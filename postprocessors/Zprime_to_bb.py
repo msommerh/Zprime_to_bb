@@ -26,7 +26,7 @@ if year == 0: year = "QCD"
 outdir    = args.outdir
 postfix   = outdir+"/"+args.title+'_flatTuple.root'
 nFiles 	  = args.nFiles
-branchsel = "%s/keep_and_drop.txt"%modulepath
+branchsel = "%s/keep_and_drop_Zprime_to_bb.txt"%modulepath
 infiles = []
 filelist = open(args.infiles, 'r').readlines()
 for entry in filelist:

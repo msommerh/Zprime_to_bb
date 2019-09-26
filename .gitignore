@@ -2,8 +2,9 @@
 *~
 *.root
 core.*
+joblist/
 filelist/
-CMSSW_10_3_3/
-submission_files/
-test_outfiles/
-\/
+output_201*/
+skim_logs_201*/
+btag/plots/
+corrections/jetMET/*/

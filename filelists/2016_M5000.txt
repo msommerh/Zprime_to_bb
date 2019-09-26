@@ -1,3 +1,0 @@
-# created from /ZprimeToBBbar_M-5000_TuneCUETP8M1_13TeV-pythia8/RunIISummer16NanoAODv5-PUMoriond17_Nano1June2019_102X_mcRun2_asymptotic_v7-v1/NANOAODSIM
-root://cms-xrd-global.cern.ch//store/mc/RunIISummer16NanoAODv5/ZprimeToBBbar_M-5000_TuneCUETP8M1_13TeV-pythia8/NANOAODSIM/PUMoriond17_Nano1June2019_102X_mcRun2_asymptotic_v7-v1/250000/56157706-284F-4945-B739-5F2BF5D4A540.root
-root://cms-xrd-global.cern.ch//store/mc/RunIISummer16NanoAODv5/ZprimeToBBbar_M-5000_TuneCUETP8M1_13TeV-pythia8/NANOAODSIM/PUMoriond17_Nano1June2019_102X_mcRun2_asymptotic_v7-v1/250000/DC556F97-0B7F-8440-9F58-F9EBF99238CB.root
