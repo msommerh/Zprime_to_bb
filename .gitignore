@@ -1,10 +1,10 @@
 *.pyc
 *~
 *.root
-core.*
-joblist/
-filelist/
-output_201*/
-skim_logs_201*/
-btag/plots/
-corrections/jetMET/*/
+filelists/
+*.swp
+\/
+//
+submission_files/
+test_outfiles/
+CMSSW_10_3_3/
