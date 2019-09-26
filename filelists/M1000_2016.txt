@@ -1,0 +1,1 @@
+root://xrootd-cms.infn.it//store/mc/RunIISummer16NanoAODv3/ZprimeToBBbar_M-1000_TuneCUETP8M1_13TeV-pythia8/NANOAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/270000/9C0E8261-59C8-E911-9C9D-A4BF01125A90.root

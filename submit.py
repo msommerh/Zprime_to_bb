@@ -157,7 +157,7 @@ def main():
 	#sys.exit()
 
 	## load data sets from file
-	if args.year in [2016,2017,2017]:
+	if args.year in [2016,2017,2018]:
 		data_set_file = 'samples_{}.json'.format(args.year)
 	elif args.year == 0:
 		data_set_file = 'samples_QCD.json'

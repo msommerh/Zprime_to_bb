@@ -1,0 +1,115 @@
+# Author: Izaak Neutelings (May 2019)
+from ROOT import TFile, TTree, TLorentzVector
+from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
+from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
+from TreeProducerCommon import TreeProducerCommon
+
+
+
+class TreeProducerZprimetobb(TreeProducerCommon):
+    """Class to create a custom output file & tree; as well as create and contain branches."""
+    
+    def __init__(self, name):
+        
+        print 'TreeProducerZprimetobb is called', name
+        self.name       = name
+        self.outputfile = TFile(name, 'RECREATE')
+        self.tree       = TTree('tree','tree')
+        
+        self.addBranch('njets',  float)
+        self.addBranch('jpt_1',  float)
+        self.addBranch('jeta_1', float)
+        self.addBranch('jphi_1', float)
+	self.addBranch('jmass_1',float)
+	self.addBranch('jdeepCSV_1', float)
+	self.addBranch('jdeepFlavour_1', float)
+        self.addBranch('jpt_2',  float)
+        self.addBranch('jeta_2', float)
+        self.addBranch('jphi_2', float)
+	self.addBranch('jmass_2',float)
+	self.addBranch('jdeepCSV_2', float)
+	self.addBranch('jdeepFlavour_2', float)
+	self.addBranch('jsorted', int)
+	self.addBranch('jj_mass', float)
+	#self.addBranch('MET_over_SumEt', float)
+	self.addBranch('Flag_Scraping_Veto_Filter')
+	self.addBranch('Flag_HBHE_NoiseFilter')
+	self.addBranch('Flag_HCAL_Laser_Filter')
+	self.addBranch('Flag_CSC_Tight_HaloFilter')
+	self.addBranch('Flag_Ecal_Dead_Cell_Filter')
+	self.addBranch('Flag_eeBadSc_Filter')
+	
+        
+    def endJob(self):
+        self.outputfile.Write()
+        self.outputfile.Close()
+    
+
+
+class ZprimetobbProducer(Module):
+    """Simple module to test postprocessing."""
+    
+    def __init__(self, name, **kwargs):
+        self.name = name
+        self.out  = TreeProducerZprimetobb(name)
+    
+    def beginJob(self):
+        pass
+        
+    def endJob(self):
+        self.out.endJob()
+        
+    def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
+        pass
+        
+    def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
+        pass
+        
+    def analyze(self, event):
+        """Process event, return True (go to next module) or False (fail, go to next event)."""
+        
+	# Event preselection
+	if event.PV_npvsGood < 1: return False
+	#self.out.MET_over_SumEt[0] = event.MET_pt/event.MET_sumEt
+	if event.MET_pt/event.MET_sumEt < 0.5: return False
+
+        # LOOP over JETS
+        jetIds = [ ]
+        #jets = Collection(event,'Jet')
+        for ijet in range(event.nJet):
+            if event.Jet_pt[ijet] < 200: continue
+            if abs(event.Jet_eta[ijet]) > 2.5: continue
+            jetIds.append(ijet)
+       
+	if len(jetIds)<2: return False
+	
+ 
+        # FILL BRANCHES JETS
+        self.out.njets[0]         = len(jetIds)
+        
+        self.out.jpt_1[0]       = event.Jet_pt[jetIds[0]]
+        self.out.jeta_1[0]      = event.Jet_eta[jetIds[0]]
+        self.out.jphi_1[0]      = event.Jet_phi[jetIds[0]]
+        self.out.jmass_1[0]      = event.Jet_mass[jetIds[0]]
+	self.out.jdeepCSV_1[0]  = event.Jet_btagDeepB[jetIds[0]]
+	self.out.jdeepFlavour_1[0]  = event.Jet_btagDeepFlavB[jetIds[0]]
+
+        self.out.jpt_2[0]       = event.Jet_pt[jetIds[1]]
+        self.out.jeta_2[0]      = event.Jet_eta[jetIds[1]]
+        self.out.jphi_2[0]      = event.Jet_phi[jetIds[1]]
+        self.out.jmass_2[0]     = event.Jet_mass[jetIds[1]]
+ 	self.out.jdeepCSV_2[0]  = event.Jet_btagDeepB[jetIds[1]]
+	self.out.jdeepFlavour_2[0]  = event.Jet_btagDeepFlavB[jetIds[1]]
+
+	self.out.jsorted[0]	  = 0
+	if self.out.jpt_1[0] >= self.out.jpt_2[0]: self.out.jsorted[0] = 1
+
+	j1_p4 = TLorentzVector()
+	j1_p4.SetPtEtaPhiM(self.out.jpt_1[0], self.out.jeta_1[0], self.out.jphi_1[0], self.out.jmass_1[0])
+	j2_p4 = TLorentzVector()
+	j2_p4.SetPtEtaPhiM(self.out.jpt_2[0], self.out.jeta_2[0], self.out.jphi_2[0], self.out.jmass_2[0])
+	self.out.jj_mass[0]	  = (j1_p4+j2_p4).M()
+        
+	self.out.tree.Fill()
+        return True
+        

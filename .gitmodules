@@ -1,0 +1,3 @@
+[submodule "corrections/leptonEfficiencies/HTT"]
+	path = corrections/leptonEfficiencies/HTT
+	url = https://github.com/CMS-HTT/LeptonEfficiencies
