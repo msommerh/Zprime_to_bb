@@ -1,0 +1,10 @@
+*.pyc
+*~
+*.root
+core.*
+joblist/
+filelist/
+output_201*/
+skim_logs_201*/
+btag/plots/
+corrections/jetMET/*/
