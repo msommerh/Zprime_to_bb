@@ -34,10 +34,8 @@ if __name__ == "__main__":
   #                                       help="get file list from DAS" )
   #parser.add_argument('-n', '--njob',    dest='nFilesPerJob', action='store', type=int, default=-1,
   #                                       help="number of files per job" )
-  #parser.add_argument('-q', '--queue',   dest='queue', choices=['all.q','short.q','long.q'], type=str, default=None, action='store',
-  #                                       help="select queue for submission" )
-  #parser.add_argument('-m', '--mock',    dest='mock', action='store_true', default=False,
-  #                                       help="mock-submit jobs for debugging purposes" )
+  parser.add_argument('-q', '--queue',   dest='queue', choices=['espresso', 'microcentury', 'longlunch', 'workday', 'tomorrow', 'testmatch'], type=str, default='tomorrow', action='store',
+                                         help="select queue for submission" )
   parser.add_argument('-v', '--verbose', dest='verbose', default=False, action='store_true',
                                          help="set verbose" )
   parser.add_argument('-y', '--year', 	 dest='year', type=int, default=2016, action='store',
@@ -45,6 +43,13 @@ if __name__ == "__main__":
 
   args = parser.parse_args()
   #checkFiles.args = args
+
+#jobflavour = 'espresso' #max 30min
+#jobflavour = 'microcentury' #max 1h
+#jobflavour = 'longlunch' #max 2h
+#jobflavour = 'workday' #max 8h
+#jobflavour = 'tomorrow' #max 1d
+#jobflavour = 'testmatch' #max 3d
 
 
 else:
@@ -182,13 +187,7 @@ def main():
 		txtfile.close()
 
 		## submit job
-		#jobflavour = 'espresso' #max 30min
-		#jobflavour = 'microcentury' #max 1h
-		#jobflavour = 'longlunch' #max 2h
-		#jobflavour = 'workday' #max 8h
-		jobflavour = 'tomorrow' #max 1d
-		#jobflavour = 'testmatch' #max 3d
-		submitJobs(title, infiles, outdir, jobflavour)
+		submitJobs(title, infiles, outdir, args.queue)
 	print
 	print
 	print "your jobs:"
