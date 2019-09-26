@@ -40,6 +40,8 @@ if __name__ == "__main__":
                                          help="set verbose" )
   parser.add_argument('-y', '--year', 	 dest='year', type=int, default=2016, action='store',
                                          help="set year, type '0' for QCD" )
+  parser.add_argument('-MC', '--isMC',   dest='isMC', type=int, action='store', default=1,
+                                         help="Set to '1' if the sample is MC, '0' if it is data." )
 
   args = parser.parse_args()
   #checkFiles.args = args
@@ -125,7 +127,7 @@ def submitJobs(title, infiles, outdir, jobflavour):
 	fout.write("export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh\n")
 	fout.write("use_x509userproxy=true\n")
 
-        fout.write("./postprocessors/Zprime_to_bb.py -t {} -i {} -o {} -y {}\n".format(title, infiles, outdir+title, args.year))
+        fout.write("./postprocessors/Zprime_to_bb.py -t {} -i {} -o {} -y {} -MC{}\n".format(title, infiles, outdir+title, args.year, args.isMC))
         fout.write("echo 'STOP---------------'\n")
         fout.write("echo\n")
         fout.write("echo\n")
@@ -162,10 +164,18 @@ def main():
 	#sys.exit()
 
 	## load data sets from file
+	if args.isMC == 1:
+		data_type="MC_signal"
+	elif args.isMC == 0:
+		data_type="data"
+	else:
+		print "Invalid input to isMC. Abort submission!!"
+		sys.exit()
+
 	if args.year in [2016,2017,2018]:
-		data_set_file = 'samples_{}.json'.format(args.year)
+		data_set_file = 'samples_{}_{}.json'.format(data_type, args.year)
 	elif args.year == 0:
-		data_set_file = 'samples_QCD.json'
+		data_set_file = 'samples_MC_QCD_2018.json'   ## need to adapt this if more QCD years will be added!!!!!
 	else:
 		print "Unknown year. Abort submission!!"
 		sys.exit()

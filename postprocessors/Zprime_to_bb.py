@@ -19,6 +19,7 @@ parser.add_argument('-i', '--infiles',  dest='infiles',   action='store', type=s
 parser.add_argument('-o', '--outdir',   dest='outdir',    action='store', type=str, default='test_outfiles')
 parser.add_argument('-n', '--nFiles',  dest='nFiles',   action='store', type=int, default=10)
 parser.add_argument('-y', '--year',  dest='year',   action='store', type=int, default=2016)
+parser.add_argument('-MC', '--isMC',  dest='isMC',   action='store', type=int, default=1)
 args = parser.parse_args()
 
 year = args.year
@@ -44,7 +45,7 @@ from modules.ModuleZprimetobb import ZprimetobbProducer
 for n in range(int(ceil(float(len(infiles))/nFiles))):
 
 	subsample = infiles[n*nFiles:(n+1)*nFiles]
-	module2run = lambda: ZprimetobbProducer(postfix.replace('.root', '_'+str(n)+'.root'), isMC=True, year=year)
+	module2run = lambda: ZprimetobbProducer(postfix.replace('.root', '_'+str(n)+'.root'), isMC=bool(args.isMC), year=year)
 
 	p = PostProcessor('.', subsample, None, branchsel, noOut=True, modules=[module2run()], provenance=False, postfix=postfix.replace('.root', '_'+str(n)+'.root'), compression=0)
 	p.run()
