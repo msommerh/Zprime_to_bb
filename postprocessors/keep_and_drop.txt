@@ -1,0 +1,19 @@
+# this is a comment
+keep * # start with all
+drop *SoftActivity*
+drop *Electron*
+drop *Photon*
+drop *GenJet*
+drop *GenPart*
+drop *Dressed*
+drop *TrigObj*
+drop *SV*
+drop HTXS*
+drop Muon_*
+drop Tau_*
+drop L1*
+drop HLT_*
+keep HLT_AK8PFJet*
+keep HLT_PFJet*
+keep HLT_CaloJet*_NoJetID
+keep HLT_PFHT*
