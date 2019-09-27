@@ -44,6 +44,8 @@ if __name__ == "__main__":
                                          help="Set to '1' if the sample is MC, '0' if it is data." )
   parser.add_argument('-BG', '--isBG',   dest='isBG', type=int, action='store', default=0,
                                          help="Set to '1' if the sample is MC QCD background, '0' if it is signal." )
+  parser.add_argument('-rs', '--resubmit',   dest='resubmit', type=str, action='store', default="",
+                                         help="Indicate file containing titles of the sample for resubmission." )
 
   args = parser.parse_args()
   #checkFiles.args = args
@@ -166,21 +168,6 @@ def main():
 	#sys.exit()
 
 	## load data sets from file
-	#if args.isMC == 1:
-	#	data_type="MC_signal"
-	#elif args.isMC == 0:
-	#	data_type="data"
-	#else:
-	#	print "Invalid input to isMC. Abort submission!!"
-	#	sys.exit()
-
-	#if args.year in [2016,2017,2018]:
-	#	data_set_file = 'samples_{}_{}.json'.format(data_type, args.year)
-	#elif args.year == 0:
-	#	data_set_file = 'samples_MC_QCD_2018.json'   ## need to adapt this if more QCD years will be added!!!!!
-	#else:
-	#	print "Unknown year. Abort submission!!"
-	# 	sys.exit()
 	if args.isMC == 1:
 		data_type="MC"
 		if args.isBG == 1:
@@ -205,7 +192,16 @@ def main():
 	with open(data_set_file, 'r') as json_file:
 		data_sets = json.load(json_file)
 
+	if args.resubmit != "":
+		rs_titles = open(args.resubmit, 'r').readlines()
+		for n, entry in enumerate(rs_titles):
+			rs_titles[n] = entry.replace("\n", "")
+		print "resubmitting the following samples:", rs_titles
+
 	for title in data_sets.keys():
+
+		if args.resubmit != "":
+			if title not in rs_titles: continue 
 
 		data_set = data_sets[title]
 		infiles = "filelists/"+title+".txt"
