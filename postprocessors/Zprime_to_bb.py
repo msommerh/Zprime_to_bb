@@ -23,7 +23,7 @@ parser.add_argument('-MC', '--isMC',  dest='isMC',   action='store', type=int, d
 args = parser.parse_args()
 
 year = args.year
-if year == 0: year = "QCD"
+#if year == 0: year = "QCD"
 outdir    = args.outdir
 postfix   = outdir+"/"+args.title+'_flatTuple.root'
 nFiles 	  = args.nFiles

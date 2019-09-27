@@ -103,8 +103,12 @@ class ZprimetobbProducer(Module):
 		self.lumi = 41530.
 	elif self.year == 2018:
 		self.lumi = 59740.
-	elif self.year == "QCD":
-		self.lumi = 59740.	#should remove the special treatment of QCD sometime
+	else:
+		print "Unknown year!!!! Abort module!!!"
+		import sys
+		sys.exit()
+	#elif self.year == "QCD":
+	#	self.lumi = 59740.	#should remove the special treatment of QCD sometime
     
     def beginJob(self):
 	print "--- beginJob ---"
