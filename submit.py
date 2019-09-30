@@ -46,6 +46,8 @@ if __name__ == "__main__":
                                          help="Set to '1' if the sample is MC QCD background, '0' if it is signal." )
   parser.add_argument('-rs', '--resubmit',   dest='resubmit', type=str, action='store', default="",
                                          help="Indicate file containing titles of the sample for resubmission." )
+  parser.add_argument('-n', '--nFiles',  dest='nFiles',   action='store', type=int, default=10,
+					 help="Number of input files per output nTuple.")
 
   args = parser.parse_args()
   #checkFiles.args = args
@@ -131,7 +133,7 @@ def submitJobs(title, infiles, outdir, jobflavour):
 	fout.write("export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh\n")
 	fout.write("use_x509userproxy=true\n")
 
-        fout.write("./postprocessors/Zprime_to_bb.py -t {} -i {} -o {} -y {} -MC {}\n".format(title, infiles, outdir+title, args.year, args.isMC))
+        fout.write("./postprocessors/Zprime_to_bb.py -t {} -i {} -o {} -y {} -MC {} -n {}\n".format(title, infiles, outdir+title, args.year, args.isMC, args.nFiles))
         fout.write("echo 'STOP---------------'\n")
         fout.write("echo\n")
         fout.write("echo\n")
