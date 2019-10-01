@@ -34,7 +34,7 @@ if __name__ == "__main__":
   #                                       help="get file list from DAS" )
   #parser.add_argument('-n', '--njob',    dest='nFilesPerJob', action='store', type=int, default=-1,
   #                                       help="number of files per job" )
-  parser.add_argument('-q', '--queue',   dest='queue', choices=['espresso', 'microcentury', 'longlunch', 'workday', 'tomorrow', 'testmatch'], type=str, default='tomorrow', action='store',
+  parser.add_argument('-q', '--queue',   dest='queue', choices=['espresso', 'microcentury', 'longlunch', 'workday', 'tomorrow', 'testmatch', 'nextweek'], type=str, default='tomorrow', action='store',
                                          help="select queue for submission" )
   parser.add_argument('-v', '--verbose', dest='verbose', default=False, action='store_true',
                                          help="set verbose" )
