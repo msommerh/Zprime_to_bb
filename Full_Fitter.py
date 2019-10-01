@@ -79,11 +79,13 @@ def dijet():
     isData = False #need to adjust depending on input, I guess
  
     samples = data if isData else back
-    pd = [x for x in sample['data_obs']['files'] if 'JetHT' in x]
-
-    alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     pd = []
-    for letter in alphabet[1:]: pd.append("data_2016_"+letter)
+    if isData:
+    	alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+        for letter in alphabet[1:]: pd.append("data_2016_"+letter)
+    else:
+	HT_bins = ['50to100', '100to200', '200to300', '300to500', '500to700', '700to1000', '1000to1500', '1500to2000', '2000toInf']
+	for HT_bin in HT_bins: pd.append("MC_QCD_2016_HT"+HT_bin)
 
     if not os.path.exists(PLOTDIR): os.makedirs(PLOTDIR)
     if BIAS: print "Running in BIAS mode"
@@ -114,17 +116,21 @@ def dijet():
     print stype, "|", baseCut
     
     file = {}
-    print " - Reading from Tree for channel", category
+    print " - Reading from Tree"
     treeBkg = TChain("tree")
-    for i, s in enumerate(samples):
-        for j, ss in enumerate(sample[s]['files']):
-            if not 'data' in s or ('data' in s and ss in pd):
-                treeBkg.Add(NTUPLEDIR + ss + ".root")
-    #for j, ss in enumerate(sample["%s_M%d" % (signName, m)]['files']): treeSign[m].Add(NTUPLEDIR + ss + ".root")
+    for i, ss in enumerate(pd):
+	j = 0
+	while True:
+	    if os.path.exists(NTUPLEDIR + ss + "/" + ss + "flatTuple_{}.root".format(j)):
+		treeBkg.Add(NTUPLEDIR + ss + "/" + ss + "flatTuple_0.root")
+		j += 1
+	    else:
+		print "found {} files for sample:".format(j+1), ss
+		break
     setData = RooDataSet("setData", "Data" if isData else "Data (QCD MC)", variables, RooFit.Cut(baseCut), RooFit.WeightVar(weight), RooFit.Import(treeBkg))
     
     nevents = setData.sumEntries()
-    dataMin, dataMax = array('d', [0.]), array('d', [0.])
+    dataMin, dataMax = array('d', [0.]), array('d', [0.])   # not sure what is happening here...
     setData.getRange(X_mass, dataMin, dataMax)
     xmin, xmax = dataMin[0], dataMax[0]
     
@@ -140,7 +146,6 @@ def dijet():
     
     # 1 parameter
     p1_1 = RooRealVar("CMS2016_"+category+"_p1_1", "p1", 7.0, 0., 1000.)
-    #modelBkg1 = RooExponential("Bkg1", "Bkg. fit (1 par.)", X_mass, p1_1)
     modelBkg1 = RooGenericPdf("Bkg1", "Bkg. fit (2 par.)", "1./pow(@0/13000, @1)", RooArgList(X_mass, p1_1))
     normzBkg1 = RooRealVar(modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 1.e10)
     modelExt1 = RooExtendPdf(modelBkg1.GetName()+"_ext", modelBkg1.GetTitle(), modelBkg1, normzBkg1)
@@ -150,9 +155,6 @@ def dijet():
     
     
     # 2 parameters
-#    p2_1 = RooRealVar("CMS2016_"+category+"_p2_1", "p1", 100., 10., 600.) #10., 0.1, 1.e4)
-#    p2_2 = RooRealVar("CMS2016_"+category+"_p2_2", "p2", 0.03, 0.,  1.)
-#    modelBkg2 = RooExpTailPdf("Bkg2", "Bkg. fit (3 par.)", X_mass, p2_1, p2_2)
     p2_1 = RooRealVar("CMS2016_"+category+"_p2_1", "p1", 0., -100., 1000.)
     p2_2 = RooRealVar("CMS2016_"+category+"_p2_2", "p2", p1_1.getVal(), -100., 600.)
     modelBkg2 = RooGenericPdf("Bkg2", "Bkg. fit (3 par.)", "pow(1-@0/13000, @1) / pow(@0/13000, @2)", RooArgList(X_mass, p2_1, p2_2))
@@ -167,14 +169,9 @@ def dijet():
     p3_2 = RooRealVar("CMS2016_"+category+"_p3_2", "p2", p2_2.getVal(), -200., 1000.)
     p3_3 = RooRealVar("CMS2016_"+category+"_p3_3", "p3", -2.5, -100., 100.)
     modelBkg3 = RooGenericPdf("Bkg3", "Bkg. fit (4 par.)", "pow(1-@0/13000, @1) / pow(@0/13000, @2+@3*log(@0/13000))", RooArgList(X_mass, p3_1, p3_2, p3_3))
-    #modelBkg3 = RooGenericPdf("Bkg3", "pow(1 - @0/13000 + @3*(@0/13000)*(@0/13000), @1) / pow(@0/13000, @2)", RooArgList(X_mass, p3_1, p3_2, p3_3))
     normzBkg3 = RooRealVar(modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 1.e10)
     modelExt3 = RooExtendPdf(modelBkg3.GetName()+"_ext", modelBkg3.GetTitle(), modelBkg3, normzBkg3)
-    #fitRes3 = modelBkg3.fitTo(setData, RooFit.Extended(False), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
     fitRes3 = modelExt3.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
-#    if not fitRes3.status()==0:
-#      print "\n\nFIT 3 FAILED"
-#      fitRes3 = modelBkg3.fitTo(setData, RooFit.Extended(False), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
     RSS[3] = drawFit("Bkg3", category, X_mass, modelBkg3, setData, binsXmass, [fitRes3], normzBkg3.getVal())
     fitRes3.Print()
     
@@ -184,14 +181,9 @@ def dijet():
     p4_3 = RooRealVar("CMS2016_"+category+"_p4_3", "p3", p3_3.getVal(), -10., 10.)
     p4_4 = RooRealVar("CMS2016_"+category+"_p4_4", "p4", 0.1, -10., 10.)
     modelBkg4 = RooGenericPdf("Bkg4", "Bkg. fit (5 par.)", "pow(1 - @0/13000, @1) / pow(@0/13000, @2+@3*log(@0/13000)+@4*pow(log(@0/13000), 2))", RooArgList(X_mass, p4_1, p4_2, p4_3, p4_4))
-    #modelBkg4 = RooGenericPdf("Bkg4", "pow(1 - @0/13000 + @3*(@0/13000)*(@0/13000), @1) / pow(@0/13000, @2+@4*log(@0/13000))", RooArgList(X_mass, p4_1, p4_2, p4_3, p4_4))
     normzBkg4 = RooRealVar(modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 1.e10)
     modelExt4 = RooExtendPdf(modelBkg4.GetName()+"_ext", modelBkg4.GetTitle(), modelBkg4, normzBkg4)
-    #fitRes4 = modelBkg4.fitTo(setData, RooFit.Extended(False), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
     fitRes4 = modelExt4.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
-#    if not fitRes4.status()==0: 
-#      print "\n\nFIT 4 FAILED"
-#      fitRes4 = modelBkg4.fitTo(setData, RooFit.Extended(False), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
     RSS[4] = drawFit("Bkg4", category, X_mass, modelBkg4, setData, binsXmass, [fitRes4], normzBkg4.getVal())
     fitRes4.Print()
     
