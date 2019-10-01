@@ -11,7 +11,7 @@ from ROOT import TStyle, TCanvas, TPad, TLegend, TLatex, TText
 from ROOT import RooFit, RooRealVar, RooDataHist, RooDataSet, RooAbsData, RooAbsReal, RooAbsPdf, RooPlot, RooBinning, RooCategory, RooSimultaneous, RooArgList, RooArgSet, RooWorkspace, RooMsgService
 from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooPolynomial, RooChebychev, RooBreitWigner, RooCBShape, RooExtendPdf, RooAddPdf
 
-from rooUtils import *
+#from rooUtils import *
 from samples import sample
 from selections import selection
 
@@ -121,8 +121,8 @@ def dijet():
     for i, ss in enumerate(pd):
 	j = 0
 	while True:
-	    if os.path.exists(NTUPLEDIR + ss + "/" + ss + "flatTuple_{}.root".format(j)):
-		treeBkg.Add(NTUPLEDIR + ss + "/" + ss + "flatTuple_0.root")
+	    if os.path.exists(NTUPLEDIR + ss + "/" + ss + "_flatTuple_{}.root".format(j)):
+		treeBkg.Add(NTUPLEDIR + ss + "/" + ss + "_flatTuple_0.root")
 		j += 1
 	    else:
 		print "found {} files for sample:".format(j+1), ss
@@ -213,7 +213,7 @@ def dijet():
     # Fisher test
     print "-"*25
     print "function & $\\chi^2$ & RSS & ndof & F-test & result \\\\"
-    print "\\multicolumn{6}{c}{", getChannel(category), "} \\\\"
+    print "\\multicolumn{6}{c}{", "Zprime_to_bb", "} \\\\"
     print "\\hline"
     for o1 in range(1, 5):
         o2 = min(o1 + 1, 5)
@@ -275,8 +275,6 @@ def dijet():
     if not isData:
         print " - Generating", nevents, "events for toy data"
         setToys = modelAlt.generate(RooArgSet(X_mass), nevents)
-        #fitRes = modelBkg.fitTo(setToys, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(False), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
-        
 
     if VERBOSE: raw_input("Press Enter to continue...")
     
@@ -286,7 +284,7 @@ def dijet():
     #                         Plot                          #
     #                                                       #
     #*******************************************************#
-    
+   
     c = TCanvas("c_"+category, category, 800, 800)
     c.Divide(1, 2)
     setTopPad(c.GetPad(1), RATIO)
@@ -295,7 +293,9 @@ def dijet():
     frame = X_mass.frame()
     setPadStyle(frame, 1.25, True)
     if VARBINS: frame.GetXaxis().SetRangeUser(X_mass.getMin(), lastBin)
-    signal = getSignal(category, stype, 2000)
+    
+    signal = getSignal(category, stype, 2000)  #replacing Alberto's getSignal by own function
+	
 
     graphData = setData.plotOn(frame, RooFit.Binning(binsXmass), RooFit.Scaling(False), RooFit.Invisible())
     modelBkg.plotOn(frame, RooFit.VisualizeError(fitRes, 1, False), RooFit.LineColor(602), RooFit.FillColor(590), RooFit.FillStyle(1001), RooFit.DrawOption("FL"), RooFit.Name("1sigma"))
@@ -675,6 +675,18 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     #print "  RSS:", rss
     #print "  Chi2:", chi2, " - ", roochi2
     return out
+
+def getSignal(cat, sig, mass):   ## FIXME still working on this function. Difficulty: the file seems wo contain already a workspace, not a conventional tree....
+    try:
+        file = TFile(NTUPLEDIR+sample+"/"+sample+"_flatTuple_0.root", "READ")
+        w = file.Get("VH_2016")
+        signal = w.pdf("%s%s_M%d" % (sig, cat, mass))
+        norm = w.var("%s%s_M%d_norm" % (sig, cat, mass))
+        xs = w.var("%s%s_M%d_xs" % (sig, cat, mass))
+        return [signal, norm.getVal(), xs.getVal()]
+    except:
+        print "WARNING: failed to get signal pdf"
+        return [None, 0., 0.]
 
 
 if __name__ == "__main__":
