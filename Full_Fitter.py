@@ -299,6 +299,7 @@ def dijet():
     if not isData:
         print " - Generating", nevents, "events for toy data"
         setToys = modelAlt.generate(RooArgSet(X_mass), nevents)
+	print "toy data generated"
 
     if VERBOSE: raw_input("Press Enter to continue...")
     
@@ -308,7 +309,8 @@ def dijet():
     #                         Plot                          #
     #                                                       #
     #*******************************************************#
-   
+  
+    print "starting to plot" 
     c = TCanvas("c_"+category, category, 800, 800)
     c.Divide(1, 2)
     setTopPad(c.GetPad(1), RATIO)
@@ -317,27 +319,36 @@ def dijet():
     frame = X_mass.frame()
     setPadStyle(frame, 1.25, True)
     if VARBINS: frame.GetXaxis().SetRangeUser(X_mass.getMin(), lastBin)
-    
+    print "initialized canvas"
     signal = getSignal(category, stype, 2000)  #replacing Alberto's getSignal by own function FIXME
-	
+    print "getSignal() function"
 
     graphData = setData.plotOn(frame, RooFit.Binning(binsXmass), RooFit.Scaling(False), RooFit.Invisible())
+    print "plotted data"
     modelBkg.plotOn(frame, RooFit.VisualizeError(fitRes, 1, False), RooFit.LineColor(602), RooFit.FillColor(590), RooFit.FillStyle(1001), RooFit.DrawOption("FL"), RooFit.Name("1sigma"))
+    print "plotted best model once"
     modelBkg.plotOn(frame, RooFit.LineColor(602), RooFit.FillColor(590), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(modelBkg.GetName()))
+    print "plotted best model twice"
     modelAlt.plotOn(frame, RooFit.LineStyle(7), RooFit.LineColor(613), RooFit.FillColor(609), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(modelAlt.GetName()))
+    print "plotted alternative model" 
     #modelBkg3.plotOn(frame, RooFit.VisualizeError(fitRes3, 1, False), RooFit.LineColor(602), RooFit.FillColor(602), RooFit.FillStyle(3003), RooFit.DrawOption("FL"), RooFit.Name("1sigma"))
     #modelBkg3.plotOn(frame, RooFit.LineStyle(3), RooFit.LineColor(602), RooFit.FillColor(596), RooFit.FillStyle(3003), RooFit.DrawOption("L"), RooFit.Name(modelBkg3.GetName()))
     #modelBkg4.plotOn(frame, RooFit.LineStyle(5), RooFit.LineColor(613), RooFit.FillColor(609), RooFit.FillStyle(3003), RooFit.DrawOption("L"), RooFit.Name(modelBkg4.GetName()))
     if not isSB and signal[0] is not None: # FIXME remove /(2./3.)
         signal[0].plotOn(frame, RooFit.Normalization(signal[1]*signal[2], RooAbsReal.NumEvent), RooFit.LineStyle(3), RooFit.LineWidth(6), RooFit.LineColor(629), RooFit.DrawOption("L"), RooFit.Name("Signal"))
+    print "weird isSB thing"
     graphData = setData.plotOn(frame, RooFit.Binning(binsXmass), RooFit.Scaling(False), RooFit.XErrorSize(0 if not VARBINS else 1), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.DrawOption("PE0"), RooFit.Name(setData.GetName()))
+    print "plotted data agin"
     fixData(graphData.getHist(), True, True, not isData)
+    print "fixData"
     pulls = frame.pullHist(setData.GetName(), modelBkg.GetName(), True)
+    print "got pulls"
     chi = frame.chiSquare(setData.GetName(), modelBkg.GetName(), True)
+    print "got chi2"
     #setToys.plotOn(frame, RooFit.DataError(RooAbsData.Poisson), RooFit.DrawOption("PE0"), RooFit.MarkerColor(2))
     if VARBINS: frame.GetYaxis().SetTitle("Events / ( 100 GeV )")
     frame.Draw()
-    
+    print "frame drawn"
     # Get Chi2
 #    chi2[1] = frame.chiSquare(modelBkg1.GetName(), setData.GetName())
 #    chi2[2] = frame.chiSquare(modelBkg2.GetName(), setData.GetName())
@@ -347,11 +358,13 @@ def dijet():
     frame.SetMaximum(frame.GetMaximum()*10)
     frame.SetMinimum(max(frame.GetMinimum(), 1.e-1))
     c.GetPad(1).SetLogy()
-    
+    print "additional settings"    
+
     drawAnalysis(channel)
     drawRegion(channel, True)
     drawCMS(LUMI, "")
-    
+    print "plot cosmetics"    
+
     leg = TLegend(0.575, 0.6, 0.95, 0.9)
     leg.SetBorderSize(0)
     leg.SetFillStyle(0) #1001
@@ -364,14 +377,16 @@ def dijet():
     if not isSB and signal[0] is not None: leg.AddEntry("Signal", signal[0].GetTitle(), "L")
     leg.SetY1(0.9-leg.GetNRows()*0.05)
     leg.Draw()
-    
+    print "legend drawn"    
+
     latex = TLatex()
     latex.SetNDC()
     latex.SetTextSize(0.04)
     latex.SetTextFont(42)
     if not isSB: latex.DrawLatex(leg.GetX1()*1.16, leg.GetY1()-0.04, "HVT model B (g_{V}=3)")
 #    latex.DrawLatex(0.67, leg.GetY1()-0.045, "#sigma_{X} = 1.0 pb")
-    
+    print "latex stuff"  
+
     c.cd(2)
     frame_res = X_mass.frame()
     setPadStyle(frame_res, 1.25)
@@ -383,20 +398,24 @@ def dijet():
     frame_res.GetYaxis().SetTitle("(N^{data}-N^{bkg})/#sigma")
     frame_res.Draw()
     fixData(pulls, False, True, False)
-    
+    print "some more settings"    
+
+
     drawChi2(RSS[order]["chi2"], RSS[order]["nbins"]-(order+1), True)
     line = drawLine(X_mass.getMin(), 0, lastBin, 0)
-    
+    "drawn chi2"    
+
     if VARBINS:
         c.SaveAs(PLOTDIR+"/BkgSR_"+channel+".pdf")
         c.SaveAs(PLOTDIR+"/BkgSR_"+channel+".png")
     else:
         c.SaveAs(PLOTDIR+"/BkgSR.pdf")
         c.SaveAs(PLOTDIR+"/BkgSR.png")
-    
+    print "saved figure"   
+ 
     if isSB: exit()
    
-
+    print "reached the end of what I understand so far"
     exit() # don't understand what is happening below yet FIXME
  
     #*******************************************************#
@@ -673,12 +692,10 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     out = {"chi2" : chi2, "chi1" : chi1, "rss" : rss, "res" : res, "nbins" : nbins, "npar" : npar}
     drawChi2(chi2, binning.numBins() - npar)
     line = drawLine(variable.getMin(), 0, variable.getMax(), 0)
-    print "debug point O"    
 
     if len(name) > 0 and len(category) > 0:
         c.SaveAs(PLOTDIR+"/"+name+".pdf")
         c.SaveAs(PLOTDIR+"/"+name+".png")
-    print "debug point P"
 
 #    if( hMassNEW.GetXaxis().GetBinLowEdge(bin+1)>=fFitXmin and hMassNEW.GetXaxis().GetBinUpEdge(bin-1)<=fFitXmax ):
 #       NumberOfVarBins += 1
