@@ -341,7 +341,7 @@ def dijet():
     print "plotted data agin"
     fixData(graphData.getHist(), True, True, not isData)
     print "fixData"
-    pulls = frame.pullHist(setData.GetName(), modelBkg.GetName(), True)
+    pulls = frame.pullHist(setData.GetName(), modelBkg.GetName(), True)  ## here the error happens FIXME
     print "got pulls"
     chi = frame.chiSquare(setData.GetName(), modelBkg.GetName(), True)
     print "got chi2"
