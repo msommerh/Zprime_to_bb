@@ -7,19 +7,22 @@ import json
 
 ## initialize histograms
 
-jpt1 = TH1D("jet_pT_1", "jet_pT_1", 100, 0, 200)
-jpt2 = TH1D("jet_pT_2", "jet_pT_2", 100, 0, 200)
-jpt = TH1D("jet_pT", "jet_pT", 100, 0, 200)
-jmass_1 = TH1D("jmass_1", "jmass_1", 100, 0, 35)
-jmass_2 = TH1D("jmass_2", "jmass_2", 100, 0, 35)
-jmass = TH1D("jmass", "jmass", 100, 0, 35)
-jj_mass = TH1D("jj_mass", "jj_mass", 100, 0, 900)
+jpt1 = TH1D("jet_pT_1", "jet_pT_1", 300, 0, 4500)
+jpt2 = TH1D("jet_pT_2", "jet_pT_2", 300, 0, 4500)
+jpt = TH1D("jet_pT", "jet_pT", 300, 0, 4500)
+jmass_1 = TH1D("jmass_1", "jmass_1", 300, 0, 700)
+jmass_2 = TH1D("jmass_2", "jmass_2", 300, 0, 700)
+jmass = TH1D("jmass", "jmass", 300, 0, 700)
+jj_mass = TH1D("jj_mass", "jj_mass", 300, 0, 10000)
 
 
 ## open flatTuples and fill histograms
 
-sample_title = "MC_QCD_2018"
+sample_title = "MC_QCD_2017"
 
+isMC = False
+if 'MC' in sample_title:
+	isMC = True
 data_set_file = "samples_{}.json".format(sample_title)
 sample_dir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"
 
@@ -38,10 +41,18 @@ for sample in file_list:
 
 	print "opening files:", sample
 
-	variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'eventweightlumi', 'genWeight', 'PSWeight', 'LHEWeight_originalXWGTUP', 'LHEReweightingWeight', 'LHEScaleWeight'])
+	variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'eventweightlumi', 'genWeight', 'PSWeight', 'LHEWeight_originalXWGTUP', 'LHEReweightingWeight', 'LHEScaleWeight', 'HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050'])
 
-	weights = variables['eventweightlumi'] # not sure yet if I need to multply with the others too
-	#weights = np.ones(variables.shape[0])
+	if isMC:
+		weights = np.multiply(variables['eventweightlumi'],variables['LHEWeight_originalXWGTUP']) # not sure yet if I need to multply with the others too
+	else:
+		weights = np.ones(variables.shape[0])
+	
+	trigger1 = np.multiply(variables['HLT_AK8PFJet550'], variables['HLT_PFJet550'])
+	trigger2 = np.multiply(variables['HLT_CaloJet550_NoJetID'], variables['HLT_PFHT1050'])
+	trigger = np.multiply(trigger1, trigger2)
+
+	weights = np.multiply(weights, trigger)
 
 	fill_hist(jpt1, variables['jpt_1'], weights=weights)
 	fill_hist(jpt2, variables['jpt_2'], weights=weights)
@@ -53,7 +64,7 @@ for sample in file_list:
 
 ## draw histograms
 
-out_file_name = "test_fitting_{}.root".format(sample_title)
+out_file_name = "test_fitting_trig_{}.root".format(sample_title)
 out_file = TFile(out_file_name, "RECREATE")
 jpt1   .Write()	 	
 jpt2   .Write() 	

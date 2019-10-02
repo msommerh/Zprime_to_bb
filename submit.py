@@ -80,8 +80,8 @@ def getFileListDAS(dataset):
 	if 'USER' in dataset:
 	    instance = 'prod/phys03'
 	cmd = 'dasgoclient -query="file dataset={} instance={}"'.format(dataset, instance)
-	if args.verbose:
-	  print "Executing ",cmd
+	#if args.verbose:
+	#  print "Executing ",cmd
 	cmd_out  = getoutput( cmd )
 	tmpList  = cmd_out.split(os.linesep)
 	filelist = [ ]

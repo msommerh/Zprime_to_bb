@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+print "starting package import"
+
 import os, sys, getopt, multiprocessing
 import copy, math, pickle
 from array import array
@@ -11,18 +13,24 @@ from ROOT import TStyle, TCanvas, TPad, TLegend, TLatex, TText
 from ROOT import RooFit, RooRealVar, RooDataHist, RooDataSet, RooAbsData, RooAbsReal, RooAbsPdf, RooPlot, RooBinning, RooCategory, RooSimultaneous, RooArgList, RooArgSet, RooWorkspace, RooMsgService
 from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooPolynomial, RooChebychev, RooBreitWigner, RooCBShape, RooExtendPdf, RooAddPdf
 
-#from rooUtils import *
-from samples import sample
-from selections import selection
+from rooUtils import *
+#from samples import sample
+#from selections import selection
+#from utils import *
 
 import optparse
+
+print "packages imported"
+
 usage = "usage: %prog [options]"
 parser = optparse.OptionParser(usage)
 parser.add_option("-b", "--bash", action="store_true", default=False, dest="bash")
 parser.add_option("-d", "--test", action="store_true", default=False, dest="bias")
 parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose")
+parser.add_option("-t", "--test_run", action="store_true", default=False, dest="test")
 (options, args) = parser.parse_args()
 if options.bash: gROOT.SetBatch(True)
+if options.test: print "performing test run on small QCD MC sample"
 
 ########## SETTINGS ##########
 
@@ -36,7 +44,7 @@ gStyle.SetPadRightMargin(0.05)
 gStyle.SetErrorX(0.)
 
 NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"
-PLOTDIR     = "plots/"
+PLOTDIR     = "plots"
 CARDDIR     = "datacards/"
 WORKDIR     = "workspace/"
 RATIO       = 4
@@ -47,8 +55,6 @@ VERBOSE     = options.verbose
 CUTCOUNT    = False
 VARBINS     = True
 BIAS        = options.bias
-
-jobs = []
 
 signalList = ['Zprime_to_bb']
 
@@ -73,7 +79,7 @@ back = ["QCD"]
 def dijet():
 
     channel = "Zprime_to_bbar"
-    category = channel
+    category = "Zprbb"
     stype = channel
     isSB = True  #no idea what this does!!
     isData = False #need to adjust depending on input, I guess
@@ -84,8 +90,11 @@ def dijet():
     	alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         for letter in alphabet[1:]: pd.append("data_2016_"+letter)
     else:
-	HT_bins = ['50to100', '100to200', '200to300', '300to500', '500to700', '700to1000', '1000to1500', '1500to2000', '2000toInf']
-	for HT_bin in HT_bins: pd.append("MC_QCD_2016_HT"+HT_bin)
+	if options.test:
+	    pd.append("MC_QCD_2016_test")
+	else:
+	    HT_bins = ['50to100', '100to200', '200to300', '300to500', '500to700', '700to1000', '1000to1500', '1500to2000', '2000toInf']
+	    for HT_bin in HT_bins: pd.append("MC_QCD_2016_HT"+HT_bin)
 
     if not os.path.exists(PLOTDIR): os.makedirs(PLOTDIR)
     if BIAS: print "Running in BIAS mode"
@@ -93,19 +102,20 @@ def dijet():
     order = 0
     RSS = {}
     
-    X_mass = RooRealVar(  	"jj_mass",    		"m_{jj}",	0.,	9050.,	"GeV")
-    j1_mass = RooRealVar(  	"jmass_1", 		"jet1 mass",	0.,  	300., 	"GeV")
-    j2_mass = RooRealVar(  	"jmass_2", 		"jet2 mass",	0.,  	300.,	"GeV")
-    j1_pt = RooRealVar(  	"jpt_1", 		"jet1 pt",	0.,  	2000., 	"GeV")
-    j2_pt = RooRealVar(  	"jpt_2", 		"jet2 pt",	0.,  	2000., 	"GeV")
-    jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",   		-99.,   1.     	)
-    jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",   		-99.,   1.     	)
-    jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",      	"",   		-99.,   1.     	)
-    jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",      	"",   		-99.,   1.     	)
+    X_mass = RooRealVar(  	"jj_mass",    		"m_{jj}",	1000.,	9000.,	"GeV")
+    j1_mass = RooRealVar(  	"jmass_1", 		"jet1 mass",	0.,  	700., 	"GeV")
+    j2_mass = RooRealVar(  	"jmass_2", 		"jet2 mass",	0.,  	700.,	"GeV")
+    j1_pt = RooRealVar(  	"jpt_1", 		"jet1 pt",	0.,  	4500., 	"GeV")
+    j2_pt = RooRealVar(  	"jpt_2", 		"jet2 pt",	0.,  	4500., 	"GeV")
+    jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",   		-2.,   1.     	)
+    jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",   		-2.,   1.     	)
+    jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",      	"",   		0.,   1.     	)
+    jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",      	"",   		0.,   1.     	)
     MET_over_sumEt = RooRealVar("MET_over_SumEt",      	"",   		0.,     1.     	)
     weight = RooRealVar(  	"eventweightlumi",  	"",  		-1.e9,  1.e9    )
     variables = RooArgSet(X_mass, j1_mass, j2_mass)
-    variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2, MET_over_sumEt, weight))
+    variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2))
+    variables.add(RooArgSet(MET_over_sumEt, weight))
     
     X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))
 
@@ -125,9 +135,10 @@ def dijet():
 		treeBkg.Add(NTUPLEDIR + ss + "/" + ss + "_flatTuple_0.root")
 		j += 1
 	    else:
-		print "found {} files for sample:".format(j+1), ss
+		print "found {} files for sample:".format(j), ss
 		break
-    setData = RooDataSet("setData", "Data" if isData else "Data (QCD MC)", variables, RooFit.Cut(baseCut), RooFit.WeightVar(weight), RooFit.Import(treeBkg))
+    #setData = RooDataSet("setData", "Data" if isData else "Data (QCD MC)", variables, RooFit.Cut(baseCut), RooFit.WeightVar(weight), RooFit.Import(treeBkg))
+    setData = RooDataSet("setData", "Data" if isData else "Data (QCD MC)", variables, RooFit.Cut(baseCut), RooFit.Import(treeBkg))
     
     nevents = setData.sumEntries()
     dataMin, dataMax = array('d', [0.]), array('d', [0.])   # not sure what is happening here...
@@ -145,45 +156,58 @@ def dijet():
     xmax = xmax+binsXmass.averageBinWidth() # start form next bin
     
     # 1 parameter
-    p1_1 = RooRealVar("CMS2016_"+category+"_p1_1", "p1", 7.0, 0., 1000.)
+    print "fitting 1 parameter model"
+    p1_1 = RooRealVar("CMS2016_"+category+"_p1_1", "p1", 7.0, 0., 2000.)
     modelBkg1 = RooGenericPdf("Bkg1", "Bkg. fit (2 par.)", "1./pow(@0/13000, @1)", RooArgList(X_mass, p1_1))
-    normzBkg1 = RooRealVar(modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 1.e10)
+    normzBkg1 = RooRealVar(modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15) #increased range!
     modelExt1 = RooExtendPdf(modelBkg1.GetName()+"_ext", modelBkg1.GetTitle(), modelBkg1, normzBkg1)
+    print "starting actual fit"
     fitRes1 = modelExt1.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
+    print "drawFit function"
     RSS[1] = drawFit("Bkg1", category, X_mass, modelBkg1, setData, binsXmass, [fitRes1], normzBkg1.getVal())
     fitRes1.Print()
     
     
     # 2 parameters
+    print "fitting 2 parameter model"
     p2_1 = RooRealVar("CMS2016_"+category+"_p2_1", "p1", 0., -100., 1000.)
     p2_2 = RooRealVar("CMS2016_"+category+"_p2_2", "p2", p1_1.getVal(), -100., 600.)
     modelBkg2 = RooGenericPdf("Bkg2", "Bkg. fit (3 par.)", "pow(1-@0/13000, @1) / pow(@0/13000, @2)", RooArgList(X_mass, p2_1, p2_2))
-    normzBkg2 = RooRealVar(modelBkg2.GetName()+"_norm", "Number of background events", nevents, 0., 1.e10)
+    normzBkg2 = RooRealVar(modelBkg2.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
     modelExt2 = RooExtendPdf(modelBkg2.GetName()+"_ext", modelBkg2.GetTitle(), modelBkg2, normzBkg2)
+    print "starting actual fit"
     fitRes2 = modelExt2.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
+    print "drawFit function"
     RSS[2] = drawFit("Bkg2", category, X_mass, modelBkg2, setData, binsXmass, [fitRes2], normzBkg2.getVal())
     fitRes2.Print()
     
     # 3 parameters
-    p3_1 = RooRealVar("CMS2016_"+category+"_p3_1", "p1", p2_1.getVal(), -1000., 1000.)
-    p3_2 = RooRealVar("CMS2016_"+category+"_p3_2", "p2", p2_2.getVal(), -200., 1000.)
-    p3_3 = RooRealVar("CMS2016_"+category+"_p3_3", "p3", -2.5, -100., 100.)
+    print "fitting 3 paramter model"
+    p3_1 = RooRealVar("CMS2016_"+category+"_p3_1", "p1", p2_1.getVal(), -2000., 2000.)
+    p3_2 = RooRealVar("CMS2016_"+category+"_p3_2", "p2", p2_2.getVal(), -400., 2000.)
+    p3_3 = RooRealVar("CMS2016_"+category+"_p3_3", "p3", -2.5, -500., 500.)
     modelBkg3 = RooGenericPdf("Bkg3", "Bkg. fit (4 par.)", "pow(1-@0/13000, @1) / pow(@0/13000, @2+@3*log(@0/13000))", RooArgList(X_mass, p3_1, p3_2, p3_3))
-    normzBkg3 = RooRealVar(modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 1.e10)
+    normzBkg3 = RooRealVar(modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
     modelExt3 = RooExtendPdf(modelBkg3.GetName()+"_ext", modelBkg3.GetTitle(), modelBkg3, normzBkg3)
+    print "starting actual fit"
     fitRes3 = modelExt3.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
+    print "drawFit function"
     RSS[3] = drawFit("Bkg3", category, X_mass, modelBkg3, setData, binsXmass, [fitRes3], normzBkg3.getVal())
     fitRes3.Print()
     
     # 4 parameters
-    p4_1 = RooRealVar("CMS2016_"+category+"_p4_1", "p1", p3_1.getVal(), -1000., 1000.)
-    p4_2 = RooRealVar("CMS2016_"+category+"_p4_2", "p2", p3_2.getVal(), -1000., 1000.)
-    p4_3 = RooRealVar("CMS2016_"+category+"_p4_3", "p3", p3_3.getVal(), -10., 10.)
-    p4_4 = RooRealVar("CMS2016_"+category+"_p4_4", "p4", 0.1, -10., 10.)
+    print "fitting 4 parameter model"
+    p4_1 = RooRealVar("CMS2016_"+category+"_p4_1", "p1", p3_1.getVal(), -2000., 2000.)
+    p4_2 = RooRealVar("CMS2016_"+category+"_p4_2", "p2", p3_2.getVal(), -2000., 2000.)
+    p4_3 = RooRealVar("CMS2016_"+category+"_p4_3", "p3", p3_3.getVal(), -50., 50.)
+    p4_4 = RooRealVar("CMS2016_"+category+"_p4_4", "p4", 0.1, -50., 50.)
     modelBkg4 = RooGenericPdf("Bkg4", "Bkg. fit (5 par.)", "pow(1 - @0/13000, @1) / pow(@0/13000, @2+@3*log(@0/13000)+@4*pow(log(@0/13000), 2))", RooArgList(X_mass, p4_1, p4_2, p4_3, p4_4))
-    normzBkg4 = RooRealVar(modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 1.e10)
+    #normzBkg4 = RooRealVar(modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 1.e10)
+    normzBkg4 = RooRealVar(modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
     modelExt4 = RooExtendPdf(modelBkg4.GetName()+"_ext", modelBkg4.GetTitle(), modelBkg4, normzBkg4)
+    print "starting actual fit"
     fitRes4 = modelExt4.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
+    print "drawFit function"
     RSS[4] = drawFit("Bkg4", category, X_mass, modelBkg4, setData, binsXmass, [fitRes4], normzBkg4.getVal())
     fitRes4.Print()
     
@@ -294,7 +318,7 @@ def dijet():
     setPadStyle(frame, 1.25, True)
     if VARBINS: frame.GetXaxis().SetRangeUser(X_mass.getMin(), lastBin)
     
-    signal = getSignal(category, stype, 2000)  #replacing Alberto's getSignal by own function
+    signal = getSignal(category, stype, 2000)  #replacing Alberto's getSignal by own function FIXME
 	
 
     graphData = setData.plotOn(frame, RooFit.Binning(binsXmass), RooFit.Scaling(False), RooFit.Invisible())
@@ -371,7 +395,10 @@ def dijet():
         c.SaveAs(PLOTDIR+"/BkgSR.png")
     
     if isSB: exit()
-    
+   
+
+    exit() # don't understand what is happening below yet FIXME
+ 
     #*******************************************************#
     #                                                       #
     #                    Signal shape                       #
@@ -609,11 +636,11 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     frame.SetMinimum(max(frame.GetMinimum(), 1.e-2))
     c.GetPad(1).SetLogy()
     frame.Draw()
-    
+
     drawAnalysis(category)
     drawRegion(category, True)
     drawCMS(LUMI, "Preliminary")
-    
+
     c.cd(2)
     frame_res = variable.frame()
     setPadStyle(frame_res, 1.25)
@@ -623,7 +650,7 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     frame_res.GetYaxis().SetTitle("(N^{data}-N^{bkg})/#sigma")
     frame_res.Draw()
     fixData(pulls, False, True, False)
-    
+
     # calculate RSS
     nbins, res, rss, chi1, chi2 = 0, 0., 0., 0., 0.
     hist = graphData.getHist()
@@ -646,11 +673,13 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     out = {"chi2" : chi2, "chi1" : chi1, "rss" : rss, "res" : res, "nbins" : nbins, "npar" : npar}
     drawChi2(chi2, binning.numBins() - npar)
     line = drawLine(variable.getMin(), 0, variable.getMax(), 0)
-    
+    print "debug point O"    
+
     if len(name) > 0 and len(category) > 0:
         c.SaveAs(PLOTDIR+"/"+name+".pdf")
         c.SaveAs(PLOTDIR+"/"+name+".png")
-    
+    print "debug point P"
+
 #    if( hMassNEW.GetXaxis().GetBinLowEdge(bin+1)>=fFitXmin and hMassNEW.GetXaxis().GetBinUpEdge(bin-1)<=fFitXmax ):
 #       NumberOfVarBins += 1
 #       data = hMassNEW.GetBinContent(bin)
@@ -677,17 +706,20 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     return out
 
 def getSignal(cat, sig, mass):   ## FIXME still working on this function. Difficulty: the file seems wo contain already a workspace, not a conventional tree....
-    try:
-        file = TFile(NTUPLEDIR+sample+"/"+sample+"_flatTuple_0.root", "READ")
-        w = file.Get("VH_2016")
-        signal = w.pdf("%s%s_M%d" % (sig, cat, mass))
-        norm = w.var("%s%s_M%d_norm" % (sig, cat, mass))
-        xs = w.var("%s%s_M%d_xs" % (sig, cat, mass))
-        return [signal, norm.getVal(), xs.getVal()]
-    except:
-        print "WARNING: failed to get signal pdf"
-        return [None, 0., 0.]
+    #try:
+    #    sample = "" # FIXME
+    #    file = TFile(NTUPLEDIR+sample+"/"+sample+"_flatTuple_0.root", "READ")
+    #    w = file.Get("VH_2016")
+    #    signal = w.pdf("%s%s_M%d" % (sig, cat, mass))
+    #    norm = w.var("%s%s_M%d_norm" % (sig, cat, mass))
+    #    xs = w.var("%s%s_M%d_xs" % (sig, cat, mass))
+    #    return [signal, norm.getVal(), xs.getVal()]
+    #except:
+    #    print "WARNING: failed to get signal pdf"
+    #    return [None, 0., 0.]
+    return [None, 0., 0. ]
 
 
 if __name__ == "__main__":
+	print "starting dijet()"
 	dijet()
