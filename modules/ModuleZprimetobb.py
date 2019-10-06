@@ -1,8 +1,8 @@
-# Author: Izaak Neutelings (May 2019)
-from ROOT import TFile, TTree, TLorentzVector, TObject, TH1, TH1D, TF1
+from ROOT import TFile, TTree, TLorentzVector, TObject, TH1, TH1D, TF1, TH1F
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 from TreeProducerCommon import TreeProducerCommon
+from PileupWeightTool import PileupWeightTool
 
 def getXsec(sample):
   if sample.find( "QCD_Pt_170to300_"                     ) !=-1 : return 117276.;
@@ -40,6 +40,10 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.outputfile = TFile(name, 'RECREATE')
         self.tree       = TTree('tree','tree')
 	self.year 	= year
+
+	self.events = TH1F('Events', 'Events', 1,0,1)
+	self.pileup = TH1F('pileup', 'pileup', 100,0,100)  ## necessary?
+	self.original = TH1F('Original', 'Original',1,0,1) ## necessary?
  
         self.addBranch('njets'		, float)
         self.addBranch('jpt_1'		, float)
@@ -76,8 +80,10 @@ class TreeProducerZprimetobb(TreeProducerCommon):
 	self.addBranch('LHEReweightingWeight'		, float)
 	self.addBranch('LHEScaleWeight'			, float)
 	self.addBranch('PSWeight'			, float)
-	self.addBranch('genWeight'			, float)
-	self.addBranch('eventweightlumi'		, float)
+	#self.addBranch('genWeight'			, float)
+	self.addBranch('GenWeight'			, float) #new weight that is either -1. or +1.
+	self.addBranch('PUWeight'			, float)
+	#self.addBranch('eventweightlumi'		, float)
         self.addBranch('isMC'				, int)
 
 
@@ -94,7 +100,8 @@ class ZprimetobbProducer(Module):
 	self.isMC	= isMC     
         print "isMC =", self.isMC 
 	self.year	= year
-        self.out  = TreeProducerZprimetobb(name)
+        self.out  = TreeProducerZprimetobb(name, isMC=self.isMC, year=self.year)
+	if self.isMC: self.puTool = PileupWeightTool(year =year)
 
 	self.lumi	= 1.
 	if self.year == 2016:
@@ -107,8 +114,6 @@ class ZprimetobbProducer(Module):
 		print "Unknown year!!!! Abort module!!!"
 		import sys
 		sys.exit()
-	#elif self.year == "QCD":
-	#	self.lumi = 59740.	#should remove the special treatment of QCD sometime
     
     def beginJob(self):
 	print "--- beginJob ---"
@@ -126,24 +131,24 @@ class ZprimetobbProducer(Module):
         self.sample = self.sample.replace("root://cms-xrd-global.cern.ch/", "")
         self.sample = self.sample[1:].replace("/", "_")
 
-	if self.isMC:
+	#if self.isMC:
 
-        	# number of events
-        	runTree = inputFile.Get('Runs')
-        	genH = TH1D("genH_%s" % self.sample, "", 1, 0, 0)
-        	genH.Sumw2()
-        	runTree.Draw("genEventCount>>genH_%s" % self.sample, "", "goff")
-        	self.genEv = genH.GetMean()*genH.GetEntries()
+        #	# number of events
+        #	runTree = inputFile.Get('Runs')
+        #	genH = TH1D("genH_%s" % self.sample, "", 1, 0, 0)
+        #	genH.Sumw2()
+        #	runTree.Draw("genEventCount>>genH_%s" % self.sample, "", "goff")
+        #	self.genEv = genH.GetMean()*genH.GetEntries()
 
-        	# Cross section
-        	self.XS = getXsec(self.sample)
+        #	# Cross section
+        #	self.XS = getXsec(self.sample)
 
-        	self.Leq = self.lumi*self.XS/self.genEv if self.genEv > 0 else 0.
-	else:
-		
-		self.Leq = 1.
+        #	self.Leq = self.lumi*self.XS/self.genEv if self.genEv > 0 else 0.
+	#else:
+	#	
+	#	self.Leq = 1.
 
-        print self.sample, ": Leq =", self.Leq
+        #print self.sample, ": Leq =", self.Leq
 
         print "--- end of beginFile ---"
 
@@ -155,7 +160,14 @@ class ZprimetobbProducer(Module):
         
     def analyze(self, event):
         """Process event, return True (go to next module) or False (fail, go to next event)."""
-       
+      
+	if self.isMC:
+		GenWeight = -1. if event.genWeight<0 else 1.
+		PUWeight = self.puTool.getWeight(event.Pileup_nTrueInt)
+		self.out.events.Fill(0., GenWeight)
+		self.out.original.Fill(0.,event.LHEWeight_originalXWGTUP)
+		self.out.pileup.Fill(event.Pileup_nTrueInt)
+ 
 	## Event filter preselection
 	passedMETFilters = False
 	try: 
@@ -276,19 +288,25 @@ class ZprimetobbProducer(Module):
 		self.out.PSWeight[0]			= event.PSWeight
 	except:
 		self.out.PSWeight[0]			= -100.	     
-	try:
-		self.out.genWeight[0]			= event.genWeight
-	except:
-		self.out.genWeight[0]			= -100.				
-
-	## event weight lumi
-        eventweightlumi = 1.
-
+	#try:
+  	# 	self.out.genWeight[0]			= event.genWeight
+	#except:
+	# 	self.out.genWeight[0]			= -100.		
 	if self.isMC:
-		eventweightlumi = self.Leq  #minimalist approach, store the things to be multiplied later separately into nTuple
-		#eventweightlumi = self.Leq * event.LHEWeight_originalXWGTUP
-        	#eventweightlumi = self.Leq * event.lheweight * event.btagweight #event.puweight
-        self.out.eventweightlumi[0] = eventweightlumi
+		self.out.GenWeight[0]			= GenWeight
+		self.out.PUWeight[0]			= PUWeight
+	else:
+		self.out.GenWeight[0]			= 1.
+		self.out.PUWeight[0]			= 1.
+	
+	## event weight lumi
+        #eventweightlumi = 1.
+
+	#if self.isMC:
+	#	eventweightlumi = self.Leq  #minimalist approach, store the things to be multiplied later separately into nTuple
+	#	#eventweightlumi = self.Leq * event.LHEWeight_originalXWGTUP
+        #	#eventweightlumi = self.Leq * event.lheweight * event.btagweight #event.puweight
+        #self.out.eventweightlumi[0] = eventweightlumi
 	self.out.isMC[0] = int(self.isMC)
 
 	self.out.tree.Fill()

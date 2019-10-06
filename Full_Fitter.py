@@ -24,12 +24,12 @@ print "packages imported"
 
 usage = "usage: %prog [options]"
 parser = optparse.OptionParser(usage)
-parser.add_option("-b", "--bash", action="store_true", default=False, dest="bash")
+parser.add_option("-b", "--bash", action="store_true", default=True, dest="bash")
 parser.add_option("-d", "--test", action="store_true", default=False, dest="bias")
 parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose")
 parser.add_option("-t", "--test_run", action="store_true", default=False, dest="test")
 (options, args) = parser.parse_args()
-if options.bash: gROOT.SetBatch(True)
+if options.bash: gROOT.SetBatch(True) #suppress immediate graphic output
 if options.test: print "performing test run on small QCD MC sample"
 
 ########## SETTINGS ##########
@@ -132,7 +132,7 @@ def dijet():
 	j = 0
 	while True:
 	    if os.path.exists(NTUPLEDIR + ss + "/" + ss + "_flatTuple_{}.root".format(j)):
-		treeBkg.Add(NTUPLEDIR + ss + "/" + ss + "_flatTuple_0.root")
+		treeBkg.Add(NTUPLEDIR + ss + "/" + ss + "_flatTuple_{}.root".format(j))
 		j += 1
 	    else:
 		print "found {} files for sample:".format(j), ss
@@ -341,6 +341,9 @@ def dijet():
     print "plotted data agin"
     fixData(graphData.getHist(), True, True, not isData)
     print "fixData"
+    print "now the erroneous frame.pullHist(setData.GetName(), modelBkg.GetName(), True) step is coming"
+    print "setData.GetName() =", setData.GetName()
+    print "modelBkg.GetName() =", modelBkg.GetName()
     pulls = frame.pullHist(setData.GetName(), modelBkg.GetName(), True)  ## here the error happens FIXME
     print "got pulls"
     chi = frame.chiSquare(setData.GetName(), modelBkg.GetName(), True)
@@ -648,6 +651,9 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     model.paramOn(frame, RooFit.Label(model.GetTitle()), RooFit.Layout(0.45, 0.95, 0.94), RooFit.Format("NEAU"))
     graphData = dataset.plotOn(frame, RooFit.Binning(binning), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.DrawOption("PE0"), RooFit.Name(dataset.GetName()))
     fixData(graphData.getHist(), True, True, not isData)
+    print "non-erroneous frame.pullHist(dataset.GetName(), model.GetName(), True) step coming now"
+    print "dataset.GetName() =", dataset.GetName()
+    print "model.GetName() =", model.GetName()
     pulls = frame.pullHist(dataset.GetName(), model.GetName(), True)
     residuals = frame.residHist(dataset.GetName(), model.GetName(), False, True) # this is y_i - f(x_i)
     roochi2 = frame.chiSquare()#dataset.GetName(), model.GetName()) #model.GetName(), dataset.GetName()
