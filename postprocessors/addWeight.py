@@ -20,7 +20,7 @@ filterset   = options.filter
 singlecore  = options.single
 verboseout  = options.verbose
 year        = options.year
-isMC	    = True #only reweight MC anyway
+isMC        = True #only reweight MC anyway
 
 
 if year=='2016':
@@ -91,16 +91,16 @@ def processFile(sample, origin, target, verbose=False):
         print '  WARNING: files for sample', sample , 'do not exist, continuing'
         return True
     for infile_name in file_list:
-	infile = TFile(infile_name, 'READ')
-	evtHist = infile.Get('Events')
-	try:
+        infile = TFile(infile_name, 'READ')
+        evtHist = infile.Get('Events')
+        try:
             nEvents = evtHist.GetBinContent(1)
             totalEntries += nEvents
             print "sample:",sample,"nEvents:", nEvents
         except:
             print '  ERROR: nEvents not found in file', sample
             exit(1)
-	infile.Close()
+        infile.Close()
     print "totalEntries =", totalEntries
 
     # Cross section
@@ -146,7 +146,7 @@ def processFile(sample, origin, target, verbose=False):
                     obj.GetEntry(event)
                     # Initialize
                     eventWeightLumi[0] = 1.
-	
+        
                     # Weights
                     if isMC:
                         eventWeightLumi[0] = obj.GenWeight * Leq
@@ -171,7 +171,7 @@ def processFile(sample, origin, target, verbose=False):
                         subobj.Write()
                 new_file.cd('..')
         new_file.Close()
-	ref_file.Close()
+        ref_file.Close()
 
 
 HT_bins = ['50to100', '100to200', '200to300', '300to500', '500to700', '700to1000', '1000to1500', '1500to2000', '2000toInf']

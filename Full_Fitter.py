@@ -24,12 +24,14 @@ print "packages imported"
 
 usage = "usage: %prog [options]"
 parser = optparse.OptionParser(usage)
-parser.add_option("-b", "--bash", action="store_true", default=True, dest="bash")
+#parser.add_option("-b", "--bash", action="store_true", default=False, dest="bash")
 parser.add_option("-d", "--test", action="store_true", default=False, dest="bias")
 parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose")
 parser.add_option("-t", "--test_run", action="store_true", default=False, dest="test")
+parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
 (options, args) = parser.parse_args()
-if options.bash: gROOT.SetBatch(True) #suppress immediate graphic output
+#if options.bash: gROOT.SetBatch(True)
+gROOT.SetBatch(True) #suppress immediate graphic output
 if options.test: print "performing test run on small QCD MC sample"
 
 ########## SETTINGS ##########
@@ -43,18 +45,29 @@ gStyle.SetPadTopMargin(0.06)
 gStyle.SetPadRightMargin(0.05)
 gStyle.SetErrorX(0.)
 
-NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"
+NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
 PLOTDIR     = "plots"
 CARDDIR     = "datacards/"
 WORKDIR     = "workspace/"
 RATIO       = 4
 SHOWERR     = True
 BLIND       = False
-LUMI        = 35920 #2016, need to generalize to different years someday
+#LUMI        = 35920 #2016, need to generalize to different years someday
 VERBOSE     = options.verbose
 CUTCOUNT    = False
 VARBINS     = True
 BIAS        = options.bias
+YEAR        = options.year
+
+if YEAR=='2016':
+    LUMI=35920.
+elif YEAR=='2017':
+    LUMI=41530.
+elif YEAR=='2018':
+    LUMI=59740.
+else:
+    print "unknown year:",YEAR
+    sys.exit()
 
 signalList = ['Zprime_to_bb']
 
@@ -81,20 +94,22 @@ def dijet():
     channel = "Zprime_to_bbar"
     category = "Zprbb"
     stype = channel
-    isSB = True  #no idea what this does!!
+    isSB = True  #no idea what this does!! --> apparently stands for side bands
     isData = False #need to adjust depending on input, I guess
+    nTupleDir = NTUPLEDIR
  
     samples = data if isData else back
     pd = []
     if isData:
-    	alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-        for letter in alphabet[1:]: pd.append("data_2016_"+letter)
+        alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+        for letter in alphabet[1:]: pd.append("data_"+YEAR+"_"+letter)
     else:
-	if options.test:
-	    pd.append("MC_QCD_2016_test")
-	else:
-	    HT_bins = ['50to100', '100to200', '200to300', '300to500', '500to700', '700to1000', '1000to1500', '1500to2000', '2000toInf']
-	    for HT_bin in HT_bins: pd.append("MC_QCD_2016_HT"+HT_bin)
+        if options.test:
+            pd.append("MC_QCD_"+YEAR)
+            nTupleDir = NTUPLEDIR.replace("weighted/","test_for_fit/")
+        else:
+            HT_bins = ['50to100', '100to200', '200to300', '300to500', '500to700', '700to1000', '1000to1500', '1500to2000', '2000toInf']
+            for HT_bin in HT_bins: pd.append("MC_QCD_"+YEAR+"_HT"+HT_bin)
 
     if not os.path.exists(PLOTDIR): os.makedirs(PLOTDIR)
     if BIAS: print "Running in BIAS mode"
@@ -102,17 +117,17 @@ def dijet():
     order = 0
     RSS = {}
     
-    X_mass = RooRealVar(  	"jj_mass",    		"m_{jj}",	1000.,	9000.,	"GeV")
-    j1_mass = RooRealVar(  	"jmass_1", 		"jet1 mass",	0.,  	700., 	"GeV")
-    j2_mass = RooRealVar(  	"jmass_2", 		"jet2 mass",	0.,  	700.,	"GeV")
-    j1_pt = RooRealVar(  	"jpt_1", 		"jet1 pt",	0.,  	4500., 	"GeV")
-    j2_pt = RooRealVar(  	"jpt_2", 		"jet2 pt",	0.,  	4500., 	"GeV")
-    jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",   		-2.,   1.     	)
-    jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",   		-2.,   1.     	)
-    jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",      	"",   		0.,   1.     	)
-    jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",      	"",   		0.,   1.     	)
-    MET_over_sumEt = RooRealVar("MET_over_SumEt",      	"",   		0.,     1.     	)
-    weight = RooRealVar(  	"eventweightlumi",  	"",  		-1.e9,  1.e9    )
+    X_mass = RooRealVar(        "jj_mass",              "m_{jj}",       1000.,  9000.,  "GeV")
+    j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
+    j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
+    j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     4500.,  "GeV")
+    j2_pt = RooRealVar(         "jpt_2",                "jet2 pt",      0.,     4500.,  "GeV")
+    jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",             -2.,   1.       )
+    jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",             -2.,   1.       )
+    jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",       "",             0.,   1.        )
+    jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             0.,   1.        )
+    MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
+    weight = RooRealVar(        "eventweightlumi",      "",             -1.e9,  1.e9    )
     variables = RooArgSet(X_mass, j1_mass, j2_mass)
     variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2))
     variables.add(RooArgSet(MET_over_sumEt, weight))
@@ -129,14 +144,14 @@ def dijet():
     print " - Reading from Tree"
     treeBkg = TChain("tree")
     for i, ss in enumerate(pd):
-	j = 0
-	while True:
-	    if os.path.exists(NTUPLEDIR + ss + "/" + ss + "_flatTuple_{}.root".format(j)):
-		treeBkg.Add(NTUPLEDIR + ss + "/" + ss + "_flatTuple_{}.root".format(j))
-		j += 1
-	    else:
-		print "found {} files for sample:".format(j), ss
-		break
+        j = 0
+        while True:
+            if os.path.exists(nTupleDir + ss + "/" + ss + "_flatTuple_{}.root".format(j)):
+                treeBkg.Add(nTupleDir + ss + "/" + ss + "_flatTuple_{}.root".format(j))
+                j += 1
+            else:
+                print "found {} files for sample:".format(j), ss
+                break
     #setData = RooDataSet("setData", "Data" if isData else "Data (QCD MC)", variables, RooFit.Cut(baseCut), RooFit.WeightVar(weight), RooFit.Import(treeBkg))
     setData = RooDataSet("setData", "Data" if isData else "Data (QCD MC)", variables, RooFit.Cut(baseCut), RooFit.Import(treeBkg))
     
@@ -157,7 +172,7 @@ def dijet():
     
     # 1 parameter
     print "fitting 1 parameter model"
-    p1_1 = RooRealVar("CMS2016_"+category+"_p1_1", "p1", 7.0, 0., 2000.)
+    p1_1 = RooRealVar("CMS"+YEAR+"_"+category+"_p1_1", "p1", 7.0, 0., 2000.)
     modelBkg1 = RooGenericPdf("Bkg1", "Bkg. fit (2 par.)", "1./pow(@0/13000, @1)", RooArgList(X_mass, p1_1))
     normzBkg1 = RooRealVar(modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15) #increased range!
     modelExt1 = RooExtendPdf(modelBkg1.GetName()+"_ext", modelBkg1.GetTitle(), modelBkg1, normzBkg1)
@@ -170,8 +185,8 @@ def dijet():
     
     # 2 parameters
     print "fitting 2 parameter model"
-    p2_1 = RooRealVar("CMS2016_"+category+"_p2_1", "p1", 0., -100., 1000.)
-    p2_2 = RooRealVar("CMS2016_"+category+"_p2_2", "p2", p1_1.getVal(), -100., 600.)
+    p2_1 = RooRealVar("CMS"+YEAR+"_"+category+"_p2_1", "p1", 0., -100., 1000.)
+    p2_2 = RooRealVar("CMS"+YEAR+"_"+category+"_p2_2", "p2", p1_1.getVal(), -100., 600.)
     modelBkg2 = RooGenericPdf("Bkg2", "Bkg. fit (3 par.)", "pow(1-@0/13000, @1) / pow(@0/13000, @2)", RooArgList(X_mass, p2_1, p2_2))
     normzBkg2 = RooRealVar(modelBkg2.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
     modelExt2 = RooExtendPdf(modelBkg2.GetName()+"_ext", modelBkg2.GetTitle(), modelBkg2, normzBkg2)
@@ -183,9 +198,9 @@ def dijet():
     
     # 3 parameters
     print "fitting 3 paramter model"
-    p3_1 = RooRealVar("CMS2016_"+category+"_p3_1", "p1", p2_1.getVal(), -2000., 2000.)
-    p3_2 = RooRealVar("CMS2016_"+category+"_p3_2", "p2", p2_2.getVal(), -400., 2000.)
-    p3_3 = RooRealVar("CMS2016_"+category+"_p3_3", "p3", -2.5, -500., 500.)
+    p3_1 = RooRealVar("CMS"+YEAR+"_"+category+"_p3_1", "p1", p2_1.getVal(), -2000., 2000.)
+    p3_2 = RooRealVar("CMS"+YEAR+"_"+category+"_p3_2", "p2", p2_2.getVal(), -400., 2000.)
+    p3_3 = RooRealVar("CMS"+YEAR+"_"+category+"_p3_3", "p3", -2.5, -500., 500.)
     modelBkg3 = RooGenericPdf("Bkg3", "Bkg. fit (4 par.)", "pow(1-@0/13000, @1) / pow(@0/13000, @2+@3*log(@0/13000))", RooArgList(X_mass, p3_1, p3_2, p3_3))
     normzBkg3 = RooRealVar(modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
     modelExt3 = RooExtendPdf(modelBkg3.GetName()+"_ext", modelBkg3.GetTitle(), modelBkg3, normzBkg3)
@@ -197,10 +212,10 @@ def dijet():
     
     # 4 parameters
     print "fitting 4 parameter model"
-    p4_1 = RooRealVar("CMS2016_"+category+"_p4_1", "p1", p3_1.getVal(), -2000., 2000.)
-    p4_2 = RooRealVar("CMS2016_"+category+"_p4_2", "p2", p3_2.getVal(), -2000., 2000.)
-    p4_3 = RooRealVar("CMS2016_"+category+"_p4_3", "p3", p3_3.getVal(), -50., 50.)
-    p4_4 = RooRealVar("CMS2016_"+category+"_p4_4", "p4", 0.1, -50., 50.)
+    p4_1 = RooRealVar("CMS"+YEAR+"_"+category+"_p4_1", "p1", p3_1.getVal(), -2000., 2000.)
+    p4_2 = RooRealVar("CMS"+YEAR+"_"+category+"_p4_2", "p2", p3_2.getVal(), -2000., 2000.)
+    p4_3 = RooRealVar("CMS"+YEAR+"_"+category+"_p4_3", "p3", p3_3.getVal(), -50., 50.)
+    p4_4 = RooRealVar("CMS"+YEAR+"_"+category+"_p4_4", "p4", 0.1, -50., 50.)
     modelBkg4 = RooGenericPdf("Bkg4", "Bkg. fit (5 par.)", "pow(1 - @0/13000, @1) / pow(@0/13000, @2+@3*log(@0/13000)+@4*pow(log(@0/13000), 2))", RooArgList(X_mass, p4_1, p4_2, p4_3, p4_4))
     #normzBkg4 = RooRealVar(modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 1.e10)
     normzBkg4 = RooRealVar(modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
@@ -299,7 +314,7 @@ def dijet():
     if not isData:
         print " - Generating", nevents, "events for toy data"
         setToys = modelAlt.generate(RooArgSet(X_mass), nevents)
-	print "toy data generated"
+        print "toy data generated"
 
     if VERBOSE: raw_input("Press Enter to continue...")
     
@@ -419,7 +434,7 @@ def dijet():
     if isSB: exit()
    
     print "reached the end of what I understand so far"
-    exit() # don't understand what is happening below yet FIXME
+    exit() # don't understand what is happening below yet, thus everything is still written for 2016 only FIXME
  
     #*******************************************************#
     #                                                       #
@@ -651,9 +666,9 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     model.paramOn(frame, RooFit.Label(model.GetTitle()), RooFit.Layout(0.45, 0.95, 0.94), RooFit.Format("NEAU"))
     graphData = dataset.plotOn(frame, RooFit.Binning(binning), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.DrawOption("PE0"), RooFit.Name(dataset.GetName()))
     fixData(graphData.getHist(), True, True, not isData)
-    print "non-erroneous frame.pullHist(dataset.GetName(), model.GetName(), True) step coming now"
-    print "dataset.GetName() =", dataset.GetName()
-    print "model.GetName() =", model.GetName()
+    #print "non-erroneous frame.pullHist(dataset.GetName(), model.GetName(), True) step coming now"
+    #print "dataset.GetName() =", dataset.GetName()
+    #print "model.GetName() =", model.GetName()
     pulls = frame.pullHist(dataset.GetName(), model.GetName(), True)
     residuals = frame.residHist(dataset.GetName(), model.GetName(), False, True) # this is y_i - f(x_i)
     roochi2 = frame.chiSquare()#dataset.GetName(), model.GetName()) #model.GetName(), dataset.GetName()
@@ -721,7 +736,7 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
 #       
 #       if (hMassNEW.GetBinContent(bin)>0):
 #         NumberOfObservations_VarBin+=1
-#         chi2_VarBin += pow( (data - fit) , 2 ) / pow( err_tot , 2 )	 
+#         chi2_VarBin += pow( (data - fit) , 2 ) / pow( err_tot , 2 )    
 #chi2_VarBin_notNorm += pow( (data - fit) , 2 )
     #print "  Integral:", integral, "-", norm
     #print "  RSS:", rss
@@ -744,5 +759,5 @@ def getSignal(cat, sig, mass):   ## FIXME still working on this function. Diffic
 
 
 if __name__ == "__main__":
-	print "starting dijet()"
-	dijet()
+        print "starting dijet()"
+        dijet()

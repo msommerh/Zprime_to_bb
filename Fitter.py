@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import numpy as np
+import os
 from ROOT import TFile, TTree, TH1D, TCanvas, TLegend
 from root_numpy import root2array, fill_hist
 import json
@@ -10,8 +11,8 @@ usage = "usage: %prog [options]"
 parser = optparse.OptionParser(usage)
 parser.add_option("-p", "--produce", action="store_true", default=False, dest="produce")
 parser.add_option("-c", "--compare", action="store_true", default=False, dest="compare")
-parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2017')
+parser.add_option('-s', '--single_process', action='store', type='int', dest='single_process',default=0)
 (options, args) = parser.parse_args()
 
 def extract_jj_mass(filename):
@@ -47,62 +48,79 @@ def produce(sample_title, LHE_weight=False, PU_weight=False):
         sample_dir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
     else:
         sample_dir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"
- 
+
+
     file_list = []
     with open(data_set_file, 'r') as json_file:
         data_sets = json.load(json_file)
     for title in data_sets.keys():
-    	file_list.append(sample_dir+title+"/"+title+"_flatTuple_*.root")
-    print "file_list =", file_list
+        j = 0
+        while True:
+            if os.path.exists(sample_dir+title+"/"+title+"_flatTuple_{}.root".format(j)):
+                file_list.append(sample_dir+title+"/"+title+"_flatTuple_{}.root".format(j))
+                j += 1
+            else:
+                print "found {} files for sample:".format(j), title
+                break
+        if j == 0: 
+            print '  WARNING: files for sample', title , 'do not exist, continuing'
+            return True
+
+    #file_list = []
+    #with open(data_set_file, 'r') as json_file:
+    #    data_sets = json.load(json_file)
+    #for title in data_sets.keys():
+    #    file_list.append(sample_dir+title+"/"+title+"_flatTuple_*.root")
+    #print "file_list =", file_list
     
     for sample in file_list:
     
-    	print "opening files:", sample
+        print "opening files:", sample
 
-	weight_string = ''
+        weight_string = ''
     
-    	if isMC: 
-    	    variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'eventWeightLumi', 'GenWeight', 'PSWeight', 'PUWeight', 'LHEWeight_originalXWGTUP', 'LHEReweightingWeight', 'LHEScaleWeight', 'HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050'])
-    	    weights = variables['eventWeightLumi']
-	    if LHE_weight: 
+        if isMC: 
+            variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'eventWeightLumi', 'GenWeight', 'PSWeight', 'PUWeight', 'LHEWeight_originalXWGTUP', 'LHEReweightingWeight', 'LHEScaleWeight', 'HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050'])
+            weights = variables['eventWeightLumi']
+            if LHE_weight: 
                 weights = np.multiply(weights, variables['LHEWeight_originalXWGTUP'])
                 weight_string += 'LHEWeighted_'
-	    if PU_weight: 
+            if PU_weight: 
                 weights = np.multiply(weights,variables['PUWeight'])
                 weight_string += 'PUWeighted_'
 
-    	else:
+        else:
             variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050'])
-    	    weights = np.ones(variables.shape[0])
-    	
-    	trigger1 = np.multiply(variables['HLT_AK8PFJet550'], variables['HLT_PFJet550'])
-    	trigger2 = np.multiply(variables['HLT_CaloJet550_NoJetID'], variables['HLT_PFHT1050'])
-    	trigger = np.multiply(trigger1, trigger2)
+            weights = np.ones(variables.shape[0])
+        
+        trigger1 = np.multiply(variables['HLT_AK8PFJet550'], variables['HLT_PFJet550'])
+        trigger2 = np.multiply(variables['HLT_CaloJet550_NoJetID'], variables['HLT_PFHT1050'])
+        trigger = np.multiply(trigger1, trigger2)
     
-    	weights = np.multiply(weights, trigger)
+        weights = np.multiply(weights, trigger)
     
-    	fill_hist(jpt1, variables['jpt_1'], weights=weights)
-    	fill_hist(jpt2, variables['jpt_2'], weights=weights)
-    	fill_hist(jpt, np.concatenate((variables['jpt_1'], variables['jpt_2'])), weights=np.concatenate((weights,weights)))
-    	fill_hist(jmass_1, variables['jmass_1'], weights=weights)
-    	fill_hist(jmass_2, variables['jmass_2'], weights=weights)
-    	fill_hist(jmass, np.concatenate((variables['jmass_1'], variables['jmass_2'])), weights=np.concatenate((weights, weights)))
-    	fill_hist(jj_mass, variables['jj_mass'], weights=weights)
+        fill_hist(jpt1, variables['jpt_1'], weights=weights)
+        fill_hist(jpt2, variables['jpt_2'], weights=weights)
+        fill_hist(jpt, np.concatenate((variables['jpt_1'], variables['jpt_2'])), weights=np.concatenate((weights,weights)))
+        fill_hist(jmass_1, variables['jmass_1'], weights=weights)
+        fill_hist(jmass_2, variables['jmass_2'], weights=weights)
+        fill_hist(jmass, np.concatenate((variables['jmass_1'], variables['jmass_2'])), weights=np.concatenate((weights, weights)))
+        fill_hist(jj_mass, variables['jj_mass'], weights=weights)
     
     ## draw histograms
 
     out_file_name = "merged_files/merged_trig_{}.root".format(weight_string+sample_title)
     out_file = TFile(out_file_name, "RECREATE")
-    jpt1   .Write()	 	
-    jpt2   .Write() 	
-    jpt    .Write() 	
-    jmass_1.Write() 	
-    jmass_2.Write() 	
-    jmass  .Write() 	
-    jj_mass.Write()  	
+    jpt1   .Write()             
+    jpt2   .Write()     
+    jpt    .Write()     
+    jmass_1.Write()     
+    jmass_2.Write()     
+    jmass  .Write()     
+    jj_mass.Write()     
     out_file.Close()
 
-	
+        
 def compare(year):
 
     hist1 = extract_jj_mass("merged_files/merged_trig_data_{}.root".format(year))
@@ -140,28 +158,51 @@ if __name__ == '__main__':
 
     if options.produce:
    
-	if options.isMC: 
-            sample_title = "MC_QCD_"+options.year
+        if options.single_process != 0:
+            print "producing a single file"
+            if options.single_process == 1:
+                print "MC_QCD_"+options.year+", LHE_weight=False, PU_weight=False"
+                produce("MC_QCD_"+options.year, LHE_weight=False, PU_weight=False)
+            elif options.single_process == 2:
+                print "MC_QCD_"+options.year+", LHE_weight=True, PU_weight=False"
+                produce("MC_QCD_"+options.year, LHE_weight=True, PU_weight=False)
+            elif options.single_process == 3:
+                print "MC_QCD_"+options.year+", LHE_weight=False, PU_weight=True"
+                produce("MC_QCD_"+options.year, LHE_weight=False, PU_weight=True)
+            elif options.single_process == 4:
+                print "MC_QCD_"+options.year+", LHE_weight=True, PU_weight=True"
+                produce("MC_QCD_"+options.year, LHE_weight=True, PU_weight=True)
+            elif options.single_process == 5:
+                print "data_"+options.year+", LHE_weight=False, PU_weight=False"                                    
+                produce("data_"+options.year, LHE_weight=False, PU_weight=False)
+            else:
+                print "unknown process flag"
+
         else:
-            sample_title = "data_"+options.year   
-    
-        jobs = []
-        module = lambda : produce(sample_title, LHE_weight=False, PU_weight=False)
-	p = multiprocessing.Process(target=module)
-        jobs.append(p)
-        p.start()
-	module = lambda : produce(sample_title, LHE_weight=True, PU_weight=False)
-	p = multiprocessing.Process(target=module)
-        jobs.append(p)
-        p.start()
-	module = lambda : produce(sample_title, LHE_weight=False, PU_weight=True)
-	p = multiprocessing.Process(target=module)
-        jobs.append(p)
-        p.start()
-	module = lambda : produce(sample_title, LHE_weight=True, PU_weight=True)
-	p = multiprocessing.Process(target=module)
-        jobs.append(p)
-        p.start()
+            print "producing all files at once"
+            jobs = []
+            sample_title = "MC_QCD_"+options.year
+            module = lambda : produce(sample_title, LHE_weight=False, PU_weight=False)
+            p = multiprocessing.Process(target=module)
+            jobs.append(p)
+            p.start()
+            module = lambda : produce(sample_title, LHE_weight=True, PU_weight=False)
+            p = multiprocessing.Process(target=module)
+            jobs.append(p)
+            p.start()
+            module = lambda : produce(sample_title, LHE_weight=False, PU_weight=True)
+            p = multiprocessing.Process(target=module)
+            jobs.append(p)
+            p.start()
+            module = lambda : produce(sample_title, LHE_weight=True, PU_weight=True)
+            p = multiprocessing.Process(target=module)
+            jobs.append(p)
+            p.start()
+            sample_title = "data_"+options.year
+            module = lambda : produce(sample_title, LHE_weight=False, PU_weight=False)
+            p = multiprocessing.Process(target=module)
+            jobs.append(p)
+            p.start()
 
     if options.compare:
  
