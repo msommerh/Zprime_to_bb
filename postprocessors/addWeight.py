@@ -11,7 +11,7 @@ usage = 'usage: %prog [options]'
 parser = optparse.OptionParser(usage)
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2017')
 parser.add_option('-f', '--filter', action='store', type='string', dest='filter', default='')
-parser.add_option('-s', '--single', action='store_true', dest='single', default=True)
+parser.add_option('-s', '--single', action='store_true', dest='single', default=False)
 parser.add_option('-v', '--verbose', action='store_true', dest='verbose', default=False)
 
 (options, args) = parser.parse_args()
@@ -35,6 +35,7 @@ elif year=='2018':
 ##############################
 
 def getXsec(sample):
+  print "Xsec("+sample+")"
   if sample.find( "QCD_Pt_170to300_"                     ) !=-1 : return 117276.;
   elif sample.find( "QCD_Pt_300to470_"                     ) !=-1 : return 7823.;
   elif sample.find( "QCD_Pt_470to600_"                     ) !=-1 : return 648.2;
@@ -103,7 +104,7 @@ def processFile(sample, origin, target, verbose=False):
     print "totalEntries =", totalEntries
 
     # Cross section
-    XS = getXsec(sample)
+    XS = getXsec(sample.replace(year+'_',''))
 
     Leq = LUMI*XS/totalEntries if totalEntries > 0 else 0.
     print sample, ": Leq =", (Leq if isMC else "Data")
@@ -179,13 +180,13 @@ HT_bins = ['50to100', '100to200', '200to300', '300to500', '500to700', '700to1000
 #sample_names = [sample_name] ## for testing
 
 sample_names = []
-for HT_bin in HT_bins:
+for HT_bin in HT_bins[2:]:  ##only part of HT_bins selected FIXME FIXME
     sample_names.append("MC_QCD_{}_HT{}".format(year, HT_bin))
 
 jobs = []
 for d in sample_names:
-    origin = '/eos/user/m/msommerh/Zprime_to_bb_analysis/MC_QCD_{}_HT{}'.format(year, HT_bin)
-    target = '/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted_MC_QCD_{}_HT{}'.format(year, HT_bin)
+    origin = '/eos/user/m/msommerh/Zprime_to_bb_analysis/'+d
+    target = '/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/'+d
     #origin = 'test_outfiles'
     #target = 'test_outfiles/weighted'
 

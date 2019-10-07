@@ -4,12 +4,14 @@ import numpy as np
 from ROOT import TFile, TTree, TH1D, TCanvas, TLegend
 from root_numpy import root2array, fill_hist
 import json
-
+import multiprocessing
 import optparse
 usage = "usage: %prog [options]"
 parser = optparse.OptionParser(usage)
 parser.add_option("-p", "--produce", action="store_true", default=False, dest="produce")
 parser.add_option("-c", "--compare", action="store_true", default=False, dest="compare")
+parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
+parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2017')
 (options, args) = parser.parse_args()
 
 def extract_jj_mass(filename):
@@ -20,7 +22,9 @@ def extract_jj_mass(filename):
     f.Close()
     return hist
 
-if options.produce:
+
+
+def produce(sample_title, LHE_weight=False, PU_weight=False):
 
     ## initialize histograms
     
@@ -34,15 +38,16 @@ if options.produce:
     
     
     ## open flatTuples and fill histograms
-    
-    sample_title = "data_2017"
-    
+     
     isMC = False
     if 'MC' in sample_title:
         isMC = True
     data_set_file = "samples_{}.json".format(sample_title)
-    sample_dir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"
-    
+    if isMC:
+        sample_dir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
+    else:
+        sample_dir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"
+ 
     file_list = []
     with open(data_set_file, 'r') as json_file:
         data_sets = json.load(json_file)
@@ -52,18 +57,22 @@ if options.produce:
     
     for sample in file_list:
     
-    	##only for test purposes, these samples are not fully computed yet:
-    	#if sample == u'/eos/user/m/msommerh/Zprime_to_bb_analysis/MC_QCD_2018_HT100to200/MC_QCD_2018_HT100to200_flatTuple_*.root': continue
-    	#if sample == u'/eos/user/m/msommerh/Zprime_to_bb_analysis/MC_QCD_2018_HT500to700/MC_QCD_2018_HT500to700_flatTuple_*.root': continue
-    
     	print "opening files:", sample
+
+	weight_string = ''
     
-    	variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'eventweightlumi', 'genWeight', 'PSWeight', 'LHEWeight_originalXWGTUP', 'LHEReweightingWeight', 'LHEScaleWeight', 'HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050'])
-    
-    	if isMC:
-    	    #weights = variables['eventweightlumi']
-    	    weights = np.multiply(variables['eventweightlumi'],variables['LHEWeight_originalXWGTUP']) # not sure yet if I need to multply with the others too
+    	if isMC: 
+    	    variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'eventWeightLumi', 'GenWeight', 'PSWeight', 'PUWeight', 'LHEWeight_originalXWGTUP', 'LHEReweightingWeight', 'LHEScaleWeight', 'HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050'])
+    	    weights = variables['eventWeightLumi']
+	    if LHE_weight: 
+                weights = np.multiply(weights, variables['LHEWeight_originalXWGTUP'])
+                weight_string += 'LHEWeighted_'
+	    if PU_weight: 
+                weights = np.multiply(weights,variables['PUWeight'])
+                weight_string += 'PUWeighted_'
+
     	else:
+            variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050'])
     	    weights = np.ones(variables.shape[0])
     	
     	trigger1 = np.multiply(variables['HLT_AK8PFJet550'], variables['HLT_PFJet550'])
@@ -81,8 +90,8 @@ if options.produce:
     	fill_hist(jj_mass, variables['jj_mass'], weights=weights)
     
     ## draw histograms
-    
-    out_file_name = "test_fitting_trig_{}.root".format(sample_title)
+
+    out_file_name = "merged_files/merged_trig_{}.root".format(weight_string+sample_title)
     out_file = TFile(out_file_name, "RECREATE")
     jpt1   .Write()	 	
     jpt2   .Write() 	
@@ -94,27 +103,66 @@ if options.produce:
     out_file.Close()
 
 	
-if options.compare:
+def compare(year):
 
-    hist1 = extract_jj_mass("test_fitting_trig_data_2017.root")
-    hist2 = extract_jj_mass("test_fitting_trig_noLHE_MC_QCD_2017.root")
-    hist3 = extract_jj_mass("test_fitting_trig_MC_QCD_2017.root") 
+    hist1 = extract_jj_mass("merged_files/merged_trig_data_{}.root".format(year))
+    hist2 = extract_jj_mass("merged_files/merged_trig_MC_QCD_{}.root".format(year))
+    hist3 = extract_jj_mass("merged_files/merged_trig_LHEWeighted_MC_QCD_{}.root".format(year)) 
+    hist4 = extract_jj_mass("merged_files/merged_trig_PUWeighted_MC_QCD_{}.root".format(year)) 
+    hist5 = extract_jj_mass("merged_files/merged_trig_LHEWeighted_PUWeighted_MC_QCD_{}.root".format(year)) 
     hist1.SetLineColor(1) 
     hist2.SetLineColor(2)
     hist3.SetLineColor(4)
-  
-    outfile = TFile("compare_MC_to_data_2017.root", "RECREATE")
+    hist4.SetLineColor(6)
+    hist5.SetLineColor(7)
+ 
+    outfile = TFile("compare_MC_to_data_{}_new_weights.root".format(year), "RECREATE")
     c = TCanvas("canvas", "canvas", 600, 600)
     hist2.Draw()
     hist1.Draw("SAME")
     hist3.Draw("SAME")
+    hist4.Draw("SAME")
+    hist5.Draw("SAME")
     l = TLegend(0.7,0.8,0.9,0.9)
     l.AddEntry(hist1, "data")
-    l.AddEntry(hist2, "MC_noLHE")
-    l.AddEntry(hist3, "MC")
+    l.AddEntry(hist2, "MC") 
+    l.AddEntry(hist3, "MC_LHE")
+    l.AddEntry(hist4, "MC_PU")
+    l.AddEntry(hist5, "MC_LHE_PU")
     l.Draw()
 
     outfile.cd() 
     c.Write()
-    c.SaveAs("compare_MC_to_data_2017.png")
-    outfile.Close() 
+    c.SaveAs("compare_MC_to_data_{}_new_weights.png".format(year))
+    outfile.Close()
+
+if __name__ == '__main__':
+
+    if options.produce:
+   
+	if options.isMC: 
+            sample_title = "MC_QCD_"+options.year
+        else:
+            sample_title = "data_"+options.year   
+    
+        jobs = []
+        module = lambda : produce(sample_title, LHE_weight=False, PU_weight=False)
+	p = multiprocessing.Process(target=module)
+        jobs.append(p)
+        p.start()
+	module = lambda : produce(sample_title, LHE_weight=True, PU_weight=False)
+	p = multiprocessing.Process(target=module)
+        jobs.append(p)
+        p.start()
+	module = lambda : produce(sample_title, LHE_weight=False, PU_weight=True)
+	p = multiprocessing.Process(target=module)
+        jobs.append(p)
+        p.start()
+	module = lambda : produce(sample_title, LHE_weight=True, PU_weight=True)
+	p = multiprocessing.Process(target=module)
+        jobs.append(p)
+        p.start()
+
+    if options.compare:
+ 
+       compare(options.year) 
