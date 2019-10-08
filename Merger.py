@@ -80,8 +80,15 @@ def produce(sample_title, LHE_weight=False, PU_weight=False):
         weight_string = ''
     
         if isMC: 
-            variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'eventWeightLumi', 'GenWeight', 'PSWeight', 'PUWeight', 'LHEWeight_originalXWGTUP', 'LHEReweightingWeight', 'LHEScaleWeight', 'HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050'])
-            weights = variables['eventWeightLumi']
+            try:
+                if '2016' in sample_title:
+                    variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'eventWeightLumi', 'GenWeight', 'PSWeight', 'PUWeight', 'LHEWeight_originalXWGTUP', 'LHEReweightingWeight', 'LHEScaleWeight', 'HLT_AK8PFJet500', 'HLT_PFJet500', 'HLT_CaloJet500_NoJetID', 'HLT_PFHT900'])
+                else:
+                    variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'eventWeightLumi', 'GenWeight', 'PSWeight', 'PUWeight', 'LHEWeight_originalXWGTUP', 'LHEReweightingWeight', 'LHEScaleWeight', 'HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050'])
+                weights = variables['eventWeightLumi']
+            except:
+                print "import failed!!"
+                continue
             if LHE_weight: 
                 weights = np.multiply(weights, variables['LHEWeight_originalXWGTUP'])
                 weight_string += 'LHEWeighted_'
@@ -90,11 +97,23 @@ def produce(sample_title, LHE_weight=False, PU_weight=False):
                 weight_string += 'PUWeighted_'
 
         else:
-            variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050'])
-            weights = np.ones(variables.shape[0])
-        
-        trigger1 = np.multiply(variables['HLT_AK8PFJet550'], variables['HLT_PFJet550'])
-        trigger2 = np.multiply(variables['HLT_CaloJet550_NoJetID'], variables['HLT_PFHT1050'])
+            try:
+                if '2016' in sample_title:
+                    variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'HLT_AK8PFJet500', 'HLT_PFJet500', 'HLT_CaloJet500_NoJetID', 'HLT_PFHT900'])
+                else:
+                    variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050'])
+                weights = np.ones(variables.shape[0])
+            except:
+                print "import failed!!"
+                continue
+       
+        if '2016' in sample_title:
+            print "using lower trigger requirements for 2016 sample compatibility"
+            trigger1 = np.multiply(variables['HLT_AK8PFJet500'], variables['HLT_PFJet500'])
+            trigger2 = np.multiply(variables['HLT_CaloJet500_NoJetID'], variables['HLT_PFHT900'])
+        else:
+            trigger1 = np.multiply(variables['HLT_AK8PFJet550'], variables['HLT_PFJet550'])
+            trigger2 = np.multiply(variables['HLT_CaloJet550_NoJetID'], variables['HLT_PFHT1050'])
         trigger = np.multiply(trigger1, trigger2)
     
         weights = np.multiply(weights, trigger)
@@ -136,6 +155,9 @@ def compare(year):
  
     outfile = TFile("compare_MC_to_data_{}_new_weights.root".format(year), "RECREATE")
     c = TCanvas("canvas", "canvas", 600, 600)
+    hist2.GetXaxis().SetTitle("m_{jj}")
+    hist2.GetYaxis().SetTitle("nEvents")   
+    hist2.SetTitle("MC_vs_data_"+year)
     hist2.Draw()
     hist1.Draw("SAME")
     hist3.Draw("SAME")

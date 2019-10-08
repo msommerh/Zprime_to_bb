@@ -28,6 +28,7 @@ parser = optparse.OptionParser(usage)
 parser.add_option("-d", "--test", action="store_true", default=False, dest="bias")
 parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose")
 parser.add_option("-t", "--test_run", action="store_true", default=False, dest="test")
+parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
 (options, args) = parser.parse_args()
 #if options.bash: gROOT.SetBatch(True)
@@ -46,7 +47,6 @@ gStyle.SetPadRightMargin(0.05)
 gStyle.SetErrorX(0.)
 
 NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
-PLOTDIR     = "plots"
 CARDDIR     = "datacards/"
 WORKDIR     = "workspace/"
 RATIO       = 4
@@ -58,6 +58,7 @@ CUTCOUNT    = False
 VARBINS     = True
 BIAS        = options.bias
 YEAR        = options.year
+ISMC        = options.isMC
 
 if YEAR=='2016':
     LUMI=35920.
@@ -68,6 +69,12 @@ elif YEAR=='2018':
 else:
     print "unknown year:",YEAR
     sys.exit()
+
+if ISMC:
+    DATA_TYPE = "MC_QCD"
+else:
+    DATA_TYPE = "data"
+PLOTDIR     = "plots/{}_{}".format(DATA_TYPE, YEAR)
 
 signalList = ['Zprime_to_bb']
 
@@ -91,11 +98,13 @@ back = ["QCD"]
 
 def dijet():
 
-    channel = "Zprime_to_bbar"
-    category = "Zprbb"
+    #channel = "Zprime_to_bbar"
+    #category = "Zprbb"
+    channel = 'bb'
+    category = "bb"
     stype = channel
     isSB = True  #no idea what this does!! --> apparently stands for side bands
-    isData = False #need to adjust depending on input, I guess
+    isData = not ISMC 
     nTupleDir = NTUPLEDIR
  
     samples = data if isData else back
@@ -127,7 +136,7 @@ def dijet():
     jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",       "",             0.,   1.        )
     jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             0.,   1.        )
     MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
-    weight = RooRealVar(        "eventweightlumi",      "",             -1.e9,  1.e9    )
+    weight = RooRealVar(        "eventWeightLumi",      "",             -1.e9,  1.e9    )
     variables = RooArgSet(X_mass, j1_mass, j2_mass)
     variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2))
     variables.add(RooArgSet(MET_over_sumEt, weight))
@@ -153,8 +162,11 @@ def dijet():
                 print "found {} files for sample:".format(j), ss
                 break
     #setData = RooDataSet("setData", "Data" if isData else "Data (QCD MC)", variables, RooFit.Cut(baseCut), RooFit.WeightVar(weight), RooFit.Import(treeBkg))
-    setData = RooDataSet("setData", "Data" if isData else "Data (QCD MC)", variables, RooFit.Cut(baseCut), RooFit.Import(treeBkg))
-    
+    if isData or options.test:
+        setData = RooDataSet("setData", "Data", variables, RooFit.Cut(baseCut), RooFit.Import(treeBkg))
+    else:   
+        setData = RooDataSet("setData", "Data (QCD MC)", variables, RooFit.Cut(baseCut), RooFit.WeightVar(weight), RooFit.Import(treeBkg))
+ 
     nevents = setData.sumEntries()
     dataMin, dataMax = array('d', [0.]), array('d', [0.])   # not sure what is happening here...
     setData.getRange(X_mass, dataMin, dataMax)
@@ -174,7 +186,8 @@ def dijet():
     print "fitting 1 parameter model"
     p1_1 = RooRealVar("CMS"+YEAR+"_"+category+"_p1_1", "p1", 7.0, 0., 2000.)
     modelBkg1 = RooGenericPdf("Bkg1", "Bkg. fit (2 par.)", "1./pow(@0/13000, @1)", RooArgList(X_mass, p1_1))
-    normzBkg1 = RooRealVar(modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15) #increased range!
+    #normzBkg1 = RooRealVar(modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15) #increased range!
+    normzBkg1 = RooRealVar(modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents) #range dependent of actual number of events!
     modelExt1 = RooExtendPdf(modelBkg1.GetName()+"_ext", modelBkg1.GetTitle(), modelBkg1, normzBkg1)
     print "starting actual fit"
     fitRes1 = modelExt1.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
@@ -188,7 +201,8 @@ def dijet():
     p2_1 = RooRealVar("CMS"+YEAR+"_"+category+"_p2_1", "p1", 0., -100., 1000.)
     p2_2 = RooRealVar("CMS"+YEAR+"_"+category+"_p2_2", "p2", p1_1.getVal(), -100., 600.)
     modelBkg2 = RooGenericPdf("Bkg2", "Bkg. fit (3 par.)", "pow(1-@0/13000, @1) / pow(@0/13000, @2)", RooArgList(X_mass, p2_1, p2_2))
-    normzBkg2 = RooRealVar(modelBkg2.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
+    #normzBkg2 = RooRealVar(modelBkg2.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
+    normzBkg2 = RooRealVar(modelBkg2.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
     modelExt2 = RooExtendPdf(modelBkg2.GetName()+"_ext", modelBkg2.GetTitle(), modelBkg2, normzBkg2)
     print "starting actual fit"
     fitRes2 = modelExt2.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
@@ -202,7 +216,8 @@ def dijet():
     p3_2 = RooRealVar("CMS"+YEAR+"_"+category+"_p3_2", "p2", p2_2.getVal(), -400., 2000.)
     p3_3 = RooRealVar("CMS"+YEAR+"_"+category+"_p3_3", "p3", -2.5, -500., 500.)
     modelBkg3 = RooGenericPdf("Bkg3", "Bkg. fit (4 par.)", "pow(1-@0/13000, @1) / pow(@0/13000, @2+@3*log(@0/13000))", RooArgList(X_mass, p3_1, p3_2, p3_3))
-    normzBkg3 = RooRealVar(modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
+    #normzBkg3 = RooRealVar(modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
+    normzBkg3 = RooRealVar(modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
     modelExt3 = RooExtendPdf(modelBkg3.GetName()+"_ext", modelBkg3.GetTitle(), modelBkg3, normzBkg3)
     print "starting actual fit"
     fitRes3 = modelExt3.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
@@ -217,8 +232,8 @@ def dijet():
     p4_3 = RooRealVar("CMS"+YEAR+"_"+category+"_p4_3", "p3", p3_3.getVal(), -50., 50.)
     p4_4 = RooRealVar("CMS"+YEAR+"_"+category+"_p4_4", "p4", 0.1, -50., 50.)
     modelBkg4 = RooGenericPdf("Bkg4", "Bkg. fit (5 par.)", "pow(1 - @0/13000, @1) / pow(@0/13000, @2+@3*log(@0/13000)+@4*pow(log(@0/13000), 2))", RooArgList(X_mass, p4_1, p4_2, p4_3, p4_4))
-    #normzBkg4 = RooRealVar(modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 1.e10)
-    normzBkg4 = RooRealVar(modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
+    #normzBkg4 = RooRealVar(modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
+    normzBkg4 = RooRealVar(modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
     modelExt4 = RooExtendPdf(modelBkg4.GetName()+"_ext", modelBkg4.GetTitle(), modelBkg4, normzBkg4)
     print "starting actual fit"
     fitRes4 = modelExt4.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
@@ -313,7 +328,7 @@ def dijet():
     setToys.SetTitle("Data (toys)")
     if not isData:
         print " - Generating", nevents, "events for toy data"
-        setToys = modelAlt.generate(RooArgSet(X_mass), nevents)
+        setToys = modelAlt.generate(RooArgSet(X_mass), nevents) #why is it modelAlt and not modelBkg?? FIXME
         print "toy data generated"
 
     if VERBOSE: raw_input("Press Enter to continue...")
@@ -334,39 +349,25 @@ def dijet():
     frame = X_mass.frame()
     setPadStyle(frame, 1.25, True)
     if VARBINS: frame.GetXaxis().SetRangeUser(X_mass.getMin(), lastBin)
-    print "initialized canvas"
     signal = getSignal(category, stype, 2000)  #replacing Alberto's getSignal by own function FIXME
-    print "getSignal() function"
 
     graphData = setData.plotOn(frame, RooFit.Binning(binsXmass), RooFit.Scaling(False), RooFit.Invisible())
-    print "plotted data"
     modelBkg.plotOn(frame, RooFit.VisualizeError(fitRes, 1, False), RooFit.LineColor(602), RooFit.FillColor(590), RooFit.FillStyle(1001), RooFit.DrawOption("FL"), RooFit.Name("1sigma"))
-    print "plotted best model once"
     modelBkg.plotOn(frame, RooFit.LineColor(602), RooFit.FillColor(590), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(modelBkg.GetName()))
-    print "plotted best model twice"
     modelAlt.plotOn(frame, RooFit.LineStyle(7), RooFit.LineColor(613), RooFit.FillColor(609), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(modelAlt.GetName()))
-    print "plotted alternative model" 
     #modelBkg3.plotOn(frame, RooFit.VisualizeError(fitRes3, 1, False), RooFit.LineColor(602), RooFit.FillColor(602), RooFit.FillStyle(3003), RooFit.DrawOption("FL"), RooFit.Name("1sigma"))
     #modelBkg3.plotOn(frame, RooFit.LineStyle(3), RooFit.LineColor(602), RooFit.FillColor(596), RooFit.FillStyle(3003), RooFit.DrawOption("L"), RooFit.Name(modelBkg3.GetName()))
     #modelBkg4.plotOn(frame, RooFit.LineStyle(5), RooFit.LineColor(613), RooFit.FillColor(609), RooFit.FillStyle(3003), RooFit.DrawOption("L"), RooFit.Name(modelBkg4.GetName()))
     if not isSB and signal[0] is not None: # FIXME remove /(2./3.)
         signal[0].plotOn(frame, RooFit.Normalization(signal[1]*signal[2], RooAbsReal.NumEvent), RooFit.LineStyle(3), RooFit.LineWidth(6), RooFit.LineColor(629), RooFit.DrawOption("L"), RooFit.Name("Signal"))
-    print "weird isSB thing"
     graphData = setData.plotOn(frame, RooFit.Binning(binsXmass), RooFit.Scaling(False), RooFit.XErrorSize(0 if not VARBINS else 1), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.DrawOption("PE0"), RooFit.Name(setData.GetName()))
-    print "plotted data agin"
     fixData(graphData.getHist(), True, True, not isData)
-    print "fixData"
-    print "now the erroneous frame.pullHist(setData.GetName(), modelBkg.GetName(), True) step is coming"
-    print "setData.GetName() =", setData.GetName()
-    print "modelBkg.GetName() =", modelBkg.GetName()
-    pulls = frame.pullHist(setData.GetName(), modelBkg.GetName(), True)  ## here the error happens FIXME
-    print "got pulls"
+    pulls = frame.pullHist(setData.GetName(), modelBkg.GetName(), True)  
     chi = frame.chiSquare(setData.GetName(), modelBkg.GetName(), True)
-    print "got chi2"
-    #setToys.plotOn(frame, RooFit.DataError(RooAbsData.Poisson), RooFit.DrawOption("PE0"), RooFit.MarkerColor(2))
+    setToys.plotOn(frame, RooFit.DataError(RooAbsData.Poisson), RooFit.DrawOption("PE0"), RooFit.MarkerColor(2))
     if VARBINS: frame.GetYaxis().SetTitle("Events / ( 100 GeV )")
     frame.Draw()
-    print "frame drawn"
+    #print "frame drawn"
     # Get Chi2
 #    chi2[1] = frame.chiSquare(modelBkg1.GetName(), setData.GetName())
 #    chi2[2] = frame.chiSquare(modelBkg2.GetName(), setData.GetName())
@@ -376,12 +377,10 @@ def dijet():
     frame.SetMaximum(frame.GetMaximum()*10)
     frame.SetMinimum(max(frame.GetMinimum(), 1.e-1))
     c.GetPad(1).SetLogy()
-    print "additional settings"    
 
     drawAnalysis(channel)
     drawRegion(channel, True)
     drawCMS(LUMI, "")
-    print "plot cosmetics"    
 
     leg = TLegend(0.575, 0.6, 0.95, 0.9)
     leg.SetBorderSize(0)
@@ -395,7 +394,6 @@ def dijet():
     if not isSB and signal[0] is not None: leg.AddEntry("Signal", signal[0].GetTitle(), "L")
     leg.SetY1(0.9-leg.GetNRows()*0.05)
     leg.Draw()
-    print "legend drawn"    
 
     latex = TLatex()
     latex.SetNDC()
@@ -403,7 +401,6 @@ def dijet():
     latex.SetTextFont(42)
     if not isSB: latex.DrawLatex(leg.GetX1()*1.16, leg.GetY1()-0.04, "HVT model B (g_{V}=3)")
 #    latex.DrawLatex(0.67, leg.GetY1()-0.045, "#sigma_{X} = 1.0 pb")
-    print "latex stuff"  
 
     c.cd(2)
     frame_res = X_mass.frame()
@@ -416,12 +413,9 @@ def dijet():
     frame_res.GetYaxis().SetTitle("(N^{data}-N^{bkg})/#sigma")
     frame_res.Draw()
     fixData(pulls, False, True, False)
-    print "some more settings"    
-
 
     drawChi2(RSS[order]["chi2"], RSS[order]["nbins"]-(order+1), True)
     line = drawLine(X_mass.getMin(), 0, lastBin, 0)
-    "drawn chi2"    
 
     if VARBINS:
         c.SaveAs(PLOTDIR+"/BkgSR_"+channel+".pdf")
@@ -429,162 +423,160 @@ def dijet():
     else:
         c.SaveAs(PLOTDIR+"/BkgSR.pdf")
         c.SaveAs(PLOTDIR+"/BkgSR.png")
-    print "saved figure"   
  
-    if isSB: exit()
-   
-    print "reached the end of what I understand so far"
-    exit() # don't understand what is happening below yet, thus everything is still written for 2016 only FIXME
- 
-    #*******************************************************#
-    #                                                       #
-    #                    Signal shape                       #
-    #                                                       #
-    #*******************************************************#
-    
-    #if not isSB:
-    
-    # nbkg fro cut&count
-    X_mass.setRange("X_data_range", xmax, X_mass.getMax())
-    massArg = RooArgSet(X_mass)
-    integral = modelBkg.createIntegral(massArg, RooFit.NormSet(massArg), RooFit.Range("X_data_range"))
-    integralError = integral.getPropagatedError(fitRes)
-    nbkg = integral.getVal() * nevents
-    nbkgErr = integralError * nevents
-    
-    syst, syst_sig = {}, {}
-    
-    if 'H_dbt' in baseCut:
-        syst["CMS2016_eff_b"] = { 1000 : [1.033, 0.956],  1100 : [1.033, 0.956],  1200 : [1.033, 0.956],  1300 : [1.033, 0.956],  1400 : [1.033, 0.956],  1500 : [1.034, 0.955],  1600 : [1.035, 0.954],  1700 : [1.041, 0.946],  1800 : [1.047, 0.938],  2000 : [1.058, 0.922],  2500 : [1.066, 0.912],  3000 : [1.066, 0.912],  3500 : [1.066, 0.912],  4000 : [1.066, 0.912],  4500 : [1.066, 0.912],  } if 'bb' in category else { 1000 : [0.968, 1.023],  1100 : [0.965, 1.019],  1200 : [0.963, 1.015],  1300 : [0.963, 1.015],  1400 : [0.962, 1.014],  1500 : [0.961, 1.015],  1600 : [0.960, 1.015],  1700 : [0.953, 1.018],  1800 : [0.946, 1.021],  2000 : [0.933, 1.026],  2500 : [0.924, 1.030],  3000 : [0.924, 1.031],  3500 : [0.923, 1.032],  4000 : [0.923, 1.032],  4500 : [0.923, 1.032],  }
-    elif 'H_csv' in baseCut:
-        syst["CMS2016_eff_b"] = { 1000 : [1.030, 0.970],  1100 : [1.033, 0.967],  1200 : [1.036, 0.965],  1300 : [1.039, 0.962],  1400 : [1.042, 0.959],  1500 : [1.044, 0.957],  1600 : [1.047, 0.954],  1700 : [1.049, 0.952],  1800 : [1.050, 0.951],  2000 : [1.054, 0.947],  2500 : [1.060, 0.941],  3000 : [1.064, 0.937],  3500 : [1.067, 0.935],  4000 : [1.069, 0.933],  4500 : [1.070, 0.932],  } if 'bb' in category else { 1000 : [0.978, 1.021],  1100 : [0.976, 1.023],  1200 : [0.973, 1.026],  1300 : [0.970, 1.028],  1400 : [0.967, 1.031],  1500 : [0.966, 1.033],  1600 : [0.964, 1.034],  1700 : [0.963, 1.034],  1800 : [0.963, 1.035],  2000 : [0.962, 1.035],  2500 : [0.963, 1.033],  3000 : [0.970, 1.027],  3500 : [0.976, 1.021],  4000 : [0.981, 1.015],  4500 : [0.985, 1.011],  }
-    else:
-        print 'b-Tagging algorithm not recognized'
-        exit()
-    syst["CMS2016_extr_V"] = { 800 : [1.051, 0.949],  1000 : [1.071, 0.929],  1500 : [1.107, 0.893],  2000 : [1.132, 0.868],  2500 : [1.151, 0.849],  3000 : [1.167, 0.833],  3500 : [1.180, 0.820],  4000 : [1.191, 0.809],  4500 : [1.201, 0.799],  } if 'hp' in category else { 800 : [0.979, 1.021],  1000 : [0.969, 1.031],  1500 : [0.952, 1.048],  2000 : [0.940, 1.060],  2500 : [0.931, 1.069],  3000 : [0.924, 1.076],  3500 : [0.918, 1.082],  4000 : [0.913, 1.087],  4500 : [0.908, 1.092],  }
-    syst["pdf_scale"] = { 1000 : [1.067, 0.933],  1100 : [1.068, 0.932],  1200 : [1.070, 0.930],  1300 : [1.073, 0.927],  1400 : [1.076, 0.924],  1500 : [1.079, 0.921],  1600 : [1.082, 0.918],  1700 : [1.085, 0.915],  1800 : [1.088, 0.912],  1900 : [1.092, 0.908],  2000 : [1.095, 0.905],  2100 : [1.100, 0.900],  2200 : [1.106, 0.894],  2300 : [1.111, 0.889],  2400 : [1.116, 0.884],  2500 : [1.121, 0.879],  2600 : [1.129, 0.871],  2700 : [1.137, 0.863],  2800 : [1.145, 0.855],  2900 : [1.153, 0.847],  3000 : [1.160, 0.840],  3100 : [1.173, 0.827],  3200 : [1.185, 0.815],  3300 : [1.197, 0.803],  3400 : [1.210, 0.790],  3500 : [1.222, 0.778],  3600 : [1.244, 0.756],  3700 : [1.265, 0.735],  3800 : [1.287, 0.713],  3900 : [1.309, 0.691],  4000 : [1.330, 0.670],  4100 : [1.361, 0.639],  4200 : [1.392, 0.608],  4300 : [1.423, 0.577],  4400 : [1.453, 0.547],  4500 : [1.484, 0.516],  }
-    syst["qcd_scale"] = { 1000 : [1.039, 0.963],  1100 : [1.045, 0.958],  1200 : [1.050, 0.954],  1300 : [1.054, 0.950],  1400 : [1.059, 0.947],  1500 : [1.063, 0.944],  1600 : [1.067, 0.940],  1700 : [1.070, 0.938],  1800 : [1.074, 0.935],  1900 : [1.077, 0.932],  2000 : [1.080, 0.930],  2100 : [1.083, 0.927],  2200 : [1.086, 0.925],  2300 : [1.089, 0.922],  2400 : [1.092, 0.920],  2500 : [1.096, 0.917],  2600 : [1.098, 0.915],  2700 : [1.101, 0.913],  2800 : [1.104, 0.911],  2900 : [1.107, 0.909],  3000 : [1.109, 0.907],  3100 : [1.112, 0.905],  3200 : [1.114, 0.903],  3300 : [1.117, 0.901],  3400 : [1.120, 0.899],  3500 : [1.122, 0.897],  3600 : [1.124, 0.896],  3700 : [1.126, 0.894],  3800 : [1.129, 0.893],  3900 : [1.131, 0.891],  4000 : [1.133, 0.889],  4100 : [1.135, 0.888],  4200 : [1.137, 0.887],  4300 : [1.138, 0.886],  4400 : [1.140, 0.885],  4500 : [1.142, 0.883],  }
+    #if isSB: exit()
+  
+    ## don't yet know how to handle the commented out part below FIXME
+     
+    ##*******************************************************#
+    ##                                                       #
+    ##                    Signal shape                       #
+    ##                                                       #
+    ##*******************************************************#
+    #
+    ##if not isSB:
+    #
+    ## nbkg fro cut&count
+    #X_mass.setRange("X_data_range", xmax, X_mass.getMax())
+    #massArg = RooArgSet(X_mass)
+    #integral = modelBkg.createIntegral(massArg, RooFit.NormSet(massArg), RooFit.Range("X_data_range"))
+    #integralError = integral.getPropagatedError(fitRes)
+    #nbkg = integral.getVal() * nevents
+    #nbkgErr = integralError * nevents
+    #
+    #syst, syst_sig = {}, {}
+    #
+    #if 'H_dbt' in baseCut:
+    #    syst["CMS2016_eff_b"] = { 1000 : [1.033, 0.956],  1100 : [1.033, 0.956],  1200 : [1.033, 0.956],  1300 : [1.033, 0.956],  1400 : [1.033, 0.956],  1500 : [1.034, 0.955],  1600 : [1.035, 0.954],  1700 : [1.041, 0.946],  1800 : [1.047, 0.938],  2000 : [1.058, 0.922],  2500 : [1.066, 0.912],  3000 : [1.066, 0.912],  3500 : [1.066, 0.912],  4000 : [1.066, 0.912],  4500 : [1.066, 0.912],  } if 'bb' in category else { 1000 : [0.968, 1.023],  1100 : [0.965, 1.019],  1200 : [0.963, 1.015],  1300 : [0.963, 1.015],  1400 : [0.962, 1.014],  1500 : [0.961, 1.015],  1600 : [0.960, 1.015],  1700 : [0.953, 1.018],  1800 : [0.946, 1.021],  2000 : [0.933, 1.026],  2500 : [0.924, 1.030],  3000 : [0.924, 1.031],  3500 : [0.923, 1.032],  4000 : [0.923, 1.032],  4500 : [0.923, 1.032],  }
+    #elif 'H_csv' in baseCut:
+    #    syst["CMS2016_eff_b"] = { 1000 : [1.030, 0.970],  1100 : [1.033, 0.967],  1200 : [1.036, 0.965],  1300 : [1.039, 0.962],  1400 : [1.042, 0.959],  1500 : [1.044, 0.957],  1600 : [1.047, 0.954],  1700 : [1.049, 0.952],  1800 : [1.050, 0.951],  2000 : [1.054, 0.947],  2500 : [1.060, 0.941],  3000 : [1.064, 0.937],  3500 : [1.067, 0.935],  4000 : [1.069, 0.933],  4500 : [1.070, 0.932],  } if 'bb' in category else { 1000 : [0.978, 1.021],  1100 : [0.976, 1.023],  1200 : [0.973, 1.026],  1300 : [0.970, 1.028],  1400 : [0.967, 1.031],  1500 : [0.966, 1.033],  1600 : [0.964, 1.034],  1700 : [0.963, 1.034],  1800 : [0.963, 1.035],  2000 : [0.962, 1.035],  2500 : [0.963, 1.033],  3000 : [0.970, 1.027],  3500 : [0.976, 1.021],  4000 : [0.981, 1.015],  4500 : [0.985, 1.011],  }
+    #else:
+    #    print 'b-Tagging algorithm not recognized'
+    #    exit()
+    #syst["CMS2016_extr_V"] = { 800 : [1.051, 0.949],  1000 : [1.071, 0.929],  1500 : [1.107, 0.893],  2000 : [1.132, 0.868],  2500 : [1.151, 0.849],  3000 : [1.167, 0.833],  3500 : [1.180, 0.820],  4000 : [1.191, 0.809],  4500 : [1.201, 0.799],  } if 'hp' in category else { 800 : [0.979, 1.021],  1000 : [0.969, 1.031],  1500 : [0.952, 1.048],  2000 : [0.940, 1.060],  2500 : [0.931, 1.069],  3000 : [0.924, 1.076],  3500 : [0.918, 1.082],  4000 : [0.913, 1.087],  4500 : [0.908, 1.092],  }
+    #syst["pdf_scale"] = { 1000 : [1.067, 0.933],  1100 : [1.068, 0.932],  1200 : [1.070, 0.930],  1300 : [1.073, 0.927],  1400 : [1.076, 0.924],  1500 : [1.079, 0.921],  1600 : [1.082, 0.918],  1700 : [1.085, 0.915],  1800 : [1.088, 0.912],  1900 : [1.092, 0.908],  2000 : [1.095, 0.905],  2100 : [1.100, 0.900],  2200 : [1.106, 0.894],  2300 : [1.111, 0.889],  2400 : [1.116, 0.884],  2500 : [1.121, 0.879],  2600 : [1.129, 0.871],  2700 : [1.137, 0.863],  2800 : [1.145, 0.855],  2900 : [1.153, 0.847],  3000 : [1.160, 0.840],  3100 : [1.173, 0.827],  3200 : [1.185, 0.815],  3300 : [1.197, 0.803],  3400 : [1.210, 0.790],  3500 : [1.222, 0.778],  3600 : [1.244, 0.756],  3700 : [1.265, 0.735],  3800 : [1.287, 0.713],  3900 : [1.309, 0.691],  4000 : [1.330, 0.670],  4100 : [1.361, 0.639],  4200 : [1.392, 0.608],  4300 : [1.423, 0.577],  4400 : [1.453, 0.547],  4500 : [1.484, 0.516],  }
+    #syst["qcd_scale"] = { 1000 : [1.039, 0.963],  1100 : [1.045, 0.958],  1200 : [1.050, 0.954],  1300 : [1.054, 0.950],  1400 : [1.059, 0.947],  1500 : [1.063, 0.944],  1600 : [1.067, 0.940],  1700 : [1.070, 0.938],  1800 : [1.074, 0.935],  1900 : [1.077, 0.932],  2000 : [1.080, 0.930],  2100 : [1.083, 0.927],  2200 : [1.086, 0.925],  2300 : [1.089, 0.922],  2400 : [1.092, 0.920],  2500 : [1.096, 0.917],  2600 : [1.098, 0.915],  2700 : [1.101, 0.913],  2800 : [1.104, 0.911],  2900 : [1.107, 0.909],  3000 : [1.109, 0.907],  3100 : [1.112, 0.905],  3200 : [1.114, 0.903],  3300 : [1.117, 0.901],  3400 : [1.120, 0.899],  3500 : [1.122, 0.897],  3600 : [1.124, 0.896],  3700 : [1.126, 0.894],  3800 : [1.129, 0.893],  3900 : [1.131, 0.891],  4000 : [1.133, 0.889],  4100 : [1.135, 0.888],  4200 : [1.137, 0.887],  4300 : [1.138, 0.886],  4400 : [1.140, 0.885],  4500 : [1.142, 0.883],  }
 
-    syst_sig["CMS2016_sig_p1_jes"] = 1. #0.010
-    syst_sig["CMS2016_sig_p2_jes"] = 1.
-    syst_sig["CMS2016_sig_p2_jer"] = 1. #0.020
-    
-    syst["CMS2016_scale_j"] = 0.010
-    syst["CMS2016_res_j"] = 0.010
-#    syst["CMS2016_scale_mass"] = 0.020
-#    syst["CMS2016_res_mass"] = -0.104
-    if stype=='XVH':
-        syst["CMS2016_scale_mass"] = [0.004+0.004, -0.009-0.005]
-        syst["CMS2016_res_mass"] = [-0.101-0.030, +0.112+0.022]
-        syst["CMS2016_scale_mass_migration"] = { 800 : [0.968, 1.035],  1000 : [0.964, 1.032],  1100 : [0.964, 1.034],  1200 : [0.963, 1.036],  1300 : [0.964, 1.033],  1400 : [0.965, 1.030],  1500 : [0.966, 1.030],  1600 : [0.967, 1.030],  1700 : [0.968, 1.030],  1800 : [0.968, 1.030],  2000 : [0.967, 1.029],  2500 : [0.966, 1.031],  3000 : [0.967, 1.031],  3500 : [0.968, 1.033],  4000 : [0.968, 1.030],  4500 : [0.967, 1.026],  } if 'wr' in channel else { 800 : [1.067, 0.922],  1000 : [1.071, 0.933],  1100 : [1.072, 0.929],  1200 : [1.074, 0.925],  1300 : [1.073, 0.928],  1400 : [1.073, 0.931],  1500 : [1.074, 0.928],  1600 : [1.076, 0.926],  1700 : [1.074, 0.925],  1800 : [1.072, 0.923],  2000 : [1.079, 0.922],  2500 : [1.081, 0.922],  3000 : [1.073, 0.927],  3500 : [1.072, 0.925],  4000 : [1.069, 0.932],  4500 : [1.063, 0.940],  }
-        syst["CMS2016_res_mass_migration"] = { 800 : [0.964, 1.023],  1000 : [0.957, 1.031],  1100 : [0.957, 1.034],  1200 : [0.956, 1.037],  1300 : [0.956, 1.037],  1400 : [0.956, 1.038],  1500 : [0.954, 1.037],  1600 : [0.951, 1.036],  1700 : [0.953, 1.035],  1800 : [0.955, 1.035],  2000 : [0.953, 1.039],  2500 : [0.952, 1.047],  3000 : [0.948, 1.051],  3500 : [0.945, 1.056],  4000 : [0.941, 1.055],  4500 : [0.943, 1.048],  } if 'wr' in channel else { 800 : [0.981, 1.006],  1000 : [0.999, 0.991],  1100 : [1.001, 0.988],  1200 : [1.002, 0.984],  1300 : [1.003, 0.985],  1400 : [1.004, 0.986],  1500 : [1.006, 0.988],  1600 : [1.009, 0.991],  1700 : [1.006, 0.989],  1800 : [1.004, 0.987],  2000 : [1.009, 0.983],  2500 : [1.010, 0.978],  3000 : [1.010, 0.977],  3500 : [1.015, 0.975],  4000 : [1.003, 0.981],  4500 : [0.990, 0.994],  }
-    elif stype=='XWH':
-        syst["CMS2016_scale_mass"] = [0.003+0.008, -0.008-0.009]
-        syst["CMS2016_res_mass"] = [-0.105-0.036, +0.118+0.029]
-        syst["CMS2016_scale_mass_migration"] = { 800 : [0.974, 1.028],  1000 : [0.971, 1.024],  1100 : [0.970, 1.026],  1200 : [0.969, 1.027],  1300 : [0.970, 1.024],  1400 : [0.971, 1.022],  1500 : [0.973, 1.021],  1600 : [0.975, 1.021],  1700 : [0.976, 1.021],  1800 : [0.977, 1.021],  2000 : [0.974, 1.020],  2500 : [0.975, 1.022],  3000 : [0.974, 1.023],  3500 : [0.974, 1.025],  4000 : [0.974, 1.023],  4500 : [0.976, 1.015],  } if 'wr' in channel else { 800 : [1.113, 0.880],  1000 : [1.128, 0.886],  1100 : [1.131, 0.880],  1200 : [1.135, 0.873],  1300 : [1.138, 0.875],  1400 : [1.142, 0.876],  1500 : [1.142, 0.872],  1600 : [1.142, 0.867],  1700 : [1.139, 0.866],  1800 : [1.137, 0.864],  2000 : [1.156, 0.858],  2500 : [1.143, 0.867],  3000 : [1.131, 0.874],  3500 : [1.134, 0.870],  4000 : [1.124, 0.881],  4500 : [1.105, 0.907],  }
-        syst["CMS2016_res_mass_migration"] = { 800 : [0.929, 1.064],  1000 : [0.925, 1.071],  1100 : [0.924, 1.074],  1200 : [0.924, 1.076],  1300 : [0.925, 1.075],  1400 : [0.926, 1.074],  1500 : [0.924, 1.073],  1600 : [0.922, 1.072],  1700 : [0.925, 1.071],  1800 : [0.927, 1.070],  2000 : [0.924, 1.073],  2500 : [0.923, 1.085],  3000 : [0.921, 1.087],  3500 : [0.917, 1.091],  4000 : [0.912, 1.094],  4500 : [0.914, 1.085],  } if 'wr' in channel else { 800 : [1.065, 0.902],  1000 : [1.107, 0.872],  1100 : [1.113, 0.862],  1200 : [1.119, 0.852],  1300 : [1.121, 0.850],  1400 : [1.123, 0.848],  1500 : [1.133, 0.845],  1600 : [1.142, 0.842],  1700 : [1.138, 0.839],  1800 : [1.135, 0.836],  2000 : [1.149, 0.824],  2500 : [1.134, 0.819],  3000 : [1.128, 0.832],  3500 : [1.143, 0.831],  4000 : [1.110, 0.840],  4500 : [1.083, 0.869],  }
-    elif stype=='XZH':
-        syst["CMS2016_scale_mass"] = [+0.008-0.004, -0.011+0.002]
-        syst["CMS2016_res_mass"] = [-0.092-0.020, +0.102+0.009]
-        syst["CMS2016_scale_mass_migration"] = { 800 : [0.952, 1.055],  1000 : [0.942, 1.059],  1100 : [0.942, 1.064],  1200 : [0.942, 1.068],  1300 : [0.942, 1.065],  1400 : [0.943, 1.062],  1500 : [0.939, 1.064],  1600 : [0.935, 1.066],  1700 : [0.935, 1.068],  1800 : [0.935, 1.070],  2000 : [0.939, 1.067],  2500 : [0.932, 1.067],  3000 : [0.939, 1.066],  3500 : [0.942, 1.064],  4000 : [0.941, 1.057],  4500 : [0.931, 1.069],  } if 'wr' in channel else { 800 : [1.032, 0.955],  1000 : [1.031, 0.965],  1100 : [1.031, 0.963],  1200 : [1.032, 0.961],  1300 : [1.030, 0.963],  1400 : [1.028, 0.965],  1500 : [1.033, 0.963],  1600 : [1.037, 0.961],  1700 : [1.035, 0.959],  1800 : [1.033, 0.958],  2000 : [1.033, 0.960],  2500 : [1.041, 0.958],  3000 : [1.032, 0.964],  3500 : [1.028, 0.965],  4000 : [1.026, 0.971],  4500 : [1.030, 0.964],  }
-        syst["CMS2016_res_mass_migration"] = { 800 : [1.069, 0.900],  1000 : [1.069, 0.893],  1100 : [1.072, 0.894],  1200 : [1.075, 0.896],  1300 : [1.072, 0.898],  1400 : [1.070, 0.901],  1500 : [1.067, 0.898],  1600 : [1.065, 0.895],  1700 : [1.065, 0.894],  1800 : [1.065, 0.894],  2000 : [1.069, 0.900],  2500 : [1.065, 0.894],  3000 : [1.062, 0.904],  3500 : [1.063, 0.912],  4000 : [1.055, 0.901],  4500 : [1.057, 0.898],  } if 'wr' in channel else { 800 : [0.916, 1.085],  1000 : [0.923, 1.076],  1100 : [0.923, 1.075],  1200 : [0.922, 1.073],  1300 : [0.925, 1.074],  1400 : [0.927, 1.074],  1500 : [0.928, 1.077],  1600 : [0.929, 1.079],  1700 : [0.928, 1.078],  1800 : [0.926, 1.076],  2000 : [0.928, 1.075],  2500 : [0.930, 1.082],  3000 : [0.927, 1.078],  3500 : [0.922, 1.078],  4000 : [0.922, 1.088],  4500 : [0.919, 1.088],  }
-    else:
-        print 'Signal not recognized'
-        exit()
-#    syst["CMS2016_scale_mass_migration"] = [0.056, -0.069] if 'wr' in channel else [-0.050, 0.036]
-#    syst["CMS2016_res_mass_migration"] = -0.049 if 'wr' in channel else +0.050
-    syst["CMS2016_eff_V"] = 0.110 if 'hp' in category else -0.230
-    syst["CMS2016_eff_H"] = 0.060
-    syst["CMS2016_eff_trigger"] = 0.010
-    syst["CMS2016_eff_e"] = 0.010
-    syst["CMS2016_eff_m"] = 0.010
-    syst["CMS2016_eff_met"] = 0.010
-    syst["CMS2016_scale_pu"] = 0.001
-    syst["pdf_accept"] = 0.010
-    syst["CMS2016_lumi"] = 0.025
-    
-    for i, m in enumerate(massPoints):
-        isShape = (m <= xmax + binsXmass.averageBinWidth()) if CUTCOUNT and not BIAS else True
-        signalName = "%s%s_M%d" % (stype, category, m)
-        signalColor = sample[signalName]['linecolor'] if signalName in sample else 1
-        
-        sig_norm, sig_int, nsig = 0., 0., 0.
-        if not isShape:
-            sig = getSignal(category, stype, m)
-            sig_norm = sig[1] # _norm
-            sig_int = (sig[0].createIntegral(massArg, RooFit.NormSet(massArg), RooFit.Range("X_data_range"))).getVal()
-            nsig = sig_norm * sig_int
-        
-        #*******************************************************#
-        #                                                       #
-        #                      Datacard                         #
-        #                                                       #
-        #*******************************************************#
+    #syst_sig["CMS2016_sig_p1_jes"] = 1. #0.010
+    #syst_sig["CMS2016_sig_p2_jes"] = 1.
+    #syst_sig["CMS2016_sig_p2_jer"] = 1. #0.020
+    #
+    #syst["CMS2016_scale_j"] = 0.010
+    #syst["CMS2016_res_j"] = 0.010
+#   # syst["CMS2016_scale_mass"] = 0.020
+#   # syst["CMS2016_res_mass"] = -0.104
+    #if stype=='XVH':
+    #    syst["CMS2016_scale_mass"] = [0.004+0.004, -0.009-0.005]
+    #    syst["CMS2016_res_mass"] = [-0.101-0.030, +0.112+0.022]
+    #    syst["CMS2016_scale_mass_migration"] = { 800 : [0.968, 1.035],  1000 : [0.964, 1.032],  1100 : [0.964, 1.034],  1200 : [0.963, 1.036],  1300 : [0.964, 1.033],  1400 : [0.965, 1.030],  1500 : [0.966, 1.030],  1600 : [0.967, 1.030],  1700 : [0.968, 1.030],  1800 : [0.968, 1.030],  2000 : [0.967, 1.029],  2500 : [0.966, 1.031],  3000 : [0.967, 1.031],  3500 : [0.968, 1.033],  4000 : [0.968, 1.030],  4500 : [0.967, 1.026],  } if 'wr' in channel else { 800 : [1.067, 0.922],  1000 : [1.071, 0.933],  1100 : [1.072, 0.929],  1200 : [1.074, 0.925],  1300 : [1.073, 0.928],  1400 : [1.073, 0.931],  1500 : [1.074, 0.928],  1600 : [1.076, 0.926],  1700 : [1.074, 0.925],  1800 : [1.072, 0.923],  2000 : [1.079, 0.922],  2500 : [1.081, 0.922],  3000 : [1.073, 0.927],  3500 : [1.072, 0.925],  4000 : [1.069, 0.932],  4500 : [1.063, 0.940],  }
+    #    syst["CMS2016_res_mass_migration"] = { 800 : [0.964, 1.023],  1000 : [0.957, 1.031],  1100 : [0.957, 1.034],  1200 : [0.956, 1.037],  1300 : [0.956, 1.037],  1400 : [0.956, 1.038],  1500 : [0.954, 1.037],  1600 : [0.951, 1.036],  1700 : [0.953, 1.035],  1800 : [0.955, 1.035],  2000 : [0.953, 1.039],  2500 : [0.952, 1.047],  3000 : [0.948, 1.051],  3500 : [0.945, 1.056],  4000 : [0.941, 1.055],  4500 : [0.943, 1.048],  } if 'wr' in channel else { 800 : [0.981, 1.006],  1000 : [0.999, 0.991],  1100 : [1.001, 0.988],  1200 : [1.002, 0.984],  1300 : [1.003, 0.985],  1400 : [1.004, 0.986],  1500 : [1.006, 0.988],  1600 : [1.009, 0.991],  1700 : [1.006, 0.989],  1800 : [1.004, 0.987],  2000 : [1.009, 0.983],  2500 : [1.010, 0.978],  3000 : [1.010, 0.977],  3500 : [1.015, 0.975],  4000 : [1.003, 0.981],  4500 : [0.990, 0.994],  }
+    #elif stype=='XWH':
+    #    syst["CMS2016_scale_mass"] = [0.003+0.008, -0.008-0.009]
+    #    syst["CMS2016_res_mass"] = [-0.105-0.036, +0.118+0.029]
+    #    syst["CMS2016_scale_mass_migration"] = { 800 : [0.974, 1.028],  1000 : [0.971, 1.024],  1100 : [0.970, 1.026],  1200 : [0.969, 1.027],  1300 : [0.970, 1.024],  1400 : [0.971, 1.022],  1500 : [0.973, 1.021],  1600 : [0.975, 1.021],  1700 : [0.976, 1.021],  1800 : [0.977, 1.021],  2000 : [0.974, 1.020],  2500 : [0.975, 1.022],  3000 : [0.974, 1.023],  3500 : [0.974, 1.025],  4000 : [0.974, 1.023],  4500 : [0.976, 1.015],  } if 'wr' in channel else { 800 : [1.113, 0.880],  1000 : [1.128, 0.886],  1100 : [1.131, 0.880],  1200 : [1.135, 0.873],  1300 : [1.138, 0.875],  1400 : [1.142, 0.876],  1500 : [1.142, 0.872],  1600 : [1.142, 0.867],  1700 : [1.139, 0.866],  1800 : [1.137, 0.864],  2000 : [1.156, 0.858],  2500 : [1.143, 0.867],  3000 : [1.131, 0.874],  3500 : [1.134, 0.870],  4000 : [1.124, 0.881],  4500 : [1.105, 0.907],  }
+    #    syst["CMS2016_res_mass_migration"] = { 800 : [0.929, 1.064],  1000 : [0.925, 1.071],  1100 : [0.924, 1.074],  1200 : [0.924, 1.076],  1300 : [0.925, 1.075],  1400 : [0.926, 1.074],  1500 : [0.924, 1.073],  1600 : [0.922, 1.072],  1700 : [0.925, 1.071],  1800 : [0.927, 1.070],  2000 : [0.924, 1.073],  2500 : [0.923, 1.085],  3000 : [0.921, 1.087],  3500 : [0.917, 1.091],  4000 : [0.912, 1.094],  4500 : [0.914, 1.085],  } if 'wr' in channel else { 800 : [1.065, 0.902],  1000 : [1.107, 0.872],  1100 : [1.113, 0.862],  1200 : [1.119, 0.852],  1300 : [1.121, 0.850],  1400 : [1.123, 0.848],  1500 : [1.133, 0.845],  1600 : [1.142, 0.842],  1700 : [1.138, 0.839],  1800 : [1.135, 0.836],  2000 : [1.149, 0.824],  2500 : [1.134, 0.819],  3000 : [1.128, 0.832],  3500 : [1.143, 0.831],  4000 : [1.110, 0.840],  4500 : [1.083, 0.869],  }
+    #elif stype=='XZH':
+    #    syst["CMS2016_scale_mass"] = [+0.008-0.004, -0.011+0.002]
+    #    syst["CMS2016_res_mass"] = [-0.092-0.020, +0.102+0.009]
+    #    syst["CMS2016_scale_mass_migration"] = { 800 : [0.952, 1.055],  1000 : [0.942, 1.059],  1100 : [0.942, 1.064],  1200 : [0.942, 1.068],  1300 : [0.942, 1.065],  1400 : [0.943, 1.062],  1500 : [0.939, 1.064],  1600 : [0.935, 1.066],  1700 : [0.935, 1.068],  1800 : [0.935, 1.070],  2000 : [0.939, 1.067],  2500 : [0.932, 1.067],  3000 : [0.939, 1.066],  3500 : [0.942, 1.064],  4000 : [0.941, 1.057],  4500 : [0.931, 1.069],  } if 'wr' in channel else { 800 : [1.032, 0.955],  1000 : [1.031, 0.965],  1100 : [1.031, 0.963],  1200 : [1.032, 0.961],  1300 : [1.030, 0.963],  1400 : [1.028, 0.965],  1500 : [1.033, 0.963],  1600 : [1.037, 0.961],  1700 : [1.035, 0.959],  1800 : [1.033, 0.958],  2000 : [1.033, 0.960],  2500 : [1.041, 0.958],  3000 : [1.032, 0.964],  3500 : [1.028, 0.965],  4000 : [1.026, 0.971],  4500 : [1.030, 0.964],  }
+    #    syst["CMS2016_res_mass_migration"] = { 800 : [1.069, 0.900],  1000 : [1.069, 0.893],  1100 : [1.072, 0.894],  1200 : [1.075, 0.896],  1300 : [1.072, 0.898],  1400 : [1.070, 0.901],  1500 : [1.067, 0.898],  1600 : [1.065, 0.895],  1700 : [1.065, 0.894],  1800 : [1.065, 0.894],  2000 : [1.069, 0.900],  2500 : [1.065, 0.894],  3000 : [1.062, 0.904],  3500 : [1.063, 0.912],  4000 : [1.055, 0.901],  4500 : [1.057, 0.898],  } if 'wr' in channel else { 800 : [0.916, 1.085],  1000 : [0.923, 1.076],  1100 : [0.923, 1.075],  1200 : [0.922, 1.073],  1300 : [0.925, 1.074],  1400 : [0.927, 1.074],  1500 : [0.928, 1.077],  1600 : [0.929, 1.079],  1700 : [0.928, 1.078],  1800 : [0.926, 1.076],  2000 : [0.928, 1.075],  2500 : [0.930, 1.082],  3000 : [0.927, 1.078],  3500 : [0.922, 1.078],  4000 : [0.922, 1.088],  4500 : [0.919, 1.088],  }
+    #else:
+    #    print 'Signal not recognized'
+    #    exit()
+#   # syst["CMS2016_scale_mass_migration"] = [0.056, -0.069] if 'wr' in channel else [-0.050, 0.036]
+#   # syst["CMS2016_res_mass_migration"] = -0.049 if 'wr' in channel else +0.050
+    #syst["CMS2016_eff_V"] = 0.110 if 'hp' in category else -0.230
+    #syst["CMS2016_eff_H"] = 0.060
+    #syst["CMS2016_eff_trigger"] = 0.010
+    #syst["CMS2016_eff_e"] = 0.010
+    #syst["CMS2016_eff_m"] = 0.010
+    #syst["CMS2016_eff_met"] = 0.010
+    #syst["CMS2016_scale_pu"] = 0.001
+    #syst["pdf_accept"] = 0.010
+    #syst["CMS2016_lumi"] = 0.025
+    # 
+    #for i, m in enumerate(massPoints):
+    #    isShape = (m <= xmax + binsXmass.averageBinWidth()) if CUTCOUNT and not BIAS else True
+    #    signalName = "%s%s_M%d" % (stype, category, m)
+    #    signalColor = sample[signalName]['linecolor'] if signalName in sample else 1
+    #    
+    #    sig_norm, sig_int, nsig = 0., 0., 0.
+    #    if not isShape:
+    #        sig = getSignal(category, stype, m)
+    #        sig_norm = sig[1] # _norm
+    #        sig_int = (sig[0].createIntegral(massArg, RooFit.NormSet(massArg), RooFit.Range("X_data_range"))).getVal()
+    #        nsig = sig_norm * sig_int
+    #    
+    #    #*******************************************************#
+    #    #                                                       #
+    #    #                      Datacard                         #
+    #    #                                                       #
+    #    #*******************************************************#
 
-        card  = "imax 1\n"
-        card += "jmax *\n"
-        card += "kmax *\n"
-        card += "-----------------------------------------------------------------------------------\n"
-        if isShape:
-            card += "shapes            %-15s  %-5s    %s%s.root    %s\n" % (signalName, category, WORKDIR, channel, "VH_2016:$PROCESS")
-            card += "shapes            %-15s  %-5s    %s%s.root    %s\n" % (modelBkg.GetName(), category, WORKDIR, category, "VH_2016:$PROCESS")
-            card += "shapes            %-15s  %-5s    %s%s.root    %s\n" % ("data_obs", category, WORKDIR, category, "VH_2016:data_obs")
-        else:
-            card += "shapes * * FAKE\n"
-        card += "-----------------------------------------------------------------------------------\n"
-        card += "bin               %s\n" % category
-        card += "observation       %0.f\n" % (-1. if isShape else 0.)
-        card += "-----------------------------------------------------------------------------------\n"
-        card += "bin                                     %-20s%-20s\n" % (category, category)
-        card += "process                                 %-20s%-20s\n" % (signalName, modelBkg.GetName()) #"roomultipdf"
-        card += "process                                 %-20s%-20s\n" % ("0", "1")
-        if isShape:
-            card += "rate                                    %-20d%-20f\n" % (1, 1) #signalYield[m].getVal(), nevents
-        else:
-            card += "rate                                    %-20.6f%-20.6f\n" % (nsig, nbkg)
-        card += "-----------------------------------------------------------------------------------\n"
-        if isShape:
-            for p in range(1, order+1): card += "%-35s     flatParam\n" % ("CMS2016_"+category+"_p%d_%d" % (order, p))
-            for s in sorted(syst_sig): card += "%-35s     param     %-20.1f%-20.1f\n" % (s, 0., syst_sig[s])
-            card += "%-35s     lnU       %-20s%-20.0f\n" % ("CMS2016_"+category+"_norm",    "-", 4.)
-        else:
-            card += "%-35s     lnN       %-20s%-20.3f\n" % ("CMS2016_"+category+"_norm",    "-", (1.+nbkgErr/nbkg))
-        # log-normal uncertainties
-        for s in sorted(syst):
-            if type(syst[s]) == dict:
-                sy = syst[s].get(m, syst[s][min(syst[s].keys(), key=lambda k: abs(k-m))])
-                card += "%-35s     lnN       %-20s%-20s\n" % (s.replace('_migration', ''), "%.3f/%.3f" % (sy[0], sy[1]), "-")
-            elif type(syst[s]) == list: card += "%-35s     lnN       %-20s%-20s\n" % (s, "%.3f/%.3f" % (1.+syst[s][0], 1.+syst[s][1]), "-")
-            else: card += "%-35s     lnN       %-20.3f%-20s\n" % (s,    1.+syst[s], "-")
-            
-        # uncertanty groups
-        card += "theory group = pdf_scale qcd_scale\n"
-        card += "norm group = CMS2016_"+category+"_norm\n"
-        if isShape:
-            card += "shape group = "
-            for p in range(1, order+1): card += "CMS2016_"+category+"_p%d_%d " % (order, p)
-            card += "\n"
-            card += "shapeS group = "
-            for i in syst_sig.keys(): card += i + " "
-            card += "\n"
-        
-        for s in signalList:
-            if s == stype: outcard = card
-            else: outcard = card.replace(stype, s)
-            outname = CARDDIR+"dijet/%s%s_M%d.txt" % (s, category, m)
-            cardfile = open(outname, 'w')
-            cardfile.write(outcard)
-            cardfile.close()
-            #print "Datacards for mass", m, "in channel", channel, "saved in", outname
+    #    card  = "imax 1\n"
+    #    card += "jmax *\n"
+    #    card += "kmax *\n"
+    #    card += "-----------------------------------------------------------------------------------\n"
+    #    if isShape:
+    #        card += "shapes            %-15s  %-5s    %s%s.root    %s\n" % (signalName, category, WORKDIR, channel, "VH_2016:$PROCESS")
+    #        card += "shapes            %-15s  %-5s    %s%s.root    %s\n" % (modelBkg.GetName(), category, WORKDIR, category, "VH_2016:$PROCESS")
+    #        card += "shapes            %-15s  %-5s    %s%s.root    %s\n" % ("data_obs", category, WORKDIR, category, "VH_2016:data_obs")
+    #    else:
+    #        card += "shapes * * FAKE\n"
+    #    card += "-----------------------------------------------------------------------------------\n"
+    #    card += "bin               %s\n" % category
+    #    card += "observation       %0.f\n" % (-1. if isShape else 0.)
+    #    card += "-----------------------------------------------------------------------------------\n"
+    #    card += "bin                                     %-20s%-20s\n" % (category, category)
+    #    card += "process                                 %-20s%-20s\n" % (signalName, modelBkg.GetName()) #"roomultipdf"
+    #    card += "process                                 %-20s%-20s\n" % ("0", "1")
+    #    if isShape:
+    #        card += "rate                                    %-20d%-20f\n" % (1, 1) #signalYield[m].getVal(), nevents
+    #    else:
+    #        card += "rate                                    %-20.6f%-20.6f\n" % (nsig, nbkg)
+    #    card += "-----------------------------------------------------------------------------------\n"
+    #    if isShape:
+    #        for p in range(1, order+1): card += "%-35s     flatParam\n" % ("CMS2016_"+category+"_p%d_%d" % (order, p))
+    #        for s in sorted(syst_sig): card += "%-35s     param     %-20.1f%-20.1f\n" % (s, 0., syst_sig[s])
+    #        card += "%-35s     lnU       %-20s%-20.0f\n" % ("CMS2016_"+category+"_norm",    "-", 4.)
+    #    else:
+    #        card += "%-35s     lnN       %-20s%-20.3f\n" % ("CMS2016_"+category+"_norm",    "-", (1.+nbkgErr/nbkg))
+    #    # log-normal uncertainties
+    #    for s in sorted(syst):
+    #        if type(syst[s]) == dict:
+    #            sy = syst[s].get(m, syst[s][min(syst[s].keys(), key=lambda k: abs(k-m))])
+    #            card += "%-35s     lnN       %-20s%-20s\n" % (s.replace('_migration', ''), "%.3f/%.3f" % (sy[0], sy[1]), "-")
+    #        elif type(syst[s]) == list: card += "%-35s     lnN       %-20s%-20s\n" % (s, "%.3f/%.3f" % (1.+syst[s][0], 1.+syst[s][1]), "-")
+    #        else: card += "%-35s     lnN       %-20.3f%-20s\n" % (s,    1.+syst[s], "-")
+    #        
+    #    # uncertanty groups
+    #    card += "theory group = pdf_scale qcd_scale\n"
+    #    card += "norm group = CMS2016_"+category+"_norm\n"
+    #    if isShape:
+    #        card += "shape group = "
+    #        for p in range(1, order+1): card += "CMS2016_"+category+"_p%d_%d " % (order, p)
+    #        card += "\n"
+    #        card += "shapeS group = "
+    #        for i in syst_sig.keys(): card += i + " "
+    #        card += "\n"
+    #    
+    #    for s in signalList:
+    #        if s == stype: outcard = card
+    #        else: outcard = card.replace(stype, s)
+    #        outname = CARDDIR+"dijet/%s%s_M%d.txt" % (s, category, m)
+    #        cardfile = open(outname, 'w')
+    #        cardfile.write(outcard)
+    #        cardfile.close()
+    #        #print "Datacards for mass", m, "in channel", channel, "saved in", outname
 
-        if BIAS:
-            outcard = card.replace(modelBkg.GetName(), "roomultipdf")
-            outcard.replace("rate                                    %-20.6f%-20.6f\n" % (1, 1), "rate                                    %-20.6f%-20.6f\n" % (10, 1))
-            outcard += "%-35s     discrete\n" % ("pdf_index")
-            outname = CARDDIR+"bias/%s%s_M%d.txt" % (stype, category, m)
-            cardfile = open(outname, 'w')
-            cardfile.write(outcard)
-            cardfile.close()
+    #    if BIAS:
+    #        outcard = card.replace(modelBkg.GetName(), "roomultipdf")
+    #        outcard.replace("rate                                    %-20.6f%-20.6f\n" % (1, 1), "rate                                    %-20.6f%-20.6f\n" % (10, 1))
+    #        outcard += "%-35s     discrete\n" % ("pdf_index")
+    #        outname = CARDDIR+"bias/%s%s_M%d.txt" % (stype, category, m)
+    #        cardfile = open(outname, 'w')
+    #        cardfile.write(outcard)
+    #        cardfile.close()
 
 
     #*******************************************************#
@@ -602,7 +594,7 @@ def dijet():
         normulti = RooRealVar("roomultipdf_norm", "Number of background events", nevents, 0., 1.e6)
     
     # create workspace
-    w = RooWorkspace("VH_2016", "workspace")
+    w = RooWorkspace("Zprime_"+YEAR, "workspace")
     # Dataset
     if isData: getattr(w, "import")(setData, RooFit.Rename("data_obs"))
     else: getattr(w, "import")(setToys, RooFit.Rename("data_obs"))
@@ -618,8 +610,8 @@ def dijet():
     #    getattr(w, "import")(signal[m], RooFit.Rename(signal[m].GetName()))
     #    getattr(w, "import")(signalYield[m], RooFit.Rename(signalYield[m].GetName()))
     #w.Print()
-    w.writeToFile("%s%s.root" % (WORKDIR, category), True)
-    print "Workspace", "%s%s.root" % (WORKDIR, category), "saved successfully"
+    w.writeToFile("bkg_%s%s.root" % (WORKDIR, DATA_TYPE+"_"+YEAR), True)
+    print "Workspace", "bkg_%s%s.root" % (WORKDIR, DATA_TYPE+"_"+YEAR), "saved successfully"
     
     if VERBOSE: raw_input("Press Enter to continue...")
     # ======   END PLOT   ======

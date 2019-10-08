@@ -180,7 +180,7 @@ HT_bins = ['50to100', '100to200', '200to300', '300to500', '500to700', '700to1000
 #sample_names = [sample_name] ## for testing
 
 sample_names = []
-for HT_bin in HT_bins[2:]:  ##only part of HT_bins selected FIXME FIXME
+for HT_bin in HT_bins:  
     sample_names.append("MC_QCD_{}_HT{}".format(year, HT_bin))
 
 jobs = []
