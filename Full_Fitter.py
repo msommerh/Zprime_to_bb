@@ -78,7 +78,7 @@ PLOTDIR     = "plots/{}_{}".format(DATA_TYPE, YEAR)
 
 signalList = ['Zprime_to_bb']
 
-genPoints = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000, 9000]
+genPoints = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 #massPoints = [x for x in range(1000, 4500+1, 100)] #if not HVTMODEL else genPoints
 massPoints = genPoints
 

@@ -21,7 +21,7 @@ from rooUtils import *
 ## ad-hoc fix of missing dictionaries containing selections and line colors
 #FIXME
 selection = {'bb':'', 'SR':''} #no selection so far
-massPoints = [x for x in range(800, 9000+1, 100)]
+massPoints = [x for x in range(800, 8000+1, 100)]
 sample = {}
 for j, m in enumerate(massPoints):
     sample["%s%s_M%d" % (stype, category, m)] = {'Linecolor':j}
@@ -96,8 +96,8 @@ def signal():
     stype = 'Zprime' 
     signalType = 'Zprime'
 
-    genPoints = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000, 9000]
-    massPoints = [x for x in range(800, 9000+1, 100)]
+    genPoints = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+    massPoints = [x for x in range(800, 8000+1, 100)]
     interPar = True
 
     n = len(genPoints)  
