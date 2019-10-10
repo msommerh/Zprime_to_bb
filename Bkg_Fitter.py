@@ -136,17 +136,25 @@ def dijet():
     jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",       "",             0.,   1.        )
     jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             0.,   1.        )
     MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
+    HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
+    HLT_PFJet500            = RooRealVar("HLT_PFJet500"            , "" , -1., 1.    )
+    HLT_CaloJet500_NoJetID  = RooRealVar("HLT_CaloJet500_NoJetID"  , "" , -1., 1.    )
+    HLT_PFHT900             = RooRealVar("HLT_PFHT900"            , "" , -1., 1.    )
+    HLT_AK8PFJet550         = RooRealVar("HLT_AK8PFJet550"         , "",  -1., 1.    )
+    HLT_PFJet550            = RooRealVar("HLT_PFJet550"            , "" , -1., 1.    )
+    HLT_CaloJet550_NoJetID  = RooRealVar("HLT_CaloJet550_NoJetID"  , "" , -1., 1.    )
+    HLT_PFHT1050            = RooRealVar("HLT_PFHT1050"            , "" , -1., 1.    )
     weight = RooRealVar(        "eventWeightLumi",      "",             -1.e9,  1.e9    )
     variables = RooArgSet(X_mass, j1_mass, j2_mass)
     variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2))
     variables.add(RooArgSet(MET_over_sumEt, weight))
-    
+    variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))
 
     if VARBINS: binsXmass = RooBinning(len(abins)-1, abins)
     else: binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
     
-    baseCut = "jj_mass>5" #just inserting a super efficient cut for now
+    baseCut = "HLT_AK8PFJet{0}==1. &&  HLT_PFJet{0}==1. && HLT_CaloJet{0}_NoJetID==1. && HLT_PFHT{1}==1.".format(500 if YEAR=='2016' else 550, 900 if YEAR=='2016' else 1050)
     print stype, "|", baseCut
     
     file = {}

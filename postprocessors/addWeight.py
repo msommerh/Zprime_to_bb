@@ -13,6 +13,7 @@ parser.add_option('-y', '--year', action='store', type='string', dest='year',def
 parser.add_option('-f', '--filter', action='store', type='string', dest='filter', default='')
 parser.add_option('-s', '--single', action='store_true', dest='single', default=False)
 parser.add_option('-v', '--verbose', action='store_true', dest='verbose', default=False)
+parser.add_option('-S', '--isSignal', action='store_true', dest='isSignal', default=False)
 
 (options, args) = parser.parse_args()
 
@@ -21,7 +22,7 @@ singlecore  = options.single
 verboseout  = options.verbose
 year        = options.year
 isMC        = True #only reweight MC anyway
-
+isSignal    = options.isSignal
 
 if year=='2016':
     LUMI=35920.
@@ -54,6 +55,53 @@ def getXsec(sample):
   elif sample.find( "QCD_HT1000to1500"                     ) !=-1 : return 1207.;
   elif sample.find( "QCD_HT1500to2000"                     ) !=-1 : return 119.9;
   elif sample.find( "QCD_HT2000toInf"                      ) !=-1 : return 25.24;
+
+  elif sample.find( "MC_signal_M500"                       ) != -1 : return 170.378; 
+  elif sample.find( "MC_signal_M600"                       ) != -1 : return 85.0684;
+  elif sample.find( "MC_signal_M700"                       ) != -1 : return 46.9232;
+  elif sample.find( "MC_signal_M800"                       ) != -1 : return 27.7679;
+  elif sample.find( "MC_signal_M900"                       ) != -1 : return 17.3149;
+  elif sample.find( "MC_signal_M1000"                      ) != -1 : return 11.2428;
+  elif sample.find( "MC_signal_M1100"                      ) != -1 : return 7.53682;
+  elif sample.find( "MC_signal_M1200"                      ) != -1 : return 5.18495;
+  elif sample.find( "MC_signal_M1300"                      ) != -1 : return 3.64455;
+  elif sample.find( "MC_signal_M1400"                      ) != -1 : return 2.60813;
+  elif sample.find( "MC_signal_M1500"                      ) != -1 : return 1.89476;
+  elif sample.find( "MC_signal_M1600"                      ) != -1 : return 1.39466;
+  elif sample.find( "MC_signal_M1700"                      ) != -1 : return 1.03814;
+  elif sample.find( "MC_signal_M1800"                      ) != -1 : return 0.780036; 
+  elif sample.find( "MC_signal_M1900"                      ) != -1 : return 0.591187;
+  elif sample.find( "MC_signal_M2000"                      ) != -1 : return 0.451406;
+  elif sample.find( "MC_signal_M2100"                      ) != -1 : return 0.346939;
+  elif sample.find( "MC_signal_M2200"                      ) != -1 : return 0.26821;
+  elif sample.find( "MC_signal_M2300"                      ) != -1 : return 0.208423; 
+  elif sample.find( "MC_signal_M2400"                      ) != -1 : return 0.162712;
+  elif sample.find( "MC_signal_M2500"                      ) != -1 : return 0.127539;
+  elif sample.find( "MC_signal_M2600"                      ) != -1 : return 0.100341;
+  elif sample.find( "MC_signal_M2700"                      ) != -1 : return 0.0792067; 
+  elif sample.find( "MC_signal_M2800"                      ) != -1 : return 0.0627105;
+  elif sample.find( "MC_signal_M2900"                      ) != -1 : return 0.0498474;
+  elif sample.find( "MC_signal_M3000"                      ) != -1 : return 0.0395947;
+  elif sample.find( "MC_signal_M3100"                      ) != -1 : return 0.0315669;
+  elif sample.find( "MC_signal_M3200"                      ) != -1 : return 0.025215;
+  elif sample.find( "MC_signal_M3300"                      ) != -1 : return 0.0201745; 
+  elif sample.find( "MC_signal_M3400"                      ) != -1 : return 0.0161649;
+  elif sample.find( "MC_signal_M3500"                      ) != -1 : return 0.0129686;
+  elif sample.find( "MC_signal_M3600"                      ) != -1 : return 0.0104153;
+  elif sample.find( "MC_signal_M3700"                      ) != -1 : return 0.00837208; 
+  elif sample.find( "MC_signal_M3800"                      ) != -1 : return 0.00673479;
+  elif sample.find( "MC_signal_M3900"                      ) != -1 : return 0.00542162;
+  elif sample.find( "MC_signal_M4000"                      ) != -1 : return 0.0043664;
+  elif sample.find( "MC_signal_M4100"                      ) != -1 : return 0.00351863; 
+  elif sample.find( "MC_signal_M4200"                      ) != -1 : return 0.00283602;
+  elif sample.find( "MC_signal_M4300"                      ) != -1 : return 0.00228571;
+  elif sample.find( "MC_signal_M4400"                      ) != -1 : return 0.00184267;
+  elif sample.find( "MC_signal_M4500"                      ) != -1 : return 0.00148565;
+  elif sample.find( "MC_signal_M4600"                      ) != -1 : return 0.00119766;
+  elif sample.find( "MC_signal_M4700"                      ) != -1 : return 0.000965227;
+  elif sample.find( "MC_signal_M4800"                      ) != -1 : return 0.00077757;
+  elif sample.find( "MC_signal_M4900"                      ) != -1 : return 0.000626126;
+  elif sample.find( "MC_signal_M5000"                      ) != -1 : return 0.00050397;
   elif sample.find( "QCD_Pt-15to7000" ) !=-1 or sample.find( "QCD_Pt_15to7000" ) !=-1: return  2.022100000e+09;
   elif sample.find("SingleMuon")!=-1  or sample.find("SingleElectron") !=-1 or sample.find("JetHT") !=-1 or sample.find("data") !=-1 : return 1.
   else:
@@ -175,13 +223,18 @@ def processFile(sample, origin, target, verbose=False):
 
 
 HT_bins = ['50to100', '100to200', '200to300', '300to500', '500to700', '700to1000', '1000to1500', '1500to2000', '2000toInf']
+mass_bins = ['600', '800', '1000', '1200', '1400' , '1600', '1800', '2000', '2500', '3000', '3500', '4000', '4500', '5000', '5500', '6000', '7000', '8000']
 
 #sample_name = 'test'
 #sample_names = [sample_name] ## for testing
 
 sample_names = []
-for HT_bin in HT_bins:  
-    sample_names.append("MC_QCD_{}_HT{}".format(year, HT_bin))
+if not isSignal:
+    for HT_bin in HT_bins:  
+        sample_names.append("MC_QCD_{}_HT{}".format(year, HT_bin))
+else:
+    for mass_bin in mass_bins:
+        sample_names.append("MC_signal_{}_M{}".format(year, mass_bin))
 
 jobs = []
 for d in sample_names:

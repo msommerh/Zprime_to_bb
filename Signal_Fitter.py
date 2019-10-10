@@ -9,36 +9,29 @@ from ROOT import TMath, TFile, TChain, TTree, TCut, TH1F, TH2F, THStack, TGraph,
 from ROOT import TStyle, TCanvas, TPad, TLegend, TLatex, TText, TColor
 from ROOT import TH1, TF1, TGraph, TGraphErrors, TGraphAsymmErrors, TVirtualFitter
 
-gSystem.Load("PDFs/HWWLVJRooPdfs_cxx.so")
+#gSystem.Load("PDFs/HWWLVJRooPdfs_cxx.so")
 from ROOT import RooFit, RooRealVar, RooDataHist, RooDataSet, RooAbsData, RooAbsReal, RooAbsPdf, RooPlot, RooBinning, RooCategory, RooSimultaneous, RooArgList, RooArgSet, RooWorkspace, RooMsgService
-from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooPolynomial, RooChebychev, RooBreitWigner, RooCBShape, RooDoubleCrystalBall, RooExtendPdf, RooAddPdf
+from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooPolynomial, RooChebychev, RooBreitWigner, RooCBShape, RooExtendPdf, RooAddPdf
 
-from alpha import drawPlot
+#from alpha import drawPlot
 from rooUtils import *
 #from samples import sample
 #from selections import selection
 
-## ad-hoc fix of missing dictionaries containing selections and line colors
-#FIXME
-selection = {'bb':'', 'SR':''} #no selection so far
-massPoints = [x for x in range(800, 8000+1, 100)]
-sample = {}
-for j, m in enumerate(massPoints):
-    sample["%s%s_M%d" % (stype, category, m)] = {'Linecolor':j}
-#FIXME
-
 
 import optparse
+
 usage = "usage: %prog [options]"
 parser = optparse.OptionParser(usage)
-parser.add_option("-a", "--all", action="store_true", default=False, dest="all")
+
+#parser.add_option("-a", "--all", action="store_true", default=False, dest="all")
 #parser.add_option("-b", "--bash", action="store_true", default=False, dest="bash")
 #parser.add_option("-c", "--channel", action="store", type="string", dest="channel", default="")
 #parser.add_option("-s", "--signal", action="store", type="string", dest="signal", default="")
 parser.add_option("-e", "--efficiency", action="store_true", default=False, dest="efficiency")
 #parser.add_option("-p", "--parallelize", action="store_true", default=False, dest="parallelize")
 parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose")
-parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
+parser.add_option("-y", "--year", action="store", type="string", dest="year",default="2017")
 (options, args) = parser.parse_args()
 #if options.bash: gROOT.SetBatch(True)
 gROOT.SetBatch(True)
@@ -55,6 +48,21 @@ colour = [
 
 ########## SETTINGS ##########
 
+## ad-hoc fix of missing dictionaries containing selections and line colors
+#FIXME
+channel = 'bb'
+stype = 'Zprime' 
+category = channel
+selection = {'bb':'', 'SR':''} #no selection so far
+genPoints = [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+massPoints = [x for x in range(600, 8000+1, 100)]
+sample = {}
+for j, m in enumerate(massPoints):
+    sample["%s%s_M%d" % (stype, category, m)] = {'linecolor':j}
+for j, m in enumerate(genPoints):
+    sample["%s%s_M%d" % (stype, category, m)] = {'linecolor':j%9+1}
+#FIXME
+
 # Silent RooFit
 RooMsgService.instance().setGlobalKillBelow(RooFit.FATAL)
 
@@ -69,6 +77,7 @@ PLOTDIR     = "plots/"
 CARDDIR     = "datacards/"
 WORKDIR     = "workspace/"
 RATIO       = 4
+YEAR        = options.year
 #LUMI        = 35867
 VERBOSE     = options.verbose
 #PARALLELIZE = True
@@ -96,8 +105,8 @@ def signal():
     stype = 'Zprime' 
     signalType = 'Zprime'
 
-    genPoints = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
-    massPoints = [x for x in range(800, 8000+1, 100)]
+    #genPoints = [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000] #defined above
+    #massPoints = [x for x in range(600, 8000+1, 100)]
     interPar = True
 
     n = len(genPoints)  
@@ -105,16 +114,10 @@ def signal():
     category = channel
     cColor = color[category] if category in color else 1
 
-    #nElec = channel.count('e')
-    #nMuon = channel.count('m')
-    #nLept = nElec + nMuon
     nBtag = channel.count('b')
-    #isHP = 'hp' in channel or nBtag > 2
-    #isLP = 'lp' in channel or nBtag > 2
-    #isAH = isHP or isLP
     isAH = False #not entirely sure what it does   
  
-    if not os.path.exists(PLOTDIR+stype+category): os.makedirs(PLOTDIR+stype+category)
+    if not os.path.exists(PLOTDIR+"MC_signal_"+YEAR): os.makedirs(PLOTDIR+"MC_signal_"+YEAR)
 
     #*******************************************************#
     #                                                       #
@@ -131,6 +134,15 @@ def signal():
     jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",       "",             0.,   1.        )
     jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             0.,   1.        )
     MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
+    HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
+    HLT_PFJet500            = RooRealVar("HLT_PFJet500"            , "" , -1., 1.    ) 
+    HLT_CaloJet500_NoJetID  = RooRealVar("HLT_CaloJet500_NoJetID"  , "" , -1., 1.    ) 
+    HLT_PFHT900             = RooRealVar("HLT_PFHT900"            , "" , -1., 1.    ) 
+    HLT_AK8PFJet550         = RooRealVar("HLT_AK8PFJet550"         , "",  -1., 1.    )
+    HLT_PFJet550            = RooRealVar("HLT_PFJet550"            , "" , -1., 1.    ) 
+    HLT_CaloJet550_NoJetID  = RooRealVar("HLT_CaloJet550_NoJetID"  , "" , -1., 1.    ) 
+    HLT_PFHT1050            = RooRealVar("HLT_PFHT1050"            , "" , -1., 1.    ) 
+
     weight = RooRealVar(        "eventWeightLumi",      "",             -1.e9,  1.e9    )
 
 
@@ -147,17 +159,19 @@ def signal():
     variables = RooArgSet(X_mass, j1_mass, j2_mass)
     variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2))
     variables.add(RooArgSet(MET_over_sumEt, weight))
+    variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     #X_mass.setRange("X_extended_range", X_mass.getMin(), X_mass.getMax())
     X_mass.setRange("X_reasonable_range", X_mass.getMin(), X_mass.getMax())
-    X_mass.setRange("X_integration_range", Xmin, Xmax)
+    X_mass.setRange("X_integration_range", X_mass.getMin(), X_mass.getMax())
+    #X_mass.setRange("X_integration_range", Xmin, Xmax)
     X_mass.setBins(int((X_mass.getMax() - X_mass.getMin())/100))
     binsXmass = RooBinning(int((X_mass.getMax() - X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
     X_mass.setBinning(binsXmass, "PLOT")
     massArg = RooArgSet(X_mass)
 
     # Cuts
-    #SRcut = selection[category]+selection['SR'] #+ " && %s>%d && %s<%d" % (J_mass.GetName(), SIGMIN, J_mass.GetName(), SIGMAX)
-    SRcut = "" #no cut so far FIXME
+    SRcut = "HLT_AK8PFJet{0}==1. &&  HLT_PFJet{0}==1. && HLT_CaloJet{0}_NoJetID==1. && HLT_PFHT{1}==1.".format(500 if YEAR=='2016' else 550, 900 if YEAR=='2016' else 1050)
+
     print "  Cut:\t", SRcut
     #SRcut = SRcut.replace('isVtoQQ', '0==0')
 
@@ -307,10 +321,10 @@ def signal():
             # define the dataset for the signal applying the SR cuts
             treeSign[m] = TChain("tree")
             j = 0
-            ss = "MC_signal_"+YEAR+"M"+m
+            ss = "MC_signal_"+YEAR+"_M"+str(m)
             while True:
                 if os.path.exists(NTUPLEDIR + ss + "/" + ss + "_flatTuple_{}.root".format(j)):
-                    treeiSign.Add(NTUPLEDIR + ss + "/" + ss + "_flatTuple_{}.root".format(j))
+                    treeSign[m].Add(NTUPLEDIR + ss + "/" + ss + "_flatTuple_{}.root".format(j))
                     j += 1
                 else:
                     print "found {} files for sample:".format(j), ss
@@ -330,7 +344,8 @@ def signal():
                 continue
             
             #setSignal[m] = RooDataSet("setSignal_"+signalName, "setSignal", variables, RooFit.Cut(SRcut), RooFit.WeightVar(weight), RooFit.Import(treeSign[m]))
-            setSignal[m] = RooDataSet("setSignal_"+signalName, "setSignal", variables, RooFit.Import(treeSign[m]))   ## so far only the unweighted and uncut version FIXME (yes, cuts could also be applied here)
+            #setSignal[m] = RooDataSet("setSignal_"+signalName, "setSignal", variables, RooFit.Import(treeSign[m]))   ## so far only the unweighted and uncut version FIXME (yes, cuts could also be applied here)
+            setSignal[m] = RooDataSet("setSignal_"+signalName, "setSignal", variables, RooFit.Cut(SRcut), RooFit.Import(treeSign[m]))
             if VERBOSE: print " - Dataset with", setSignal[m].sumEntries(), "events loaded"
            
 
@@ -339,93 +354,23 @@ def signal():
             
             if treeSign[m].GetEntries(SRcut) > 5:
                 if VERBOSE: print " - Running fit"
-        #        # Step 1: fit gaussian first
-        #        salpha1[m].setConstant(True)
-        #        sslope1[m].setConstant(True)
-        #        salpha2[m].setConstant(True)
-        #        sslope2[m].setConstant(True)
-        #        frSignal1[m] = signalExt[m].fitTo(setSignal[m], RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.Save(1), RooFit.Extended(True), RooFit.SumW2Error(True), RooFit.PrintLevel(1 if VERBOSE else -1))
-        #
-        #        # Step 2: fit lower tails
-        #        signalYield[m].setConstant(True)
-        #        smean[m].setConstant(True)
-        #        ssigma[m].setConstant(True)
-        #        salpha1[m].setConstant(False)
-        #        sslope1[m].setConstant(False)
-        #        frSignal2[m] = signalExt[m].fitTo(setSignal[m], RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.Save(1), RooFit.Extended(False), RooFit.SumW2Error(True), RooFit.PrintLevel(1 if VERBOSE else -1))
-        #
-        #        # Step 2: fit lower tails
-        #        salpha1[m].setConstant(True)
-        #        sslope1[m].setConstant(True)
-        #        salpha2[m].setConstant(False)
-        #        sslope2[m].setConstant(False)
-        #        frSignal3[m] = signalExt[m].fitTo(setSignal[m], RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.Save(1), RooFit.Extended(False), RooFit.SumW2Error(True), RooFit.PrintLevel(1 if VERBOSE else -1))
-        #
-        #        # Step 4: refit everything together
-        #        signalYield[m].setConstant(False)
-        #        smean[m].setConstant(False)
-        #        ssigma[m].setConstant(False)
-        #        salpha1[m].setConstant(False)
-        #        sslope1[m].setConstant(False)
-        #        salpha2[m].setConstant(False)
-        #        sslope2[m].setConstant(False)
-
-        #        gaussian.fitTo(setSignal[m], RooFit.Strategy(0), RooFit.Minimizer("Minuit"), RooFit.Save(0), RooFit.Extended(True), RooFit.SumW2Error(True), RooFit.PrintLevel(1 if VERBOSE else -1))
-        #        signalYield[m].setConstant(True)
-#                frSignal[m] = signalExt[m].fitTo(setSignal[m], RooFit.Strategy(0), RooFit.Minimizer("Minuit"), RooFit.Save(1), RooFit.Extended(True), RooFit.SumW2Error(True), RooFit.PrintLevel(-1))
                 frSignal[m] = signalExt[m].fitTo(setSignal[m], RooFit.Save(1), RooFit.Extended(True), RooFit.SumW2Error(True), RooFit.PrintLevel(-1))
                 if VERBOSE: print "********** Fit result [", m, "] **", category, "*"*40, "\n", frSignal[m].Print(), "\n", "*"*80
                 if VERBOSE: frSignal[m].correlationMatrix().Print()
-                #, RooFit.Range("X_reasonable_range")
-        #        , RooFit.Strategy(2), RooFit.Minimizer("Minuit2")
-        #        , RooFit.Range(0, 5000)
-        #        , RooFit.Save(1)
-
-        ###        # Refit the tail
-        ###        #if 'nn' in channel:
-        ###        #    sslope1[m].setMax(40)
-        ###        vmean[m].setConstant(True)
-        ###        vsigma[m].setConstant(True)
-        ###        salpha1[m].setConstant(True)
-        ###        signal[m].fitTo(setSignal[m], RooFit.Strategy(0), RooFit.Minimizer("Minuit"), RooFit.SumW2Error(True), RooFit.PrintLevel(-1))
-        ###        salpha1[m].setConstant(False)
-        ###        sslope1[m].setConstant(True)
-        ###        signal[m].fitTo(setSignal[m], RooFit.Strategy(0), RooFit.Minimizer("Minuit"), RooFit.SumW2Error(True), RooFit.PrintLevel(-1))
-        ###        salpha1[m].setConstant(True)
-        ###        vmean[m].setConstant(False)
-        ###        vsigma[m].setConstant(False)
-        ###        frSignal[m] = signalExt[m].fitTo(setSignal[m], RooFit.Strategy(0), RooFit.Minimizer("Minuit"), RooFit.Save(1), RooFit.Extended(True), RooFit.SumW2Error(True), RooFit.PrintLevel(1 if VERBOSE else -1))
-
-                
-
-                #if m==3500: ssigma[m].setVal(250.)
-        #        smean[m].setConstant(True)
-        #        ssigma[m].setConstant(True)
-        #        salpha[m].setConstant(True)
-        #        sslope[m].setConstant(True)
-                #massset = RooArgSet(X_mass)
-
-                #print signalName, signalNorm[m].getVal(), setSignal[m].sumEntries(), signal[m].createIntegral(massset, RooFit.NormSet(massset)).getVal()
                 drawPlot(signalMass, stype+channel, X_mass, signal[m], setSignal[m], frSignal[m])
             
             else:
                 print "  WARNING: signal", stype, "and mass point", m, "in channel", channel, "has 0 entries or does not exist"
                         
             # Remove HVT cross sections
-            xs = getCrossSection(stype, channel, m)
+            #xs = getCrossSection(stype, channel, m)
+            xs = 1.    ## FIXME
             signalXS[m].setVal(xs * 1000.)
             
             signalIntegral[m] = signalExt[m].createIntegral(massArg, RooFit.NormSet(massArg), RooFit.Range("X_integration_range"))
             boundaryFactor = signalIntegral[m].getVal()
             if VERBOSE: print " - Fit normalization vs integral:", signalYield[m].getVal(), "/", boundaryFactor, "events"
             signalNorm[m].setVal( boundaryFactor * signalYield[m].getVal() / signalXS[m].getVal()) # here normalize to sigma(X) x Br(X->VH) = 1 [fb]
-
-            # Apply V-tagging scale factors
-            #if isAH:
-            #    if isHP: signalNorm[m].setVal( signalNorm[m].getVal() * 0.99 ) #0.99 +- 0.11
-            #    if isLP: signalNorm[m].setVal( signalNorm[m].getVal() * 1.03 ) #1.03 +- 0.23
-
-
 
         vmean[m].setConstant(True)
         vsigma[m].setConstant(True)
@@ -456,24 +401,22 @@ def signal():
     c_signal = TCanvas("c_signal", "c_signal", 800, 600)
     c_signal.cd()
     frame_signal = X_mass.frame()
-    for m in genPoints:
+    for j, m in enumerate(genPoints):
         if m in signalExt.keys():
-            signal[m].plotOn(frame_signal, RooFit.LineColor(sample["%s_M%d" % (stype, m)]['linecolor']), RooFit.Normalization(signalNorm[m].getVal(), RooAbsReal.NumEvent), RooFit.Range("X_reasonable_range"))
-    frame_signal.GetXaxis().SetRangeUser(0, 5000)
+            #print "color:",(j%9)+1
+            #print "signalNorm[m].getVal() =", signalNorm[m].getVal()
+            #print "RooAbsReal.NumEvent =", RooAbsReal.NumEvent
+            signal[m].plotOn(frame_signal, RooFit.LineColor((j%9)+1), RooFit.Normalization(signalNorm[m].getVal(), RooAbsReal.NumEvent), RooFit.Range("X_reasonable_range"))
+    frame_signal.GetXaxis().SetRangeUser(0, 10000)
     frame_signal.Draw()
     drawCMS(-1, "Simulation")
     drawAnalysis(channel)
     drawRegion(channel)
-    c_signal.SaveAs(PLOTDIR+"/"+stype+category+"/"+stype+"_Signal.pdf")
-    c_signal.SaveAs(PLOTDIR+"/"+stype+category+"/"+stype+"_Signal.png")
+
+    c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_Signal.pdf")
+    c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_Signal.png")
     if VERBOSE: raw_input("Press Enter to continue...")
     # ====== CONTROL PLOT ======
-
-
-
-    #ffile = TFile("workspaces/"+channel+".root", "READ")
-    #w = ffile.Get("Vh_2015")
-    #w.Print()
 
     # Normalization
     gnorm = TGraphErrors()
@@ -507,7 +450,7 @@ def signal():
     gmean.SetLineColor(cColor)
     imean = TGraphErrors()
     imean.SetMarkerStyle(24)
-    fmean = TF1("fmean", "pol1", 0, 5000)
+    fmean = TF1("fmean", "pol1", 0, 10000)
     fmean.SetLineColor(2)
     fmean.SetFillColor(2)
 
@@ -519,7 +462,7 @@ def signal():
     gsigma.SetLineColor(cColor)
     isigma = TGraphErrors()
     isigma.SetMarkerStyle(24)
-    fsigma = TF1("fsigma", "pol1", 0, 5000)
+    fsigma = TF1("fsigma", "pol1", 0, 10000)
     fsigma.SetLineColor(2)
     fsigma.SetFillColor(2)
 
@@ -531,7 +474,7 @@ def signal():
     galpha1.SetLineColor(cColor)
     ialpha1 = TGraphErrors()
     ialpha1.SetMarkerStyle(24)
-    falpha1 = TF1("falpha", "pol0", 0, 5000)
+    falpha1 = TF1("falpha", "pol0", 0, 10000)
     falpha1.SetLineColor(2)
     falpha1.SetFillColor(2)
 
@@ -543,7 +486,7 @@ def signal():
     gslope1.SetLineColor(cColor)
     islope1 = TGraphErrors()
     islope1.SetMarkerStyle(24)
-    fslope1 = TF1("fslope", "pol0", 0, 5000)
+    fslope1 = TF1("fslope", "pol0", 0, 10000)
     fslope1.SetLineColor(2)
     fslope1.SetFillColor(2)
 
@@ -555,7 +498,7 @@ def signal():
     galpha2.SetLineColor(cColor)
     ialpha2 = TGraphErrors()
     ialpha2.SetMarkerStyle(24)
-    falpha2 = TF1("falpha", "pol0", 0, 5000)
+    falpha2 = TF1("falpha", "pol0", 0, 10000)
     falpha2.SetLineColor(2)
     falpha2.SetFillColor(2)
 
@@ -567,7 +510,7 @@ def signal():
     gslope2.SetLineColor(cColor)
     islope2 = TGraphErrors()
     islope2.SetMarkerStyle(24)
-    fslope2 = TF1("fslope", "pol0", 0, 5000)
+    fslope2 = TF1("fslope", "pol0", 0, 10000)
     fslope2.SetLineColor(2)
     fslope2.SetFillColor(2)
 
@@ -607,7 +550,7 @@ def signal():
     galpha2.Fit(falpha2, "Q0", "SAME")
     gslope2.Fit(fslope2, "Q0", "SAME")
 #    gnorm.Fit(fnorm, "Q0", "", 700, 5000)
-    for m in [5000, 5500]: gnorm.SetPoint(gnorm.GetN(), m, gnorm.Eval(m, 0, "S"))
+    #for m in [5000, 5500]: gnorm.SetPoint(gnorm.GetN(), m, gnorm.Eval(m, 0, "S"))
     gnorm.Fit(fnorm, "Q", "SAME", 700, 6000)
 
     for m in massPoints:
@@ -686,7 +629,7 @@ def signal():
     galpha1.Draw("APL")
     ialpha1.Draw("P, SAME")
     drawRegion(channel)
-    galpha1.GetYaxis().SetRangeUser(0., 5.)
+    galpha1.GetYaxis().SetRangeUser(0., 2.) #adjusted upper limit from 5 to 2
     #falpha1.FixParameter(0, 0.)
 #    ealpha1 = TGraphErrors(galpha1)
 #    ealpha1.SetFillStyle(3003)
@@ -697,7 +640,7 @@ def signal():
     gslope1.Draw("APL")
     islope1.Draw("P, SAME")
     drawRegion(channel)
-    gslope1.GetYaxis().SetRangeUser(0., 125.)
+    gslope1.GetYaxis().SetRangeUser(0., 60.) #adjusted upper limit from 125 to 60
 #    eslope1 = TGraphErrors(gslope1)
 #    eslope1.SetFillStyle(3003)
 #    eslope1.SetFillColor(1)
@@ -727,8 +670,8 @@ def signal():
 #        eslope2.Draw("3, SAME")
 
 
-    c1.Print(PLOTDIR+stype+category+"/"+stype+"_SignalShape.pdf")
-    c1.Print(PLOTDIR+stype+category+"/"+stype+"_SignalShape.png")
+    c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_SignalShape.pdf")
+    c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_SignalShape.png")
 
 
     c2 = TCanvas("c2", "Signal Efficiency", 800, 600)
@@ -744,8 +687,8 @@ def signal():
     drawCMS(-1, "Simulation")
     drawAnalysis(channel)
     drawRegion(channel)
-    c2.Print(PLOTDIR+stype+category+"/"+stype+"_SignalNorm.pdf")
-    c2.Print(PLOTDIR+stype+category+"/"+stype+"_SignalNorm.png")
+    c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_SignalNorm.pdf")
+    c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_SignalNorm.png")
 
 
     #*******************************************************#
@@ -766,64 +709,14 @@ def signal():
     #                                                       #
     #*******************************************************#
 
-#    from ROOT import RooMultiPdf
-#    cat = RooCategory("pdf_index", "Index of Pdf which is active");
-#    pdfs = RooArgList(modelBkg, modelAlt)
-#    roomultipdf = RooMultiPdf("roomultipdf", "All Pdfs", cat, pdfs)
-#    norm = RooRealVar("roomultipdf_norm", "Number of background events", nevents, 0., 1.e6)
-#    norm = RooRealVar(modelBkg.GetName()+"_norm", "Number of background events", nevents, 0., 1.e10)
-
     # create workspace
     w = RooWorkspace("Zprime_"+YEAR, "workspace")
     for m in massPoints:
         getattr(w, "import")(signal[m], RooFit.Rename(signal[m].GetName()))
         getattr(w, "import")(signalNorm[m], RooFit.Rename(signalNorm[m].GetName()))
         getattr(w, "import")(signalXS[m], RooFit.Rename(signalXS[m].GetName()))
-    w.writeToFile("signal_%s%s.root" % (WORKDIR, YEAR), True)      ## eventually, the idea will probably be to write it into the same file as the bkg. but for no I'd like to keep them apart FIXME
-    print "Workspace", "signal_%s%s.root" % (WORKDIR, YEAR), "saved successfully"
-    w.Print()
-
-    #param = pickle.load( open( SIGNALFILE, "rb" ) )
-    #param[channel] = {'mean' : [fmean.GetParameter(0), fmean.GetParameter(1)], 'sigma' : [fsigma.GetParameter(0), fsigma.GetParameter(1)], 'alpha1' : [falpha1.GetParameter(0), falpha1.GetParameter(1)], 'slope1' : [fslope1.GetParameter(0), fslope1.GetParameter(1)], 'alpha2' : [falpha2.GetParameter(0), falpha2.GetParameter(1)], 'slope2' : [fslope2.GetParameter(0), fslope2.GetParameter(1)], 'norm' : [fnorm.GetParameter(0), fnorm.GetParameter(1), fnorm.GetParameter(2), fnorm.GetParameter(3), fnorm.GetParameter(4), fnorm.GetParameter(5), fnorm.GetParameter(6), fnorm.GetParameter(7), fnorm.GetParameter(8), fnorm.GetParameter(9)]}
-    #pickle.dump( param, open( SIGNALFILE, "wb" ) )
-    #print "Pickle signal file for channel", channel, "written to file", SIGNALFILE
-
-
-    # Print
-    #print "@  '"+channel+"' : {'mean' : [%e, %e], 'sigma' : [%e, %e], 'alpha' : [%e, %e], 'slope' : [%e, %e], 'norm' : [%e, %e, %e, %e, %e, %e, %e, %e, %e, %e]}," % ( fmean.GetParameter(0), fmean.GetParameter(1), fsigma.GetParameter(0), fsigma.GetParameter(1), falpha1.GetParameter(0), falpha1.GetParameter(1), fslope1.GetParameter(0), fslope1.GetParameter(1), fnorm.GetParameter(0), fnorm.GetParameter(1), fnorm.GetParameter(2), fnorm.GetParameter(3), fnorm.GetParameter(4), fnorm.GetParameter(5), fnorm.GetParameter(6), fnorm.GetParameter(7), fnorm.GetParameter(8), fnorm.GetParameter(9) )
-    ##if HVTMODEL: print "@  param['"+channel+"']['norm_hvt'] : [%e, %e, %e]" % (fnorm.GetParameter(0), fnorm.GetParameter(1), fnorm.GetParameter(2))
-    #else: print "@  "+channel+"   , 'norm_hvt' : [%e, %e, %e]" % (fnorm.GetParameter(0), fnorm.GetParameter(1), fnorm.GetParameter(2))
-    #if isAH:
-    #print "@  '"+channel+"' : {'mean' : [%e, %e], 'sigma' : [%e, %e], 'alpha1' : [%e, %e], 'slope1' : [%e, %e], 'alpha2' : [%e, %e], 'slope2' : [%e, %e], 'norm' : [%e, %e, %e, %e, %e, %e, %e, %e, %e, %e]}," % ( fmean.GetParameter(0), fmean.GetParameter(1), fsigma.GetParameter(0), fsigma.GetParameter(1), falpha1.GetParameter(0), falpha1.GetParameter(1), fslope1.GetParameter(0), fslope1.GetParameter(1), falpha2.GetParameter(0), falpha2.GetParameter(1), fslope2.GetParameter(0), fslope2.GetParameter(1), fnorm.GetParameter(0), fnorm.GetParameter(1), fnorm.GetParameter(2), fnorm.GetParameter(3), fnorm.GetParameter(4), fnorm.GetParameter(5), fnorm.GetParameter(6), fnorm.GetParameter(7), fnorm.GetParameter(8), fnorm.GetParameter(9) )
-    # Save
-#    outFile = TFile("rootfiles/fitDataHist.root", "UPDATE")
-#    outFile.cd()
-#    gmean.Write(channel+"_SignalMeanGraph")
-#    fmean.Write(channel+"_SignalMeanFunction")
-#    gsigma.Write(channel+"_SignalSigmaGraph")
-#    fsigma.Write(channel+"_SignalSigmaFunction")
-#    galpha.Write(channel+"_SignalAlphaGraph")
-#    falpha.Write(channel+"_SignalAlphaFunction")
-#    gslope.Write(channel+"_SignalSlopeGraph")
-#    fslope.Write(channel+"_SignalSlopeFunction")
-#    outFile.Close()
-#    print "Histograms saved in file rootfiles/fitDataHist.root"
-
-
-
-    if not gROOT.IsBatch(): raw_input("Press Enter to continue...")
-
-
-
-
-        # Linear interpolation for the yield
-#        idx = min(range(len(genPoints)), key=lambda x: abs(genPoints[x]-m) if genPoints[x]<=m and m!=genPoints[-1] else 1.e6)
-#        m0, m1 = genPoints[idx], genPoints[idx+1]
-#        y0, y1 = signalNorm[m0].getVal(), signalNorm[m1].getVal()
-#        # y = y0 + (y1-y0)*(x-x0)/(x1-x0)
-#        syield = y0 + (y1-y0)*(m-m0)/(m1-m0)
-
-
+    w.writeToFile("signal_%sMC_signal_%s.root" % (WORKDIR, YEAR), True)      ## eventually, the idea will probably be to write it into the same file as the bkg. but for no I'd like to keep them apart FIXME
+    print "Workspace", "signal_%sMC_signal_%s.root" % (WORKDIR, YEAR), "saved successfully"
 
 
 def efficiency(stype, Zlep=True):
@@ -1088,41 +981,126 @@ def efficiencyAll():
     c1.Print("plotsSignal/Efficiency/Efficiency.pdf")
     c1.Print("plotsSignal/Efficiency/Efficiency.png")
 
+def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=None, cat="", alt=None, anorm=-1, signal=None, snorm=-1):
+    isData = norm>0
+    isMass = "Mass" in name
+    isSignal = '_M' in name
+    isCategory = reg is not None
+    isBottomPanel = not isSignal
+    postfix = "Mass" if isMass else ('SR' if 'SR' in name else ('SB' if 'SB' in name else ""))
+    cut = "reg==reg::"+cat if reg is not None else ""
+    normRange = "h_extended_reasonable_range" if isMass else "X_reasonable_range"
+    dataRange = "LSBrange,HSBrange" if isMass and isData else normRange
 
+    cmsLabel = "Preliminary" if isData else "Simulation Preliminary"
+    if not type(fitRes) is list: cmsLabel = "Preliminary"
+    if 'paper' in name: cmsLabel = ""
+    pullRange = 5
 
-def plot(channel):
+    dataMin, dataMax = array('d', [0.]), array('d', [0.])
+    dataset.getRange(variable, dataMin, dataMax)
+    xmin, xmax = dataMin[0], dataMax[0]
+
+    lastBin = variable.getMax()
+    if not isMass and not isSignal:
+        if 'nn' in channel or 'll' in channel or 'ee' in channel or 'mm' in channel: lastBin = 3500.
+        else: lastBin = 4500.
+
     # ====== CONTROL PLOT ======
-    c_signal = TCanvas("c_signal", "c_signal", 800, 600)
-    c_signal.cd()
-    frame_signal = X_mass.frame()
-    for m in genPoints[1:-1]: msignal[m].plotOn(frame_signal, RooFit.LineColor(sample["%s_M%d" % (channel[:3], m)]['linecolor']), RooFit.Normalization(1., RooAbsReal.NumEvent), RooFit.Name("M%d" % m))
-    frame_signal.GetXaxis().SetRangeUser(XBINMIN, XBINMAX)
-    frame_signal.GetYaxis().SetRangeUser(0, 1)
-    frame_signal.GetYaxis().SetTitle("Arbitray units")
-    frame_signal.Draw()
-    drawCMS(-1, "Simulation")
-    drawAnalysis("VH")
-    drawRegion(channel)
-    mleg = TLegend(0.75, 0.6, 0.98, 0.92)
-    mleg.SetBorderSize(0)
-    mleg.SetFillStyle(0) #1001
-    mleg.SetFillColor(0)
-    for m in genPoints[1:-1]: mleg.AddEntry("M%d" % m, "m_{X} = %d GeV" % m, "L")
-    mleg.Draw()
-    c_signal.SaveAs(PLOTDIR+"/"+channel+"/Signal.pdf")
-    c_signal.SaveAs(PLOTDIR+"/"+channel+"/Signal.png")
-    if VERBOSE: raw_input("Press Enter to continue...")
-    # ====== CONTROL PLOT ======
+    c = TCanvas("c_"+name, "Fitting "+name, 800, 800 if isBottomPanel else 600)
+    if isBottomPanel:
+        c.Divide(1, 2)
+        setTopPad(c.GetPad(1), RATIO)
+        setBotPad(c.GetPad(2), RATIO)
+    else: setPad(c.GetPad(0))
+    c.cd(1)
+    frame = variable.frame()
+    if isBottomPanel: setPadStyle(frame, 1.25, True)
 
-#efficiency()
-#exit()
-#signal("XZHnnb")
-#signal("XZHhpb")
+    # Plot Data
+    data, res = None, None
+    if dataset is not None: data = dataset.plotOn(frame, RooFit.Cut(cut), RooFit.Binning(variable.getBinning("PLOT")), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.Range(dataRange), RooFit.DrawOption("PE0"), RooFit.Name("data_obs"))
+    if data is not None and isData: fixData(data.getHist(), True)
 
-#for c in channelList: #signal(c)
-#    p = multiprocessing.Process(target=signal, args=(c,))
-#    jobs.append(p)
-#    p.start()
+    # Simple fit
+    if isCategory:
+        if type(fitRes) is list:
+            for f in fitRes:
+                if f is not None:
+                    model.plotOn(frame, RooFit.Slice(reg, cat), RooFit.ProjWData(RooArgSet(reg), dataset), RooFit.VisualizeError(f, 1, False), RooFit.SumW2Error(True), RooFit.FillColor(1), RooFit.FillStyle(3002))
+                    if VERBOSE: model.plotOn(frame, RooFit.Slice(reg, cat), RooFit.ProjWData(RooArgSet(reg), dataset), RooFit.VisualizeError(f), RooFit.SumW2Error(True), RooFit.FillColor(2), RooFit.FillStyle(3004))
+        elif fitRes is not None: frame.addObject(fitRes, "E3")
+        model.plotOn(frame, RooFit.Slice(reg, cat), RooFit.ProjWData(RooArgSet(reg), dataset), RooFit.LineColor(getColor(name, channel)))
+        res = frame.pullHist()
+        if alt is not None: alt.plotOn(frame, RooFit.Normalization(anorm, RooAbsReal.NumEvent), RooFit.LineStyle(7), RooFit.LineColor(922), RooFit.Name("Alternate"))
+    else:
+        if type(fitRes) is list:
+            for f in fitRes:
+                if f is not None:
+                    model.plotOn(frame, RooFit.VisualizeError(f, 1, False), RooFit.Normalization(norm if norm>0 or dataset is None else dataset.sumEntries(), RooAbsReal.NumEvent), RooFit.SumW2Error(True), RooFit.Range(normRange), RooFit.FillColor(1), RooFit.FillStyle(3002), RooFit.DrawOption("F"))
+                    if VERBOSE: model.plotOn(frame, RooFit.VisualizeError(f), RooFit.Normalization(norm if norm>0 or dataset is None else dataset.sumEntries(), RooAbsReal.NumEvent), RooFit.SumW2Error(True), RooFit.Range(normRange), RooFit.FillColor(2), RooFit.FillStyle(3004), RooFit.DrawOption("F"))
+                model.paramOn(frame, RooFit.Label(model.GetTitle()), RooFit.Layout(0.5, 0.95, 0.94), RooFit.Format("NEAU"))
+        elif fitRes is not None: frame.addObject(fitRes, "E3")
+        model.plotOn(frame, RooFit.LineColor(getColor(name, channel)), RooFit.Range(normRange), RooFit.Normalization(norm if norm>0 or dataset is None else dataset.sumEntries(), RooAbsReal.NumEvent)) #RooFit.Normalization(norm if norm>0 or dataset is None else dataset.sumEntries(), RooAbsReal.NumEvent)
+        res = frame.pullHist() #if not isSignal else frame.residHist()
+        # plot components
+        for comp in ["baseTop", "gausW", "gausT", "baseVV", "gausVW", "gausVZ", "gausVH"]: model.plotOn(frame, RooFit.LineColor(getColor(name, channel)), RooFit.Range(normRange), RooFit.LineStyle(2), RooFit.Components(comp), RooFit.Normalization(norm if norm>0 or dataset is None else dataset.sumEntries(), RooAbsReal.NumEvent))
+        if alt is not None: alt.plotOn(frame, RooFit.Range(normRange), RooFit.LineStyle(7), RooFit.LineColor(922), RooFit.Name("Alternate"))
+
+    # Replot data
+    if dataset is not None: data = dataset.plotOn(frame, RooFit.Cut(cut), RooFit.Binning(variable.getBinning("PLOT")), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.Range(dataRange), RooFit.DrawOption("PE0"), RooFit.Name("data_obs"))
+
+    if not isMass and not isSignal: # Log scale
+        frame.SetMaximum(frame.GetMaximum()*10)
+        frame.SetMinimum(max(frame.SetMinimum(), 8.e-2 if isData else 1.e-4))
+        c.GetPad(1).SetLogy()
+    else:
+        frame.GetYaxis().SetRangeUser(0, frame.GetMaximum())
+        frame.SetMaximum(frame.GetMaximum()*1.25)
+        frame.SetMinimum(0)
+    frame.GetYaxis().SetTitleOffset(frame.GetYaxis().GetTitleOffset()*1.15)
+    frame.Draw()
+    drawCMS(LUMI, cmsLabel)
+    drawAnalysis(channel)
+    drawRegion(channel + ("" if isData and not isCategory else ('SR' if 'SR' in name else ('SB' if 'SB' in name else ""))), True)
+    if isSignal: drawMass(name)
+
+    if isBottomPanel:
+        c.cd(2)
+        frame_res = variable.frame()
+        setPadStyle(frame_res, 1.25)
+        #res = frame.residHist()
+        if res is not None and isData: fixData(res)
+        if dataset is not None: frame_res.addPlotable(res, "P")
+        setBotStyle(frame_res, RATIO, False)
+        frame_res.GetYaxis().SetRangeUser(-pullRange, pullRange)
+        frame_res.GetYaxis().SetTitleOffset(frame_res.GetYaxis().GetTitleOffset()*1.12)
+        frame_res.GetYaxis().SetTitle("(N^{data}-N^{bkg})/#sigma")
+        frame_res.Draw()
+        chi2, nbins, npar = 0., 0, 0
+        if not res==None:
+            for i in range(0, res.GetN()):
+                if data.getHist().GetY()[i] > 1.e-3:
+                    nbins = nbins + 1
+                    chi2 += res.GetY()[i]**2
+
+        #if isData and not isMass:
+        frame.GetXaxis().SetRangeUser(variable.getMin(), lastBin)
+        frame_res.GetXaxis().SetRangeUser(variable.getMin(), lastBin)
+        line_res = drawLine(frame_res.GetXaxis().GetXmin(), 0, lastBin, 0)
+
+    if 'paper' in name:
+        c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".pdf")
+        c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".png")
+        return
+    if isSignal:
+        c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".pdf")
+        c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".png")
+        return
+    c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".pdf")
+    c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".png")
+    #if VERBOSE: raw_input("Press Enter to continue...")
+    # ======   END PLOT   ======
 
 
 if __name__ == "__main__":
@@ -1143,3 +1121,4 @@ if __name__ == "__main__":
     #    signal(options.channel, options.signal)
 
     signal()
+

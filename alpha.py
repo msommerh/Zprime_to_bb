@@ -8,12 +8,12 @@ from ROOT import TMath, TFile, TChain, TTree, TCut, TH1F, TH2F, THStack, TF1, TG
 from ROOT import TStyle, TCanvas, TPad, TLegend, TLatex, TText
 
 # Import PDF library and PDF diagonalizer
-gSystem.Load("PDFs/HWWLVJRooPdfs_cxx.so")
-gSystem.Load("PDFs/PdfDiagonalizer_cc.so")
+#gSystem.Load("PDFs/HWWLVJRooPdfs_cxx.so")
+#gSystem.Load("PDFs/PdfDiagonalizer_cc.so")
 
 from ROOT import RooFit, RooRealVar, RooDataHist, RooDataSet, RooAbsData, RooAbsReal, RooAbsPdf, RooPlot, RooBinning, RooCategory, RooSimultaneous, RooArgList, RooArgSet, RooWorkspace, RooMsgService
 from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooPolynomial, RooChebychev, RooBreitWigner, RooCBShape, RooExtendPdf, RooAddPdf, RooProdPdf, RooNumConvPdf, RooFFTConvPdf
-from ROOT import PdfDiagonalizer, RooAlphaExp, RooErfExpPdf, Roo2ExpPdf, RooAlpha42ExpPdf, RooExpNPdf, RooAlpha4ExpNPdf, RooExpTailPdf, RooAlpha4ExpTailPdf, RooAlpha, RooDoubleCrystalBall #RooPowerLaw
+#from ROOT import PdfDiagonalizer, RooAlphaExp, RooErfExpPdf, Roo2ExpPdf, RooAlpha42ExpPdf, RooExpNPdf, RooAlpha4ExpNPdf, RooExpTailPdf, RooAlpha4ExpTailPdf, RooAlpha, #RooDoubleCrystalBall #RooPowerLaw
 from ROOT import TMatrixDSym, TMatrixDSymEigen, RooAddition, RooCustomizer, RooFitResult
 
 
@@ -22,20 +22,20 @@ from rooUtils import *
 #from xsections import xsection
 #from samples import sample
 
-import optparse
-usage = "usage: %prog [options]"
-parser = optparse.OptionParser(usage)
-parser.add_option("-a", "--all", action="store_true", default=False, dest="all")
-parser.add_option("-b", "--bash", action="store_true", default=False, dest="bash")
-parser.add_option("-c", "--channel", action="store", type="string", dest="channel", default="")
-parser.add_option("-d", "--different", action="store_true", default=False, dest="different")
-parser.add_option("-e", "--extrapolate", action="store_true", default=False, dest="extrapolate")
-parser.add_option("-p", "--parallelize", action="store_true", default=False, dest="parallelize")
-parser.add_option("-s", "--scan", action="store_true", default=False, dest="scan")
-parser.add_option("-x", "--dijet", action="store_true", default=False, dest="dijet")
-parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose")
-(options, args) = parser.parse_args()
-if options.bash: gROOT.SetBatch(True)
+#import optparse
+#usage = "usage: %prog [options]"
+#parser = optparse.OptionParser(usage)
+#parser.add_option("-a", "--all", action="store_true", default=False, dest="all")
+#parser.add_option("-b", "--bash", action="store_true", default=False, dest="bash")
+#parser.add_option("-c", "--channel", action="store", type="string", dest="channel", default="")
+#parser.add_option("-d", "--different", action="store_true", default=False, dest="different")
+#parser.add_option("-e", "--extrapolate", action="store_true", default=False, dest="extrapolate")
+#parser.add_option("-p", "--parallelize", action="store_true", default=False, dest="parallelize")
+#parser.add_option("-s", "--scan", action="store_true", default=False, dest="scan")
+#parser.add_option("-x", "--dijet", action="store_true", default=False, dest="dijet")
+#parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose")
+#(options, args) = parser.parse_args()
+#if options.bash: gROOT.SetBatch(True)
 
 ########## SETTINGS ##########
 
@@ -48,12 +48,19 @@ gStyle.SetPadTopMargin(0.06)
 gStyle.SetPadRightMargin(0.05)
 gStyle.SetErrorX(0.)
 
-ALTERNATIVE = options.different
-EXTRAPOLATE = options.extrapolate
-SCAN        = options.scan
-DIJET       = options.dijet
+#ALTERNATIVE = options.different
+#EXTRAPOLATE = options.extrapolate
+#SCAN        = options.scan
+#DIJET       = options.dijet
+ALTERNATIVE = False
+EXTRAPOLATE = False
+SCAN        = False
+DIJET       = False
+VERBOSE     = False
+
 NTUPLEDIR   = "/scratch/zucchett/Ntuple/VH/"
-PLOTDIR     = "plotsAlpha/" if not EXTRAPOLATE else "plotsAlphaExt/"
+#PLOTDIR     = "plotsAlpha/" if not EXTRAPOLATE else "plotsAlphaExt/"
+PLOTDIR     = "plots/"
 CARDDIR     = "datacards/"
 WORKDIR     = "workspace/"
 RATIO       = 4
@@ -61,8 +68,8 @@ LUMI        = 35867
 BLIND       = False if not EXTRAPOLATE else False
 REGENERATE  = False
 PREFIX      = "CMS2016_"
-VERBOSE     = options.verbose
-PARALLELIZE = options.parallelize
+#VERBOSE     = options.verbose
+#PARALLELIZE = options.parallelize
 
 channelList = ['nnb', 'nnbb', 'enb', 'enbb', 'mnb', 'mnbb', 'eeb', 'mmb', 'eebb', 'mmbb']
 signalList = ['XWH', 'XZH', 'XVH']
@@ -1975,19 +1982,19 @@ def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=No
             lineU_res = drawLine(SIGMAX, -pullRange, SIGMAX, pullRange)
 
     if 'paper' in name:
-        c.SaveAs(PLOTDIR+"/"+name+".pdf")
-        c.SaveAs(PLOTDIR+"/"+name+".png")
+        c.SaveAs(PLOTDIR+name+".pdf")
+        c.SaveAs(PLOTDIR+name+".png")
         return
     if isSignal:
-        c.SaveAs("plotsSignal/"+channel+"/"+name+".pdf")
-        c.SaveAs("plotsSignal/"+channel+"/"+name+".png")
+        c.SaveAs(PLOTDIR+channel+"/"+name+".pdf")
+        c.SaveAs(PLOTDIR+channel+"/"+name+".png")
         return
-#    if not os.path.exists(PLOTDIR+"/"+channel):
-#        c.SaveAs(PLOTDIR+"/"+name+".pdf")
-#        c.SaveAs(PLOTDIR+"/"+name+".png")
+#    if not os.path.exists(PLOTDIR+channel):
+#        c.SaveAs(PLOTDIR+name+".pdf")
+#        c.SaveAs(PLOTDIR+name+".png")
 #        return
-    c.SaveAs(PLOTDIR+"/"+channel+"/"+name+".pdf")
-    c.SaveAs(PLOTDIR+"/"+channel+"/"+name+".png")
+    c.SaveAs(PLOTDIR+channel+"/"+name+".pdf")
+    c.SaveAs(PLOTDIR+channel+"/"+name+".png")
     #if VERBOSE: raw_input("Press Enter to continue...")
     # ======   END PLOT   ======
 
@@ -2033,20 +2040,20 @@ def drawAlphaPlot(name, channel, var, alpha, bkgSB, bkgSR, fitRes, alpha2=None, 
     leg.Draw()
 
 
-    c.SaveAs(PLOTDIR+"/"+channel+"/AlphaRatio.pdf")
-    c.SaveAs(PLOTDIR+"/"+channel+"/AlphaRatio.png")
-    #c.SaveAs(PLOTDIR+"/"+channel+"/AlphaRatio.root")
+    c.SaveAs(PLOTDIR+channel+"/AlphaRatio.pdf")
+    c.SaveAs(PLOTDIR+channel+"/AlphaRatio.png")
+    #c.SaveAs(PLOTDIR+channel+"/AlphaRatio.root")
 #    frame.SetYTitle("")
 #    #bkgSB.plotOn(frame, RooFit.LineColor(602))
 #    #bkgSR.plotOn(frame, RooFit.LineColor(2))
-#    c.SaveAs(PLOTDIR+"/"+channel+"/AlphaMethod.pdf")
-#    c.SaveAs(PLOTDIR+"/"+channel+"/AlphaMethod.png")
-#    #c.SaveAs(PLOTDIR+"/"+channel+"/AlphaMethod.root")
+#    c.SaveAs(PLOTDIR+channel+"/AlphaMethod.pdf")
+#    c.SaveAs(PLOTDIR+channel+"/AlphaMethod.png")
+#    #c.SaveAs(PLOTDIR+channel+"/AlphaMethod.root")
 #    frame.SetMinimum(max(frame.SetMinimum(), 2.e-3))
 #    c.GetPad(0).SetLogy()
-#    c.SaveAs(PLOTDIR+"/"+channel+"/AlphaMethod_log.pdf")
-#    c.SaveAs(PLOTDIR+"/"+channel+"/AlphaMethod_log.png")
-#    #c.SaveAs(PLOTDIR+"/"+channel+"/AlphaMethod_log.root")
+#    c.SaveAs(PLOTDIR+channel+"/AlphaMethod_log.pdf")
+#    c.SaveAs(PLOTDIR+channel+"/AlphaMethod_log.png")
+#    #c.SaveAs(PLOTDIR+channel+"/AlphaMethod_log.root")
     # ======   END PLOT   ======
 
 
@@ -2088,15 +2095,15 @@ def drawAlphaPlot(name, channel, var, alpha, bkgSB, bkgSR, fitRes, alpha2=None, 
         leg2.AddEntry("bkgSR2", "alternative bkg. pred. in SR", "L")
     leg2.Draw()
 
-    c_alpha2.SaveAs(PLOTDIR+"/"+channel+"/AlphaMethod.pdf")
-    c_alpha2.SaveAs(PLOTDIR+"/"+channel+"/AlphaMethod.png")
-    #c_alpha2.SaveAs(PLOTDIR+"/"+channel+"/AlphaMethod.root")
+    c_alpha2.SaveAs(PLOTDIR+channel+"/AlphaMethod.pdf")
+    c_alpha2.SaveAs(PLOTDIR+channel+"/AlphaMethod.png")
+    #c_alpha2.SaveAs(PLOTDIR+channel+"/AlphaMethod.root")
     frame_alpha2.SetMaximum(1.e+1)
     frame_alpha2.SetMinimum(1.e-6)
     c_alpha2.GetPad(0).SetLogy()
-    c_alpha2.SaveAs(PLOTDIR+"/"+channel+"/AlphaMethod_log.pdf")
-    c_alpha2.SaveAs(PLOTDIR+"/"+channel+"/AlphaMethod_log.png")
-    #c_alpha2.SaveAs(PLOTDIR+"/"+channel+"/AlphaMethod_log.root")
+    c_alpha2.SaveAs(PLOTDIR+channel+"/AlphaMethod_log.pdf")
+    c_alpha2.SaveAs(PLOTDIR+channel+"/AlphaMethod_log.png")
+    #c_alpha2.SaveAs(PLOTDIR+channel+"/AlphaMethod_log.root")
 
     #if VERBOSE: raw_input("Press Enter to continue...")
     # ======   END PLOT   ======
@@ -2161,8 +2168,8 @@ def plotSys(name, channel, variable, model, sys):
     leg.AddEntry("Down", "-1 #sigma", "L")
     leg.Draw()
 
-    c_sys.SaveAs(PLOTDIR+"/"+channel+"/"+name+".pdf")
-    c_sys.SaveAs(PLOTDIR+"/"+channel+"/"+name+".png")
+    c_sys.SaveAs(PLOTDIR+channel+"/"+name+".pdf")
+    c_sys.SaveAs(PLOTDIR+channel+"/"+name+".png")
 
 
 
