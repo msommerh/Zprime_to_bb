@@ -32,6 +32,7 @@ parser.add_option("-e", "--efficiency", action="store_true", default=False, dest
 #parser.add_option("-p", "--parallelize", action="store_true", default=False, dest="parallelize")
 parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose")
 parser.add_option("-y", "--year", action="store", type="string", dest="year",default="2017")
+parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
 (options, args) = parser.parse_args()
 #if options.bash: gROOT.SetBatch(True)
 gROOT.SetBatch(True)
@@ -52,16 +53,16 @@ colour = [
 #FIXME
 channel = 'bb'
 stype = 'Zprime' 
-category = channel
+#category = options.category
 selection = {'bb':'', 'SR':''} #no selection so far
 #genPoints = [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 massPoints = [x for x in range(600, 8000+1, 100)]
 sample = {}
 for j, m in enumerate(massPoints):
-    sample["%s%s_M%d" % (stype, category, m)] = {'linecolor':j}
+    sample["%s%s_M%d" % (stype, channel, m)] = {'linecolor':j}
 for j, m in enumerate(genPoints):
-    sample["%s%s_M%d" % (stype, category, m)] = {'linecolor':j%9+1}
+    sample["%s%s_M%d" % (stype, channel, m)] = {'linecolor':j%9+1}
 #FIXME
 
 # Silent RooFit
@@ -83,6 +84,7 @@ YEAR        = options.year
 VERBOSE     = options.verbose
 #PARALLELIZE = True
 READTREE    = True
+BTAG_THRESHOLD = 0.1
 
 if YEAR=='2016':
     LUMI=35920.
@@ -96,15 +98,15 @@ else:
 
 channelList = ['bb']
 signalList = ['Zprbb']
+color = {'bb' : 4, 'bq': 2, 'qq':8}
+channel = 'bb'
+categories = ['bb', 'bq']
+stype = 'Zprime' 
+signalType = 'Zprime'
 
-color = {'bb' : 4, 'bq': 2}
+jobs = []
 
-#jobs = []
-
-def signal():
-    channel = 'bb'
-    stype = 'Zprime' 
-    signalType = 'Zprime'
+def signal(category):
 
     #genPoints = [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000] #defined above
     #massPoints = [x for x in range(600, 8000+1, 100)]
@@ -112,7 +114,7 @@ def signal():
 
     n = len(genPoints)  
     
-    category = channel
+    #category = channel
     cColor = color[category] if category in color else 4
 
     nBtag = channel.count('b')
@@ -126,15 +128,15 @@ def signal():
     #                                                       #
     #*******************************************************#
     X_mass  = RooRealVar (      "jj_mass",              "m_{jj}",       0.,     10000.,  "GeV")
-    j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
-    j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
-    j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     4500.,  "GeV")
-    j2_pt = RooRealVar(         "jpt_2",                "jet2 pt",      0.,     4500.,  "GeV")
-    jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",             -2.,   1.       )
-    jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",             -2.,   1.       )
+    #j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
+    #j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
+    #j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     4500.,  "GeV")
+    #j2_pt = RooRealVar(         "jpt_2",                "jet2 pt",      0.,     4500.,  "GeV")
+    #jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",             -2.,   1.       )
+    #jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",             -2.,   1.       )
     jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",       "",             0.,   1.        )
     jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             0.,   1.        )
-    MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
+    #MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
     HLT_PFJet500            = RooRealVar("HLT_PFJet500"            , "" , -1., 1.    ) 
     HLT_CaloJet500_NoJetID  = RooRealVar("HLT_CaloJet500_NoJetID"  , "" , -1., 1.    ) 
@@ -147,8 +149,6 @@ def signal():
     weight = RooRealVar(        "eventWeightLumi",      "",             -1.e9,  1.e9    )
 
 
-    #Xmin = 750
-    #Xmax = Xmin + 4000
     Xmin = 0            ## might need to adjust these FIXME
     Xmax = Xmin + 10000
 
@@ -157,9 +157,10 @@ def signal():
 
     # Define the RooArgSet which will include all the variables defined before
     # there is a maximum of 9 variables in the declaration, so the others need to be added with 'add'
-    variables = RooArgSet(X_mass, j1_mass, j2_mass)
-    variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2))
-    variables.add(RooArgSet(MET_over_sumEt, weight))
+    variables = RooArgSet(X_mass)
+    variables.add(RooArgSet(jdeepFlavour_1, jdeepFlavour_2, weight))
+    #variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2))
+    #variables.add(RooArgSet(MET_over_sumEt, weight))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     #X_mass.setRange("X_extended_range", X_mass.getMin(), X_mass.getMax())
     X_mass.setRange("X_reasonable_range", X_mass.getMin(), X_mass.getMax())
@@ -172,6 +173,11 @@ def signal():
 
     # Cuts
     SRcut = "HLT_AK8PFJet{0}==1. &&  HLT_PFJet{0}==1. && HLT_CaloJet{0}_NoJetID==1. && HLT_PFHT{1}==1.".format(500 if YEAR=='2016' else 550, 900 if YEAR=='2016' else 1050)
+
+    if category=='bb':
+        SRcut += " && jdeepFlavour_1>={0} && jdeepFlavour_2>={0}".format(BTAG_THRESHOLD)
+    elif category=='bq':
+        SRcut += " && ((jdeepFlavour_1>={0} && jdeepFlavour_2<{0}) || (jdeepFlavour_1<{0} && jdeepFlavour_2>={0}))".format(BTAG_THRESHOLD)
 
     print "  Cut:\t", SRcut
     #SRcut = SRcut.replace('isVtoQQ', '0==0')
@@ -265,8 +271,9 @@ def signal():
 
         signalString = "M%d" % m
         signalMass = "%s_M%d" % (stype, m)
-        signalName = "%s%s_M%d" % (stype, category, m)
-        
+        #signalName = "%s%s_M%d" % (stype, category, m)
+        signalName = "%s%s_M%d" % (stype, channel, m)
+ 
         signalColor = sample[signalName]['linecolor'] if signalName in sample else 1
         #signalColor = 1 #just put something FIXME
         # fit the shape of the signal and put everything together in the datacard and workspace
@@ -356,7 +363,7 @@ def signal():
                 frSignal[m] = signalExt[m].fitTo(setSignal[m], RooFit.Save(1), RooFit.Extended(True), RooFit.SumW2Error(True), RooFit.PrintLevel(-1))
                 if VERBOSE: print "********** Fit result [", m, "] **", category, "*"*40, "\n", frSignal[m].Print(), "\n", "*"*80
                 if VERBOSE: frSignal[m].correlationMatrix().Print()
-                drawPlot(signalMass, stype+channel, X_mass, signal[m], setSignal[m], frSignal[m])
+                drawPlot(signalMass+"_"+category, stype+channel, X_mass, signal[m], setSignal[m], frSignal[m])
             
             else:
                 print "  WARNING: signal", stype, "and mass point", m, "in channel", channel, "has 0 entries or does not exist"
@@ -412,8 +419,8 @@ def signal():
     drawAnalysis(channel)
     drawRegion(channel)
 
-    c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_Signal.pdf")
-    c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_Signal.png")
+    c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.pdf")
+    c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.png")
     if VERBOSE: raw_input("Press Enter to continue...")
     # ====== CONTROL PLOT ======
 
@@ -669,8 +676,8 @@ def signal():
 #        eslope2.Draw("3, SAME")
 
 
-    c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_SignalShape.pdf")
-    c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_SignalShape.png")
+    c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.pdf")
+    c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.png")
 
 
     c2 = TCanvas("c2", "Signal Efficiency", 800, 600)
@@ -686,8 +693,8 @@ def signal():
     drawCMS(-1, "Simulation")
     drawAnalysis(channel)
     drawRegion(channel)
-    c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_SignalNorm.pdf")
-    c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_SignalNorm.png")
+    c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.pdf")
+    c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.png")
 
 
     #*******************************************************#
@@ -714,8 +721,8 @@ def signal():
         getattr(w, "import")(signal[m], RooFit.Rename(signal[m].GetName()))
         getattr(w, "import")(signalNorm[m], RooFit.Rename(signalNorm[m].GetName()))
         getattr(w, "import")(signalXS[m], RooFit.Rename(signalXS[m].GetName()))
-    w.writeToFile("signal_%sMC_signal_%s.root" % (WORKDIR, YEAR), True)      ## eventually, the idea will probably be to write it into the same file as the bkg. but for no I'd like to keep them apart FIXME
-    print "Workspace", "signal_%sMC_signal_%s.root" % (WORKDIR, YEAR), "saved successfully"
+    w.writeToFile("signal_%sMC_signal_%s_%s.root" % (WORKDIR, YEAR, category), True)      ## eventually, the idea will probably be to write it into the same file as the bkg. but for no I'd like to keep them apart FIXME
+    print "Workspace", "signal_%sMC_signal_%s_%s.root" % (WORKDIR, YEAR, category), "saved successfully"
 
 
 def efficiency(stype, Zlep=True):
@@ -1118,6 +1125,10 @@ if __name__ == "__main__":
     #                signal(c, s)
     #else:
     #    signal(options.channel, options.signal)
-
-    signal()
-
+    if options.category!='':
+        signal(options.category)
+    else:
+        for c in categories:
+            p = multiprocessing.Process(target=signal, args=(c,)) 
+            jobs.append(p)
+            p.start()

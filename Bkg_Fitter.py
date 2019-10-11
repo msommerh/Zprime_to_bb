@@ -30,6 +30,7 @@ parser.add_option("-v", "--verbose", action="store_true", default=False, dest="v
 parser.add_option("-t", "--test_run", action="store_true", default=False, dest="test")
 parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
+parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
 (options, args) = parser.parse_args()
 #if options.bash: gROOT.SetBatch(True)
 gROOT.SetBatch(True) #suppress immediate graphic output
@@ -63,6 +64,7 @@ VARBINS     = False
 BIAS        = options.bias
 YEAR        = options.year
 ISMC        = options.isMC
+BTAG_THRESHOLD = 0.1
 
 if YEAR=='2016':
     LUMI=35920.
@@ -79,8 +81,11 @@ if ISMC:
 else:
     DATA_TYPE = "data"
 PLOTDIR     = "plots/{}_{}".format(DATA_TYPE, YEAR)
+if options.category in ['', 'bb', 'bq']: PLOTDIR+="_btagged"
+if options.test: PLOTDIR += "_test"
 
 signalList = ['Zprime_to_bb']
+categories = ['bb', 'bq']
 
 genPoints = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 #massPoints = [x for x in range(1000, 4500+1, 100)] #if not HVTMODEL else genPoints
@@ -100,12 +105,12 @@ back = ["QCD"]
 
 ########## ######## ##########
 
-def dijet():
+def dijet(category):
 
     #channel = "Zprime_to_bbar"
     #category = "Zprbb"
     channel = 'bb'
-    category = "bb"
+    #category = "bb"
     stype = channel
     isSB = True  #no idea what this does!! --> apparently stands for side bands
     isData = not ISMC 
@@ -131,15 +136,15 @@ def dijet():
     RSS = {}
     
     X_mass = RooRealVar(        "jj_mass",              "m_{jj}",       1200.,  9000.,  "GeV")
-    j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
-    j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
-    j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     4500.,  "GeV")
-    j2_pt = RooRealVar(         "jpt_2",                "jet2 pt",      0.,     4500.,  "GeV")
-    jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",             -2.,   1.       )
-    jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",             -2.,   1.       )
+    #j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
+    #j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
+    #j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     4500.,  "GeV")
+    #j2_pt = RooRealVar(         "jpt_2",                "jet2 pt",      0.,     4500.,  "GeV")
+    #jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",             -2.,   1.       )
+    #jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",             -2.,   1.       )
     jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",       "",             0.,   1.        )
     jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             0.,   1.        )
-    MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
+    #MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
     HLT_PFJet500            = RooRealVar("HLT_PFJet500"            , "" , -1., 1.    )
     HLT_CaloJet500_NoJetID  = RooRealVar("HLT_CaloJet500_NoJetID"  , "" , -1., 1.    )
@@ -149,9 +154,11 @@ def dijet():
     HLT_CaloJet550_NoJetID  = RooRealVar("HLT_CaloJet550_NoJetID"  , "" , -1., 1.    )
     HLT_PFHT1050            = RooRealVar("HLT_PFHT1050"            , "" , -1., 1.    )
     weight = RooRealVar(        "eventWeightLumi",      "",             -1.e9,  1.e9    )
-    variables = RooArgSet(X_mass, j1_mass, j2_mass)
-    variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2))
-    variables.add(RooArgSet(MET_over_sumEt, weight))
+
+    variables = RooArgSet(X_mass)
+    variables.add(RooArgSet(jdeepFlavour_1, jdeepFlavour_2, weight))
+    #variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2))
+    #variables.add(RooArgSet(MET_over_sumEt, weight))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))
 
@@ -159,6 +166,12 @@ def dijet():
     else: binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
     
     baseCut = "HLT_AK8PFJet{0}==1. &&  HLT_PFJet{0}==1. && HLT_CaloJet{0}_NoJetID==1. && HLT_PFHT{1}==1.".format(500 if YEAR=='2016' else 550, 900 if YEAR=='2016' else 1050)
+
+    if category=='bb':
+        baseCut += " && jdeepFlavour_1>={0} && jdeepFlavour_2>={0}".format(BTAG_THRESHOLD)
+    elif category=='bq':
+        baseCut += " && ((jdeepFlavour_1>={0} && jdeepFlavour_2<{0}) || (jdeepFlavour_1<{0} && jdeepFlavour_2>={0}))".format(BTAG_THRESHOLD)
+
     print stype, "|", baseCut
     
     file = {}
@@ -390,8 +403,8 @@ def dijet():
     frame.SetMinimum(max(frame.GetMinimum(), 1.e-1))
     c.GetPad(1).SetLogy()
 
-    drawAnalysis(channel)
-    drawRegion(channel, True)
+    drawAnalysis(category)
+    drawRegion(category, True)
     drawCMS(LUMI, "")
 
     leg = TLegend(0.575, 0.6, 0.95, 0.9)
@@ -430,11 +443,11 @@ def dijet():
     line = drawLine(X_mass.getMin(), 0, lastBin, 0)
 
     if VARBINS:
-        c.SaveAs(PLOTDIR+"/BkgSR_"+channel+".pdf")
-        c.SaveAs(PLOTDIR+"/BkgSR_"+channel+".png")
+        c.SaveAs(PLOTDIR+"/BkgSR_"+category+".pdf")
+        c.SaveAs(PLOTDIR+"/BkgSR_"+category+".png")
     else:
-        c.SaveAs(PLOTDIR+"/BkgSR.pdf")
-        c.SaveAs(PLOTDIR+"/BkgSR.png")
+        c.SaveAs(PLOTDIR+"/BkgSR_"+category+".pdf")
+        c.SaveAs(PLOTDIR+"/BkgSR_"+category+".png")
  
     #if isSB: exit()
   
@@ -622,8 +635,8 @@ def dijet():
     #    getattr(w, "import")(signal[m], RooFit.Rename(signal[m].GetName()))
     #    getattr(w, "import")(signalYield[m], RooFit.Rename(signalYield[m].GetName()))
     #w.Print()
-    w.writeToFile("bkg_%s%s.root" % (WORKDIR, DATA_TYPE+"_"+YEAR), True)
-    print "Workspace", "bkg_%s%s.root" % (WORKDIR, DATA_TYPE+"_"+YEAR), "saved successfully"
+    w.writeToFile("bkg_%s%s_%s%s.root" % (WORKDIR, DATA_TYPE+"_"+YEAR, category, "_test" if options.test else ""), True)
+    print "Workspace", "bkg_%s%s_%s%s.root" % (WORKDIR, DATA_TYPE+"_"+YEAR, category, "_test" if options.test else ""), "saved successfully"
     
     if VERBOSE: raw_input("Press Enter to continue...")
     # ======   END PLOT   ======
@@ -723,8 +736,8 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     line = drawLine(variable.getMin(), 0, variable.getMax(), 0)
 
     if len(name) > 0 and len(category) > 0:
-        c.SaveAs(PLOTDIR+"/"+name+".pdf")
-        c.SaveAs(PLOTDIR+"/"+name+".png")
+        c.SaveAs(PLOTDIR+"/"+name+"_"+category+".pdf")
+        c.SaveAs(PLOTDIR+"/"+name+"_"+category+".png")
 
 #    if( hMassNEW.GetXaxis().GetBinLowEdge(bin+1)>=fFitXmin and hMassNEW.GetXaxis().GetBinUpEdge(bin-1)<=fFitXmax ):
 #       NumberOfVarBins += 1
@@ -767,5 +780,11 @@ def getSignal(cat, sig, mass):   ## FIXME still working on this function. Diffic
 
 
 if __name__ == "__main__":
-        print "starting dijet()"
-        dijet()
+    if options.category!='':
+        dijet(options.category)
+    else:
+        jobs=[]
+        for c in categories:
+            p = multiprocessing.Process(target=dijet, args=(c,))
+            jobs.append(p)
+            p.start()

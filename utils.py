@@ -435,42 +435,67 @@ def makeResidHist(data, bkg):
 ### DRAW UTILS ###
 ##################
 
+#def getChannel(channel):
+#    text = ""
+#    #
+#    if 'Electrons' in channel: return "2e, 2 jets"
+#    elif 'Muons' in channel: return "2#mu, 2 jets"
+#    elif 'MET' in channel: return "0l, 2 jets"
+#    isAH = ('hp' in channel or 'lp' in channel or 'qqqq' in channel)
+#    #
+#    if 'ah' in channel: return "All categories"
+#    if 'VHsl' in channel: return "0l, 1l, 2l categories"
+#    if 'WHsl' in channel: return "1l categories"
+#    if 'ZHsl' in channel: return "0l, 2l categories"
+#    if 'sum' in channel: return "Total"
+#    # leptons
+#    if 'nn' in channel or '0l' in channel: text += "0l"
+#    elif 'ee' in channel or '2e' in channel: text += "2e"
+#    elif 'e' in channel or '1e' in channel: text += "1e"
+#    elif 'mm' in channel or '2m' in channel: text += "2#mu"
+#    elif 'm' in channel or '1m' in channel: text += "1#mu"
+#    elif 'll' in channel or '2l' in channel: text += "2l"
+#    elif 'ln' in channel or '2l' in channel: text += "1l"
+#    #if 'qq' in channel or 'hp' in channel or 'lp' in channel: text += "all-had"
+#    if 'sb' in channel: text += "sidebands"
+#    elif 'zr' in channel: text += "Z mass"
+#    elif 'wr' in channel: text += "W mass"
+#    elif 'vr' in channel: text += "V b tag"
+#    # purity
+#    if 'hp' in channel: text += ", high purity"
+#    elif 'lp' in channel: text += ", low purity"
+#    elif 'ap' in channel: text += ", no purity"
+#    # b-tag
+#    if '0b' in channel: text += ", no b tag" if isAH else ", 0 b tag"
+#    elif 'bbbb' in channel or '4b' in channel: text += ", tight b tag" if isAH else ", 4 b tag"
+#    elif 'bbb' in channel or '3b' in channel: text += ", loose b tag" if isAH else ", 3 b tag"
+#    elif 'bb' in channel or '2b' in channel: text += ", tight b tag" if isAH else ", 2 b tag"
+#    elif 'b' in channel or '1b' in channel: text += ", loose b tag" if isAH else ", 1 b tag"
+#    # region
+#    if 'SR' in channel: text += ", signal region"
+#    elif 'SB' in channel: text += ", sidebands region"
+#    elif 'CR' in channel: text += ", control region"
+#    elif 'TR' in channel: text += ", top control region"
+#    elif 'WR' in channel: text += ", W control region"
+#    elif 'ZR' in channel: text += ", Z control region"
+#    elif 'MC' in channel: text += ", simulation"
+#    elif 'Inc' in channel: text += ", inclusive region"
+#    
+#    return text
+
 def getChannel(channel):
     text = ""
     #
-    if 'Electrons' in channel: return "2e, 2 jets"
-    elif 'Muons' in channel: return "2#mu, 2 jets"
-    elif 'MET' in channel: return "0l, 2 jets"
-    isAH = ('hp' in channel or 'lp' in channel or 'qqqq' in channel)
-    #
-    if 'ah' in channel: return "All categories"
-    if 'VHsl' in channel: return "0l, 1l, 2l categories"
-    if 'WHsl' in channel: return "1l categories"
-    if 'ZHsl' in channel: return "0l, 2l categories"
-    if 'sum' in channel: return "Total"
-    # leptons
-    if 'nn' in channel or '0l' in channel: text += "0l"
-    elif 'ee' in channel or '2e' in channel: text += "2e"
-    elif 'e' in channel or '1e' in channel: text += "1e"
-    elif 'mm' in channel or '2m' in channel: text += "2#mu"
-    elif 'm' in channel or '1m' in channel: text += "1#mu"
-    elif 'll' in channel or '2l' in channel: text += "2l"
-    elif 'ln' in channel or '2l' in channel: text += "1l"
-    #if 'qq' in channel or 'hp' in channel or 'lp' in channel: text += "all-had"
-    if 'sb' in channel: text += "sidebands"
-    elif 'zr' in channel: text += "Z mass"
-    elif 'wr' in channel: text += "W mass"
-    elif 'vr' in channel: text += "V b tag"
     # purity
     if 'hp' in channel: text += ", high purity"
     elif 'lp' in channel: text += ", low purity"
     elif 'ap' in channel: text += ", no purity"
     # b-tag
-    if '0b' in channel: text += ", no b tag" if isAH else ", 0 b tag"
-    elif 'bbbb' in channel or '4b' in channel: text += ", tight b tag" if isAH else ", 4 b tag"
-    elif 'bbb' in channel or '3b' in channel: text += ", loose b tag" if isAH else ", 3 b tag"
-    elif 'bb' in channel or '2b' in channel: text += ", tight b tag" if isAH else ", 2 b tag"
-    elif 'b' in channel or '1b' in channel: text += ", loose b tag" if isAH else ", 1 b tag"
+    if '0b' in channel: text += "0 b tag"
+    elif 'bbbb' in channel or '4b' in channel: text +=  "4 b tag"
+    elif 'bbb' in channel or '3b' in channel: text += "3 b tag"
+    elif 'bb' in channel or '2b' in channel: text += "2 b tag"
+    elif 'b' in channel or '1b' in channel: text += "1 b tag"
     # region
     if 'SR' in channel: text += ", signal region"
     elif 'SB' in channel: text += ", sidebands region"
