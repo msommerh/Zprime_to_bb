@@ -46,7 +46,10 @@ gStyle.SetPadTopMargin(0.06)
 gStyle.SetPadRightMargin(0.05)
 gStyle.SetErrorX(0.)
 
-NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
+if options.isMC:
+    NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
+else:
+     NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"   
 CARDDIR     = "datacards/"
 WORKDIR     = "workspace/"
 RATIO       = 4
@@ -55,7 +58,8 @@ BLIND       = False
 #LUMI        = 35920 #2016, need to generalize to different years someday
 VERBOSE     = options.verbose
 CUTCOUNT    = False
-VARBINS     = True
+#VARBINS     = True
+VARBINS     = False
 BIAS        = options.bias
 YEAR        = options.year
 ISMC        = options.isMC
@@ -111,7 +115,7 @@ def dijet():
     pd = []
     if isData:
         alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-        for letter in alphabet[1:]: pd.append("data_"+YEAR+"_"+letter)
+        for letter in alphabet: pd.append("data_"+YEAR+"_"+letter)
     else:
         if options.test:
             pd.append("MC_QCD_"+YEAR)
@@ -126,7 +130,7 @@ def dijet():
     order = 0
     RSS = {}
     
-    X_mass = RooRealVar(        "jj_mass",              "m_{jj}",       1000.,  9000.,  "GeV")
+    X_mass = RooRealVar(        "jj_mass",              "m_{jj}",       1200.,  9000.,  "GeV")
     j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
     j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
     j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     4500.,  "GeV")
@@ -372,7 +376,7 @@ def dijet():
     fixData(graphData.getHist(), True, True, not isData)
     pulls = frame.pullHist(setData.GetName(), modelBkg.GetName(), True)  
     chi = frame.chiSquare(setData.GetName(), modelBkg.GetName(), True)
-    setToys.plotOn(frame, RooFit.DataError(RooAbsData.Poisson), RooFit.DrawOption("PE0"), RooFit.MarkerColor(2))
+    #setToys.plotOn(frame, RooFit.DataError(RooAbsData.Poisson), RooFit.DrawOption("PE0"), RooFit.MarkerColor(2))
     if VARBINS: frame.GetYaxis().SetTitle("Events / ( 100 GeV )")
     frame.Draw()
     #print "frame drawn"
@@ -696,9 +700,13 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     hist = graphData.getHist()
     xmin, xmax = array('d', [0.]), array('d', [0.])
     dataset.getRange(variable, xmin, xmax)
+    #print "hist.GetN() =", hist.GetN()
     for i in range(0, hist.GetN()):
         if hist.GetX()[i] - hist.GetErrorXlow(i) > xmax[0] and hist.GetX()[i] + hist.GetErrorXhigh(i) > xmax[0]: continue# and abs(pulls.GetY()[i]) < 5:
         if hist.GetY()[i] <= 0.: continue
+        #print "i =", i
+        #print "residuals.GetY() =", residuals.GetY()
+        #print "residuals.GetY()[i] =", residuals.GetY()[i]
         res += residuals.GetY()[i]
         rss += residuals.GetY()[i]**2
         #print i, pulls.GetY()[i]

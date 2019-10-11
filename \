@@ -2,7 +2,7 @@
 
 import numpy as np
 import os
-from ROOT import TFile, TTree, TH1D, TCanvas, TLegend, gROOT
+from ROOT import TFile, TTree, TH1D, TCanvas, TLegend
 from root_numpy import root2array, fill_hist
 import json
 import multiprocessing
@@ -12,13 +12,9 @@ parser = optparse.OptionParser(usage)
 parser.add_option("-p", "--produce", action="store_true", default=False, dest="produce")
 parser.add_option("-S", "--signal", action="store_true", default=False, dest="signal")
 parser.add_option("-c", "--compare", action="store_true", default=False, dest="compare")
-parser.add_option("-C", "--SigvsBkg", action="store_true", default=False, dest="SigvsBkg")
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2017')
 parser.add_option('-s', '--single_process', action='store', type='int', dest='single_process',default=0)
 (options, args) = parser.parse_args()
-
-gROOT.SetBatch(True)
-masspoints = [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 
 def extract_jj_mass(filename):
     f = TFile.Open(filename)
@@ -28,13 +24,6 @@ def extract_jj_mass(filename):
     f.Close()
     return hist
 
-def extract_btag(filename): 
-    f = TFile.Open(filename)
-    hist = f.Get("jdeepFlavour")
-    hist.SetDirectory(0)
-    hist.SetStats(False)
-    f.Close()
-    return hist
 
 def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
 
@@ -72,14 +61,7 @@ def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
 
     m=0
     for n, output_file in enumerate(output_files):
-       
-        weight_string = ''
-        if LHE_weight: 
-             weight_string += 'LHEWeighted_'
-        if PU_weight: 
-             weight_string += 'PUWeighted_'
-
-        print "working on output file:", output_file if isSignal else output_file.replace(sample_title, weight_string+sample_title)
+        print "working on output file:", output_file
 
         ## initialize histograms
         
@@ -89,18 +71,8 @@ def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
         jmass_1 = TH1D("jmass_1", "jmass_1", 200, 0, 700)
         jmass_2 = TH1D("jmass_2", "jmass_2", 200, 0, 700)
         jmass = TH1D("jmass", "jmass", 200, 0, 700)
-        jdeepFlavour_1 = TH1D("jdeepFlavour_1", "jdeepFlavour_1", 200, 0., 1.)
-        jdeepFlavour_2 = TH1D("jdeepFlavour_2", "jdeepFlavour_2", 200, 0., 1.)
-        jdeepFlavour = TH1D("jdeepFlavour", "jdeepFlavour", 200, 0., 1.)
         jj_mass = TH1D("jj_mass", "jj_mass", 200, 0, 10000)
-
-        branches = ['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'jdeepFlavour_1', 'jdeepFlavour_2']
-        if '2016' in sample_title:
-            branches += ['HLT_AK8PFJet500', 'HLT_PFJet500', 'HLT_CaloJet500_NoJetID', 'HLT_PFHT900']
-        else:
-            branches += ['HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050']
-        weight_branches = ['eventWeightLumi', 'GenWeight', 'PSWeight', 'PUWeight', 'LHEWeight_originalXWGTUP', 'LHEReweightingWeight', 'LHEScaleWeight']
-  
+     
         if isSignal:
             sub_list = file_list[m:m+nfiles[n]]
         else:
@@ -110,9 +82,14 @@ def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
         
             print "opening files:", sample
     
+            weight_string = ''
+        
             if isMC and not isSignal: 
                 try:
-                    variables = root2array(sample, treename='tree', branches=branches+weight_branches)
+                    if '2016' in sample_title:
+                        variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'eventWeightLumi', 'GenWeight', 'PSWeight', 'PUWeight', 'LHEWeight_originalXWGTUP', 'LHEReweightingWeight', 'LHEScaleWeight', 'HLT_AK8PFJet500', 'HLT_PFJet500', 'HLT_CaloJet500_NoJetID', 'HLT_PFHT900'])
+                    else:
+                        variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'eventWeightLumi', 'GenWeight', 'PSWeight', 'PUWeight', 'LHEWeight_originalXWGTUP', 'LHEReweightingWeight', 'LHEScaleWeight', 'HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050'])
                     weights = variables['eventWeightLumi']
                 except:
                     print "import failed!!"
@@ -120,12 +97,17 @@ def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
                     continue
                 if LHE_weight: 
                     weights = np.multiply(weights, variables['LHEWeight_originalXWGTUP'])
+                    weight_string += 'LHEWeighted_'
                 if PU_weight: 
                     weights = np.multiply(weights,variables['PUWeight'])
+                    weight_string += 'PUWeighted_'
     
             else:
                 try:
-                    variables = root2array(sample, treename='tree', branches=branches)
+                    if '2016' in sample_title:
+                        variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'HLT_AK8PFJet500', 'HLT_PFJet500', 'HLT_CaloJet500_NoJetID', 'HLT_PFHT900'])
+                    else:
+                        variables = root2array(sample, treename='tree', branches=['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050'])
                     weights = np.ones(variables.shape[0])
                 except:
                     print "import failed!!"
@@ -149,9 +131,6 @@ def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
             fill_hist(jmass_1, variables['jmass_1'], weights=weights)
             fill_hist(jmass_2, variables['jmass_2'], weights=weights)
             fill_hist(jmass, np.concatenate((variables['jmass_1'], variables['jmass_2'])), weights=np.concatenate((weights, weights)))
-            fill_hist(jdeepFlavour_1, variables['jdeepFlavour_1'], weights=weights)
-            fill_hist(jdeepFlavour_2, variables['jdeepFlavour_2'], weights=weights)
-            fill_hist(jdeepFlavour, np.concatenate((variables['jdeepFlavour_1'], variables['jdeepFlavour_2'])), weights=np.concatenate((weights, weights)))
             fill_hist(jj_mass, variables['jj_mass'], weights=weights)
         
         ## draw histograms
@@ -159,28 +138,22 @@ def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
         #out_file_name = "merged_files/merged_trig_{}.root".format(weight_string+sample_title)
         #out_file = TFile(out_file_name, "RECREATE")
         out_file = TFile(output_file if isSignal else output_file.replace(sample_title, weight_string+sample_title), "RECREATE")
-        jpt1            .Write()             
-        jpt2            .Write()     
-        jpt             .Write()     
-        jmass_1         .Write()     
-        jmass_2         .Write()     
-        jmass           .Write()
-        jdeepFlavour_1  .Write()
-        jdeepFlavour_2  .Write()
-        jdeepFlavour    .Write() 
-        jj_mass         .Write()     
+        jpt1   .Write()             
+        jpt2   .Write()     
+        jpt    .Write()     
+        jmass_1.Write()     
+        jmass_2.Write()     
+        jmass  .Write()     
+        jj_mass.Write()     
         out_file.Close()
     
-        jpt1            .Delete()
-        jpt2            .Delete()
-        jpt             .Delete()
-        jmass_1         .Delete()
-        jmass_2         .Delete()
-        jmass           .Delete()
-        jdeepFlavour_1  .Delete()
-        jdeepFlavour_2  .Delete()
-        jdeepFlavour    .Delete() 
-        jj_mass.        Delete()   
+        jpt1   .Delete()
+        jpt2   .Delete()
+        jpt    .Delete()
+        jmass_1.Delete()
+        jmass_2.Delete()
+        jmass  .Delete()
+        jj_mass.Delete()   
  
         m += nfiles[n]
 
@@ -219,62 +192,6 @@ def compare(year):
     c.Write()
     c.SaveAs("compare_MC_to_data_{}_new_weights.png".format(year))
     outfile.Close()
-
-def SigvsBkg(year):
-
-    outfile = TFile("compare_Sig_to_Bkg_{}.root".format(year), "RECREATE")
-
-    bkg_hist_b = extract_btag("merged_files/merged_trig_MC_QCD_{}.root".format(year))
-    bkg_hist_b.SetLineColor(2) 
-    bkg_hist_b.SetTitle("MC_Sig_vs_Bkg_"+year)  
-    bkg_hist_b.GetXaxis().SetTitle("deepFlavour")
-    bkg_hist_b.GetYaxis().SetTitle("(a.u.)")
-    bkg_hist_m = extract_jj_mass("merged_files/merged_trig_MC_QCD_{}.root".format(year))
-    bkg_hist_m.SetLineColor(2) 
-    bkg_hist_m.SetTitle("MC_Sig_vs_Bkg_"+year)  
-    bkg_hist_m.GetXaxis().SetTitle("m_{jj}")
-    bkg_hist_m.GetYaxis().SetTitle("(a.u.)")
-
-    signal_hists_b = []
-    signal_hists_m = []
-    canvases_b = []
-    canvases_m = []
-    for i, m in enumerate(masspoints):
-        m_title="MC_Sig_vs_Bkg_{}_M{}".format(year,m)
-        signal_hists_b.append(extract_btag("merged_files/merged_trig_MC_signal_{}_M{}.root".format(year, m)))
-        signal_hists_b[i].SetLineColor(4)
-        signal_hists_b[i].SetTitle(m_title)
-        signal_hists_b[i].GetXaxis().SetTitle("deepFlavour")
-        signal_hists_b[i].GetYaxis().SetTitle("(a.u.)")
-        bkg_hist_b.SetTitle(m_title)  
-        signal_hists_m.append(extract_jj_mass("merged_files/merged_trig_MC_signal_{}_M{}.root".format(year, m)))
-        signal_hists_m[i].SetLineColor(4)
-        signal_hists_m[i].SetTitle(m_title)
-        signal_hists_m[i].GetXaxis().SetTitle("m_{jj}")
-        signal_hists_m[i].GetYaxis().SetTitle("(a.u.)")
-        bkg_hist_m.SetTitle(m_title)
-       
-        canvases_b.append(TCanvas("btag_M"+str(m), "btag_M"+str(m), 600, 600))
-        canvases_b[i].cd()
-        bkg_hist_b.DrawNormalized()
-        signal_hists_b[i].DrawNormalized("SAME")
-        if i==0:
-            l = TLegend(0.7,0.8,0.9,0.9)
-            l.AddEntry(signal_hists_b[i], "MC_signal")
-            l.AddEntry(bkg_hist_b, "MC_bkg") 
-        l.Draw()
-        canvases_m.append(TCanvas("m_jj_M"+str(m), "m_jj_M"+str(m), 600, 600))
-        canvases_m[i].cd()
-        bkg_hist_m.DrawNormalized()
-        signal_hists_m[i].DrawNormalized("SAME")
-        l.Draw()
-
-        outfile.cd() 
-        canvases_b[i].Write()
-        canvases_m[i].Write()
-
-    outfile.Close()
-    print "saved as compare_Sig_to_Bkg_{}.root".format(year)
 
 if __name__ == '__main__':
 
@@ -331,7 +248,4 @@ if __name__ == '__main__':
 
     if options.compare:
  
-        compare(options.year)
-
-    if options.SigvsBkg: 
-        SigvsBkg(options.year)
+       compare(options.year) 
