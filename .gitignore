@@ -10,3 +10,4 @@ test_outfiles/
 CMSSW_10_3_3/
 *.png
 *.pdf
+datacards/
