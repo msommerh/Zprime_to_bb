@@ -625,7 +625,7 @@ def signal(category):
     gsigma.SetMinimum(0.)
     gsigma.Draw("APL")
     isigma.Draw("P, SAME")
-    drawRegion(channel)
+    drawRegian(channel)
 #    esigma = TGraphErrors(gsigma)
 #    esigma.SetFillStyle(3003)
 #    esigma.SetFillColor(1)

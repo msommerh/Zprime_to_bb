@@ -462,7 +462,7 @@ def dijet(category):
     ##if not isSB:
     #
     ## nbkg fro cut&count
-    #X_mass.setRange("X_data_range", xmax, X_mass.getMax())
+    #X_mass.setRange("X_data_range", xmax, X_mass.getMax())   ## I don't get it. Why is there a xmax in the spot for the minimum??
     #massArg = RooArgSet(X_mass)
     #integral = modelBkg.createIntegral(massArg, RooFit.NormSet(massArg), RooFit.Range("X_data_range"))
     #integralError = integral.getPropagatedError(fitRes)
@@ -537,6 +537,8 @@ def dijet(category):
     #    #                      Datacard                         #
     #    #                                                       #
     #    #*******************************************************#
+
+    #    generate_datacard(YEAR, category, m, CARDDIR+"%s_M%d%s%s.txt" % (category, m, "_MC" if ISMC else "" , "_test" if options.test, else ""))
 
     #    card  = "imax 1\n"
     #    card += "jmax *\n"
@@ -777,6 +779,28 @@ def getSignal(cat, sig, mass):   ## FIXME still working on this function. Diffic
     #    print "WARNING: failed to get signal pdf"
     #    return [None, 0., 0.]
     return [None, 0., 0. ]
+
+def generate_datacard(year, category, masspoint, outname):
+    card  = "imax 1\n"
+    card += "jmax 1\n"
+    card += "kmax *\n"
+    card += "-----------------------------------------------------------------------------------\n"
+    card += "shapes            sig  *    signal_workspace/MC_signal_{year}_{category}.root     Zprime_{year}:Zprimebb_{masspoint}\n".format(year=year, category=category, masspoint=masspoint)
+    card += "shapes            bkg  *    bkg_workspace/data_{year}_{category}.root    Zprime_{year}:Bkg_{category}\n".format(year=year, category=category)
+    card += "shapes            data_obs  *    bkg_workspace/data_{year}_{category}.root    Zprime_{year}:data_obs\n".format(year=year, category=category)
+    card += "-----------------------------------------------------------------------------------\n"
+    card += "bin               {}\n".format(category)
+    card += "observation       -1\n"
+    card += "-----------------------------------------------------------------------------------\n"
+    card += "bin                                     {:20}{:20}\n".format(category, category)
+    card += "process                                 {:20}{:20}\n".format("sig", "bkg") 
+    card += "process                                 {:20}{:20}\n".format("0", "1")
+    card += "rate                                    {:20}{:20}\n".format(1, 1) 
+    card += "-----------------------------------------------------------------------------------\n"
+    cardfile = open(outname, 'w')
+    cardfile.write(card)
+    cardfile.close()
+    print "Datacards for mass", masspoint, "in category", ccategory, "saved in", outname
 
 
 if __name__ == "__main__":
