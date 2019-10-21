@@ -12,28 +12,6 @@ import json
 
 if __name__ == "__main__":
   parser = ArgumentParser()
-  #parser.add_argument('-f', '--force',   dest='force', action='store_true', default=False,
-  #                                       help="submit jobs without asking confirmation" )
-  #parser.add_argument('-y', '--year',    dest='years', choices=[2016,2017,2018], type=int, nargs='+', default=[2017], action='store',
-  #                                       help="select year" )
-  #parser.add_argument('-c', '--channel', dest='channels', choices=['ll'], type=str, nargs='+', default=['ll'], action='store',
-  #                                       help="channels to submit" )
-  #parser.add_argument('-s', '--sample',  dest='samples', type=str, nargs='+', default=[ ], action='store',
-  #                                       help="filter these samples, glob patterns (wildcards * and ?) are allowed." )
-  #parser.add_argument('-x', '--veto',    dest='vetos', nargs='+', default=[ ], action='store',
-  #                                       help="veto this sample" )
-  #parser.add_argument('-t', '--type',    dest='type', choices=['data','mc'], type=str, default=None, action='store',
-  #                                       help="filter data or MC to submit" )
-  #parser.add_argument('-T', '--tes',     dest='tes', type=float, default=1.0, action='store',
-  #                                       help="tau energy scale" )
-  #parser.add_argument('-L', '--ltf',     dest='ltf', type=float, default=1.0, action='store',
-  #                                       help="lepton to tau fake energy scale" )
-  #parser.add_argument('-J', '--jtf',     dest='jtf', type=float, default=1.0, action='store',
-  #                                       help="jet to tau fake energy scale" )
-  #parser.add_argument('-d', '--das',     dest='useDAS', action='store_true', default=False,
-  #                                       help="get file list from DAS" )
-  #parser.add_argument('-n', '--njob',    dest='nFilesPerJob', action='store', type=int, default=-1,
-  #                                       help="number of files per job" )
   parser.add_argument('-q', '--queue',   dest='queue', choices=['espresso', 'microcentury', 'longlunch', 'workday', 'tomorrow', 'testmatch', 'nextweek'], type=str, default='tomorrow', action='store',
                                          help="select queue for submission" )
   parser.add_argument('-v', '--verbose', dest='verbose', default=False, action='store_true',
@@ -48,6 +26,8 @@ if __name__ == "__main__":
                                          help="Indicate file containing titles of the sample for resubmission." )
   parser.add_argument('-n', '--nFiles',  dest='nFiles',   action='store', type=int, default=10,
                                          help="Number of input files per output nTuple.")
+  parser.add_argument('-s', '--single',   dest='single', type=str, action='store', default="",
+                                         help="Single dataset to be submitted instead of the standard datasets." )
 
   args = parser.parse_args()
   #checkFiles.args = args
@@ -168,56 +148,74 @@ def main():
         #submitJobs(title+"_2", infiles.replace(".txt","2.txt"), outdir, "longlunch")
         #submitJobs(title+"_3", infiles.replace(".txt","3.txt"), outdir, "longlunch")
         #sys.exit()
+    
+        if args.single!="":
+            data_set = args.single
+            infiles = "filelists/single.txt"
 
-        ## load data sets from file
-        if args.isMC == 1:
-                data_type="MC"
-                if args.isBG == 1:
-                        data_type += "_QCD"
-                elif args.isBG == 0:
-                        data_type += "_signal"
-                else:
-                        print "Invalid input to isBG. Abort submission!!"
-                        sys.exit()
-        elif args.isMC == 0:
-                data_type="data"
+            ## create filelist from DAS 
+            txtfile = open(infiles, "w")
+            txtfile.write("# created from {}\n".format(data_set))
+            filelist = getFileListDAS(data_set)
+            for entry in filelist:
+                  txtfile.write(entry+"\n")
+            txtfile.close()
+
+            ## submit job
+            submitJobs("single", infiles, outdir, args.queue)
+
+
         else:
-                print "Invalid input to isMC. Abort submission!!"
-                sys.exit()
 
-        if args.year in [2016,2017,2018]:
-                data_set_file = 'samples_{}_{}.json'.format(data_type, args.year)
-        else:
-                print "Unknown year. Abort submission!!"
-                sys.exit()
-
-        with open(data_set_file, 'r') as json_file:
-                data_sets = json.load(json_file)
-
-        if args.resubmit != "":
-                rs_titles = open(args.resubmit, 'r').readlines()
-                for n, entry in enumerate(rs_titles):
-                        rs_titles[n] = entry.replace("\n", "")
-                print "resubmitting the following samples:", rs_titles
-
-        for title in data_sets.keys():
-
-                if args.resubmit != "":
-                        if title not in rs_titles: continue 
-
-                data_set = data_sets[title]
-                infiles = "filelists/"+title+".txt"
-
-                ## create filelist from DAS 
-                txtfile = open(infiles, "w")
-                txtfile.write("# created from {}\n".format(data_set))
-                filelist = getFileListDAS(data_set)
-                for entry in filelist:
-                      txtfile.write(entry+"\n")
-                txtfile.close()
-
-                ## submit job
-                submitJobs(title, infiles, outdir, args.queue)
+            ## load data sets from file
+            if args.isMC == 1:
+                    data_type="MC"
+                    if args.isBG == 1:
+                            data_type += "_QCD"
+                    elif args.isBG == 0:
+                            data_type += "_signal"
+                    else:
+                            print "Invalid input to isBG. Abort submission!!"
+                            sys.exit()
+            elif args.isMC == 0:
+                    data_type="data"
+            else:
+                    print "Invalid input to isMC. Abort submission!!"
+                    sys.exit()
+    
+            if args.year in [2016,2017,2018]:
+                    data_set_file = 'samples_{}_{}.json'.format(data_type, args.year)
+            else:
+                    print "Unknown year. Abort submission!!"
+                    sys.exit()
+    
+            with open(data_set_file, 'r') as json_file:
+                    data_sets = json.load(json_file)
+    
+            if args.resubmit != "":
+                    rs_titles = open(args.resubmit, 'r').readlines()
+                    for n, entry in enumerate(rs_titles):
+                            rs_titles[n] = entry.replace("\n", "")
+                    print "resubmitting the following samples:", rs_titles
+    
+            for title in data_sets.keys():
+    
+                    if args.resubmit != "":
+                            if title not in rs_titles: continue 
+    
+                    data_set = data_sets[title]
+                    infiles = "filelists/"+title+".txt"
+    
+                    ## create filelist from DAS 
+                    txtfile = open(infiles, "w")
+                    txtfile.write("# created from {}\n".format(data_set))
+                    filelist = getFileListDAS(data_set)
+                    for entry in filelist:
+                          txtfile.write(entry+"\n")
+                    txtfile.close()
+    
+                    ## submit job
+                    submitJobs(title, infiles, outdir, args.queue)
         print
         print
         print "your jobs:"

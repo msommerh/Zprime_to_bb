@@ -36,6 +36,68 @@ def extract_btag(filename):
     f.Close()
     return hist
 
+def compate_jj_masses(output_file, title1, title2, directory1, directory2, trigger1='2017', trigger2='2017'):
+    branches=['jj_mass']
+    if trigger1=='2016':
+        branches1 = branches+['HLT_AK8PFJet500', 'HLT_PFJet500', 'HLT_CaloJet500_NoJetID', 'HLT_PFHT900']
+    else:
+        branches1 = branches+['HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050']
+    if trigger2=='2016':
+        branches2 = branches+['HLT_AK8PFJet500', 'HLT_PFJet500', 'HLT_CaloJet500_NoJetID', 'HLT_PFHT900']
+    else:
+        branches2 = branches+['HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050']
+
+    jj_mass1 = TH1D("jj_mass1", "jj_mass1", 200, 0, 10000) 
+    jj_mass2 = TH1D("jj_mass2", "jj_mass2", 200, 0, 10000) 
+    var1 = root2array(directory1+"/*flatTuple_*.root", treename='tree', branches=branches1)
+    var2 = root2array(directory2+"/*flatTuple_*.root", treename='tree', branches=branches2)
+    
+    if trigger1=='2016':
+        trig11 = np.multiply(var1['HLT_AK8PFJet500'], var1['HLT_PFJet500'])
+        trig12 = np.multiply(var1['HLT_CaloJet500_NoJetID'], var1['HLT_PFHT900'])
+    else:
+        trig11 = np.multiply(var1['HLT_AK8PFJet550'], var1['HLT_PFJet550'])
+        trig12 = np.multiply(var1['HLT_CaloJet550_NoJetID'], var1['HLT_PFHT1050'])
+    if trigger2=='2016':
+        trig21 = np.multiply(var2['HLT_AK8PFJet500'], var2['HLT_PFJet500'])
+        trig22 = np.multiply(var2['HLT_CaloJet500_NoJetID'], var2['HLT_PFHT900'])
+    else:
+        trig21 = np.multiply(var2['HLT_AK8PFJet550'], var2['HLT_PFJet550'])
+        trig22 = np.multiply(var2['HLT_CaloJet550_NoJetID'], var2['HLT_PFHT1050'])
+    trig1 = np.multiply(trig11, trig12)
+    trig2 = np.multiply(trig21, trig22)
+    
+    fill_hist(jj_mass1, var1['jj_mass'], weights=trig1)
+    fill_hist(jj_mass2, var2['jj_mass'], weights=trig2)
+
+    out_file = TFile(output_file, "RECREATE")
+    jj_mass1.Write()
+    jj_mass2.Write()
+
+    jj_mass1.SetLineColor(2)
+    jj_mass1.SetTitle(title1)
+    jj_mass1.GetXaxis().SetTitle("m_{jj} (GeV)")
+    jj_mass1.GetYaxis().SetTitle("(a.u.)")
+    jj_mass2.SetLineColor(4)
+    jj_mass2.SetTitle(title2)
+    jj_mass2.GetXaxis().SetTitle("m_{jj} (GeV)")
+    jj_mass2.GetYaxis().SetTitle("(a.u.)")
+
+    canvas = TCanvas("canvas", "canvas", 600, 600)
+    canvas.cd()
+    jj_mass1.DrawNormalized()
+    jj_mass2.DrawNormalized("SAME")
+    l = TLegend(0.7,0.8,0.9,0.9)
+    l.AddEntry(jj_mass1, title1)
+    l.AddEntry(jj_mass2, title2) 
+    l.Draw()
+
+    out_file.cd() 
+    canvas.Write()
+    out_file.Close()
+    print "saved plots as "+output_file
+
+
 def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
 
     ## open flatTuples and fill histograms

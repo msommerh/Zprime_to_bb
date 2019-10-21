@@ -86,7 +86,6 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         #self.addBranch('eventweightlumi'               , float)
         self.addBranch('isMC'                           , int)
 
-
     def endJob(self):
         self.outputfile.Write()
         self.outputfile.Close()
@@ -182,6 +181,21 @@ class ZprimetobbProducer(Module):
 
         if not passedMETFilters: return False
 
+        ## jet order check 
+        if event.nJet < 2: return False
+        if event.Jet_pt[0]>event.Jet_pt[1]:
+            leading1 = 0
+            leading2 = 1
+        else:
+            leading1 = 1
+            leading2 = 0
+        for ijet in range(event.nJet)[2:]:
+            if event.Jet_pt[ijet] > event.Jet_pt[leading1]: 
+                leading2=leading1
+                leading1=ijet
+            elif event.Jet_pt[ijet] > event.Jet_pt[leading2]: 
+                leading2=ijet
+
         ## Loop over Jets
         jetIds = [ ]
         jetHT = 0.
@@ -209,8 +223,8 @@ class ZprimetobbProducer(Module):
 
         
         ## Dijet-based event selections
-        #if self.out.jj_mass[0] < 890: return False
-        if self.out.jj_deltaEta[0]>1.1: return False
+        if self.out.jj_mass[0] < 800: return False  # will need to change this when deriving the trigger efficiency
+        #if self.out.jj_deltaEta[0]>1.1: return False
 
  
         ## Fill jet branches
@@ -233,7 +247,7 @@ class ZprimetobbProducer(Module):
         self.out.jjetsId_2[0] = event.Jet_jetId[jetIds[1]]
 
         self.out.jsorted[0]       = 0
-        if self.out.jpt_1[0] >= self.out.jpt_2[0]: self.out.jsorted[0] = 1
+        if leading1==0 and leading2==1: self.out.jsorted[0] = 1
 
         self.out.MET_over_SumEt[0] = event.MET_pt/jetHT
         
