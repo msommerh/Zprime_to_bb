@@ -29,6 +29,8 @@ if __name__ == "__main__":
                 continue
             elif "TTree::SetBranchStatus:0: RuntimeWarning: No branch name is matching wildcard -> *GenJet*" in line:
                 continue
+            elif "working on file nr" in line:
+                continue
             else:
                 clean_file=False
                 print line

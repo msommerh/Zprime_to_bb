@@ -36,7 +36,7 @@ def extract_btag(filename):
     f.Close()
     return hist
 
-def compate_jj_masses(output_file, title1, title2, directory1, directory2, trigger1='2017', trigger2='2017'):
+def compare_jj_masses(output_file, title1, title2, directory1, directory2, trigger1='2017', trigger2='2017'):
     branches=['jj_mass']
     if trigger1=='2016':
         branches1 = branches+['HLT_AK8PFJet500', 'HLT_PFJet500', 'HLT_CaloJet500_NoJetID', 'HLT_PFHT900']
@@ -120,8 +120,15 @@ def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
         if isSignal: output_files.append("merged_files/merged_trig_{}.root".format(title))
         j = 0
         while True:
-            if os.path.exists(sample_dir+title+"/"+title+"_flatTuple_{}.root".format(j)):
-                file_list.append(sample_dir+title+"/"+title+"_flatTuple_{}.root".format(j))
+            if title == "data_2018_D":      ## remove later FIXME
+                adhoc = "parallel_execution/"
+                print "using pararallel execution branch for now"
+            else:
+                adhoc = ""     
+            file_path = sample_dir+adhoc+title+"/"+title+"_flatTuple_{}.root".format(j)  ## remove later FIXME
+            #file_path = sample_dir+title+"/"+title+"_flatTuple_{}.root".format(j) 
+            if os.path.exists(file_path):
+                file_list.append(file_path)
                 j += 1
             else:
                 print "found {} files for sample:".format(j), title
@@ -154,13 +161,16 @@ def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
         jdeepFlavour_1 = TH1D("jdeepFlavour_1", "jdeepFlavour_1", 200, 0., 1.)
         jdeepFlavour_2 = TH1D("jdeepFlavour_2", "jdeepFlavour_2", 200, 0., 1.)
         jdeepFlavour = TH1D("jdeepFlavour", "jdeepFlavour", 200, 0., 1.)
-        jj_mass = TH1D("jj_mass", "jj_mass", 200, 0, 10000)
+        jj_mass = TH1D("jj_mass", "jj_mass", 400, 0, 10000)
 
         branches = ['jpt_1', 'jpt_2', 'jmass_1', 'jmass_2', 'jj_mass', 'jdeepFlavour_1', 'jdeepFlavour_2']
+        selection = "jj_mass>1200 && jpt_1>500 && jj_deltaEta<1.3"
         if '2016' in sample_title:
-            branches += ['HLT_AK8PFJet500', 'HLT_PFJet500', 'HLT_CaloJet500_NoJetID', 'HLT_PFHT900']
+            selection += " && HLT_AK8PFJet500==1. && HLT_PFJet500==1. && HLT_CaloJet500_NoJetID==1. && HLT_PFHT900==1."
+            #branches += ['HLT_AK8PFJet500', 'HLT_PFJet500', 'HLT_CaloJet500_NoJetID', 'HLT_PFHT900']
         else:
-            branches += ['HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050']
+            selection += " && HLT_AK8PFJet550==1. && HLT_PFJet550==1. && HLT_CaloJet550_NoJetID==1. && HLT_PFHT1050==1."
+            #branches += ['HLT_AK8PFJet550', 'HLT_PFJet550', 'HLT_CaloJet550_NoJetID', 'HLT_PFHT1050']
         weight_branches = ['eventWeightLumi', 'GenWeight', 'PSWeight', 'PUWeight', 'LHEWeight_originalXWGTUP', 'LHEReweightingWeight', 'LHEScaleWeight']
   
         if isSignal:
@@ -174,7 +184,7 @@ def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
     
             if isMC and not isSignal: 
                 try:
-                    variables = root2array(sample, treename='tree', branches=branches+weight_branches)
+                    variables = root2array(sample, treename='tree', branches=branches+weight_branches, selection=selection)
                     weights = variables['eventWeightLumi']
                 except:
                     print "import failed!!"
@@ -187,23 +197,23 @@ def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
     
             else:
                 try:
-                    variables = root2array(sample, treename='tree', branches=branches)
+                    variables = root2array(sample, treename='tree', branches=branches, selection=selection)
                     weights = np.ones(variables.shape[0])
                 except:
                     print "import failed!!"
                     m += nfiles[n]
                     continue
            
-            if '2016' in sample_title:
-                print "using lower trigger requirements for 2016 sample compatibility"
-                trigger1 = np.multiply(variables['HLT_AK8PFJet500'], variables['HLT_PFJet500'])
-                trigger2 = np.multiply(variables['HLT_CaloJet500_NoJetID'], variables['HLT_PFHT900'])
-            else:
-                trigger1 = np.multiply(variables['HLT_AK8PFJet550'], variables['HLT_PFJet550'])
-                trigger2 = np.multiply(variables['HLT_CaloJet550_NoJetID'], variables['HLT_PFHT1050'])
-            trigger = np.multiply(trigger1, trigger2)
+            #if '2016' in sample_title:
+            #    print "using lower trigger requirements for 2016 sample compatibility"
+            #    trigger1 = np.multiply(variables['HLT_AK8PFJet500'], variables['HLT_PFJet500'])
+            #    trigger2 = np.multiply(variables['HLT_CaloJet500_NoJetID'], variables['HLT_PFHT900'])
+            #else:
+            #    trigger1 = np.multiply(variables['HLT_AK8PFJet550'], variables['HLT_PFJet550'])
+            #    trigger2 = np.multiply(variables['HLT_CaloJet550_NoJetID'], variables['HLT_PFHT1050'])
+            #trigger = np.multiply(trigger1, trigger2)
         
-            weights = np.multiply(weights, trigger)
+            #weights = np.multiply(weights, trigger)
         
             fill_hist(jpt1, variables['jpt_1'], weights=weights)
             fill_hist(jpt2, variables['jpt_2'], weights=weights)
@@ -250,14 +260,14 @@ def compare(year):
 
     hist1 = extract_jj_mass("merged_files/merged_trig_data_{}.root".format(year))
     hist2 = extract_jj_mass("merged_files/merged_trig_MC_QCD_{}.root".format(year))
-    hist3 = extract_jj_mass("merged_files/merged_trig_LHEWeighted_MC_QCD_{}.root".format(year)) 
+    #hist3 = extract_jj_mass("merged_files/merged_trig_LHEWeighted_MC_QCD_{}.root".format(year)) 
     hist4 = extract_jj_mass("merged_files/merged_trig_PUWeighted_MC_QCD_{}.root".format(year)) 
-    hist5 = extract_jj_mass("merged_files/merged_trig_LHEWeighted_PUWeighted_MC_QCD_{}.root".format(year)) 
+    #hist5 = extract_jj_mass("merged_files/merged_trig_LHEWeighted_PUWeighted_MC_QCD_{}.root".format(year)) 
     hist1.SetLineColor(1) 
     hist2.SetLineColor(2)
-    hist3.SetLineColor(4)
+    #hist3.SetLineColor(4)
     hist4.SetLineColor(6)
-    hist5.SetLineColor(7)
+    #hist5.SetLineColor(7)
  
     outfile = TFile("compare_MC_to_data_{}_new_weights.root".format(year), "RECREATE")
     c = TCanvas("canvas", "canvas", 600, 600)
@@ -266,21 +276,22 @@ def compare(year):
     hist2.SetTitle("MC_vs_data_"+year)
     hist2.Draw()
     hist1.Draw("SAME")
-    hist3.Draw("SAME")
+    #hist3.Draw("SAME")
     hist4.Draw("SAME")
-    hist5.Draw("SAME")
+    #hist5.Draw("SAME")
     l = TLegend(0.7,0.8,0.9,0.9)
     l.AddEntry(hist1, "data")
     l.AddEntry(hist2, "MC") 
-    l.AddEntry(hist3, "MC_LHE")
+    #l.AddEntry(hist3, "MC_LHE")
     l.AddEntry(hist4, "MC_PU")
-    l.AddEntry(hist5, "MC_LHE_PU")
+    #l.AddEntry(hist5, "MC_LHE_PU")
     l.Draw()
 
     outfile.cd() 
     c.Write()
     c.SaveAs("compare_MC_to_data_{}_new_weights.png".format(year))
     outfile.Close()
+    print "saved canvas in compare_MC_to_data_{}_new_weights.root".format(year)
 
 def SigvsBkg(year):
 

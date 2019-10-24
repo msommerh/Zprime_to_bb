@@ -5,6 +5,7 @@ import numpy as np
 from array import array
 from ROOT import TFile, TH1, TF1, TLorentzVector
 import ROOT
+import sys
 
 import optparse
 usage = 'usage: %prog [options]'
@@ -14,14 +15,14 @@ parser.add_option('-f', '--filter', action='store', type='string', dest='filter'
 parser.add_option('-s', '--single', action='store_true', dest='single', default=False)
 parser.add_option('-v', '--verbose', action='store_true', dest='verbose', default=False)
 parser.add_option('-S', '--isSignal', action='store_true', dest='isSignal', default=False)
-
+parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
 (options, args) = parser.parse_args()
 
 filterset   = options.filter
 singlecore  = options.single
 verboseout  = options.verbose
 year        = options.year
-isMC        = True #only reweight MC anyway
+isMC        = options.isMC
 isSignal    = options.isSignal
 
 if year=='2016':
@@ -113,7 +114,7 @@ def processFile(sample, origin, target, verbose=False):
 
     if not os.path.exists(origin):
         print 'Origin directory', origin, 'does not exist, aborting...'
-        exit()
+        sys.exit()
     if not os.path.exists(target):
         print 'Target directory', target,'does not exist, creating it now'
         os.makedirs(target)
@@ -138,18 +139,19 @@ def processFile(sample, origin, target, verbose=False):
     if j == 0: 
         print '  WARNING: files for sample', sample , 'do not exist, continuing'
         return True
-    for infile_name in file_list:
-        infile = TFile(infile_name, 'READ')
-        evtHist = infile.Get('Events')
-        try:
-            nEvents = evtHist.GetBinContent(1)
-            totalEntries += nEvents
-            print "sample:",sample,"nEvents:", nEvents
-        except:
-            print '  ERROR: nEvents not found in file', sample
-            exit(1)
-        infile.Close()
-    print "totalEntries =", totalEntries
+    if isMC:
+        for infile_name in file_list:
+            infile = TFile(infile_name, 'READ')
+            evtHist = infile.Get('Events')
+            try:
+                nEvents = evtHist.GetBinContent(1)
+                totalEntries += nEvents
+                #print "sample:",sample,"nEvents:", nEvents
+            except:
+                print '  ERROR: nEvents not found in file', sample
+                exit(1)
+            infile.Close()
+        print "totalEntries =", totalEntries
 
     # Cross section
     XS = getXsec(sample.replace(year+'_',''))
@@ -218,27 +220,48 @@ def processFile(sample, origin, target, verbose=False):
                         new_file.cd(subdir)
                         subobj.Write()
                 new_file.cd('..')
-        new_file.Close()
+        #new_file.Close()
         ref_file.Close()
-
+        new_file.Close()
 
 HT_bins = ['50to100', '100to200', '200to300', '300to500', '500to700', '700to1000', '1000to1500', '1500to2000', '2000toInf']
 mass_bins = ['600', '800', '1000', '1200', '1400' , '1600', '1800', '2000', '2500', '3000', '3500', '4000', '4500', '5000', '5500', '6000', '7000', '8000']
+
+data_2016_letters = ["B", "C", "D", "E", "F", "G", "H"]
+data_2017_letters = ["B", "C", "D", "E", "F"]
+data_2018_letters = ["A", "B", "C", "D"]
 
 #sample_name = 'test'
 #sample_names = [sample_name] ## for testing
 
 sample_names = []
-if not isSignal:
+if isMC and not isSignal:
     for HT_bin in HT_bins:  
         sample_names.append("MC_QCD_{}_HT{}".format(year, HT_bin))
-else:
+elif isMC:
     for mass_bin in mass_bins:
         sample_names.append("MC_signal_{}_M{}".format(year, mass_bin))
+else:
+    if year=='2016':
+        letters = data_2016_letters
+    elif year=='2017':
+        letters = data_2017_letters
+    elif year=='2018':
+        letters = data_2018_letters
+    else:
+        print "unknown year"
+        sys.exit()
+    for letter in letters:
+        sample_names.append("data_{}_{}".format(year, letter))
 
 jobs = []
 for d in sample_names:
     origin = '/eos/user/m/msommerh/Zprime_to_bb_analysis/'+d
+    if d=="data_2018_D": 
+        origin='/eos/user/m/msommerh/Zprime_to_bb_analysis/parallel_execution/'+d  ## ad-hoc for now FIXME
+    else:
+        print "not D"
+        continue
     target = '/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/'+d
     #origin = 'test_outfiles'
     #target = 'test_outfiles/weighted'

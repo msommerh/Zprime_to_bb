@@ -24,10 +24,14 @@ if __name__ == "__main__":
                                          help="Set to '1' if the sample is MC QCD background, '0' if it is signal." )
   parser.add_argument('-rs', '--resubmit',   dest='resubmit', type=str, action='store', default="",
                                          help="Indicate file containing titles of the sample for resubmission." )
+  parser.add_argument('-rf', '--resubmit_file',   dest='resubmit_file', type=int, action='store', default=-1,
+                                         help="Indicate output file number for single resubmission." )
   parser.add_argument('-n', '--nFiles',  dest='nFiles',   action='store', type=int, default=10,
                                          help="Number of input files per output nTuple.")
   parser.add_argument('-s', '--single',   dest='single', type=str, action='store', default="",
                                          help="Single dataset to be submitted instead of the standard datasets." )
+  parser.add_argument('-c', '--cores',  dest='cores',   action='store', type=int, default=1,
+                                         help="Number of cpu cores. A number >1 will enable multiprocessing.")
 
   args = parser.parse_args()
   #checkFiles.args = args
@@ -113,7 +117,7 @@ def submitJobs(title, infiles, outdir, jobflavour):
         fout.write("export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh\n")
         fout.write("use_x509userproxy=true\n")
 
-        fout.write("./postprocessors/Zprime_to_bb.py -t {} -i {} -o {} -y {} -MC {} -n {}\n".format(title, infiles, outdir+title, args.year, args.isMC, args.nFiles))
+        fout.write("./postprocessors/Zprime_to_bb.py -t {} -i {} -o {} -y {} -MC {} -n {} -r {}{}\n".format(title, infiles, outdir+title, args.year, args.isMC, args.nFiles, args.resubmit_file, " -mp" if args.cores>1 else ""))
         fout.write("echo 'STOP---------------'\n")
         fout.write("echo\n")
         fout.write("echo\n")
@@ -135,12 +139,14 @@ def makeSubmitFileCondor(exe, jobname, jobflavour):
     submitfile.write("error                 = "+jobname+".$(ClusterId).$(ProcId).err\n")
     submitfile.write("log                   = "+jobname+".$(ClusterId).log\n")
     submitfile.write('+JobFlavour           = "'+jobflavour+'"\n')
+    if args.cores>1: submitfile.write('RequestCpus           = {}\n'.format(args.cores))
     submitfile.write("queue")
     submitfile.close()
 
 def main():
 
         outdir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"
+        #outdir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/parallel_execution/"
         
         #infiles = "filelists/default.txt"
         #title = "test_QCD"
@@ -148,7 +154,12 @@ def main():
         #submitJobs(title+"_2", infiles.replace(".txt","2.txt"), outdir, "longlunch")
         #submitJobs(title+"_3", infiles.replace(".txt","3.txt"), outdir, "longlunch")
         #sys.exit()
-    
+       
+        if args.cores>1:
+            print "Enabling multiprocessing and requesting {} cpu cores.".format(args.cores)
+ 
+        if args.resubmit_file != -1: print "only submitting output file nr", args.resubmit_file
+
         if args.single!="":
             data_set = args.single
             infiles = "filelists/single.txt"
@@ -162,7 +173,7 @@ def main():
             txtfile.close()
 
             ## submit job
-            submitJobs("single", infiles, outdir, args.queue)
+            submitJobs("single_8core", infiles, outdir, args.queue)
 
 
         else:
