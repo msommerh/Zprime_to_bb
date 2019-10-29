@@ -257,11 +257,6 @@ else:
 jobs = []
 for d in sample_names:
     origin = '/eos/user/m/msommerh/Zprime_to_bb_analysis/'+d
-    if d=="data_2018_D": 
-        origin='/eos/user/m/msommerh/Zprime_to_bb_analysis/parallel_execution/'+d  ## ad-hoc for now FIXME
-    else:
-        print "not D"
-        continue
     target = '/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/'+d
     #origin = 'test_outfiles'
     #target = 'test_outfiles/weighted'

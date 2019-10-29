@@ -100,7 +100,7 @@ channelList = ['bb']
 signalList = ['Zprbb']
 color = {'bb' : 4, 'bq': 2, 'qq':8}
 channel = 'bb'
-categories = ['bb', 'bq']
+categories = ['bb', 'bq', 'qq']
 stype = 'Zprime' 
 signalType = 'Zprime'
 

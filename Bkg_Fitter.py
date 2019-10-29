@@ -47,10 +47,11 @@ gStyle.SetPadTopMargin(0.06)
 gStyle.SetPadRightMargin(0.05)
 gStyle.SetErrorX(0.)
 
-if options.isMC:
-    NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
-else:
-     NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"   
+NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
+#if options.isMC:
+#    NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
+#else:
+#     NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"   
 CARDDIR     = "datacards/"
 WORKDIR     = "workspace/"
 RATIO       = 4
@@ -85,7 +86,7 @@ if options.category in ['', 'bb', 'bq']: PLOTDIR+="_btagged"
 if options.test: PLOTDIR += "_test"
 
 signalList = ['Zprime_to_bb']
-categories = ['bb', 'bq']
+categories = ['bb', 'bq', 'qq']
 
 genPoints = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 #massPoints = [x for x in range(1000, 4500+1, 100)] #if not HVTMODEL else genPoints
@@ -138,13 +139,14 @@ def dijet(category):
     X_mass = RooRealVar(        "jj_mass",              "m_{jj}",       1200.,  9000.,  "GeV")
     #j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
     #j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
-    #j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     4500.,  "GeV")
+    j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     4500.,  "GeV")
     #j2_pt = RooRealVar(         "jpt_2",                "jet2 pt",      0.,     4500.,  "GeV")
     #jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",             -2.,   1.       )
     #jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",             -2.,   1.       )
     jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",       "",             0.,   1.        )
     jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             0.,   1.        )
     #MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
+    jj_deltaEta = RooRealVar(    "jj_deltaEta",                "",      0.,     5.)
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
     HLT_PFJet500            = RooRealVar("HLT_PFJet500"            , "" , -1., 1.    )
     HLT_CaloJet500_NoJetID  = RooRealVar("HLT_CaloJet500_NoJetID"  , "" , -1., 1.    )
@@ -157,6 +159,7 @@ def dijet(category):
 
     variables = RooArgSet(X_mass)
     variables.add(RooArgSet(jdeepFlavour_1, jdeepFlavour_2, weight))
+    variables.add(RooArgSet(j1_pt, jj_deltaEta))
     #variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2))
     #variables.add(RooArgSet(MET_over_sumEt, weight))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
@@ -166,6 +169,8 @@ def dijet(category):
     else: binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
     
     baseCut = "HLT_AK8PFJet{0}==1. &&  HLT_PFJet{0}==1. && HLT_CaloJet{0}_NoJetID==1. && HLT_PFHT{1}==1.".format(500 if YEAR=='2016' else 550, 900 if YEAR=='2016' else 1050)
+
+    baseCut += " && jpt_1>500 && jj_deltaEta<1.3"
 
     if category=='bb':
         baseCut += " && jdeepFlavour_1>={0} && jdeepFlavour_2>={0}".format(BTAG_THRESHOLD)

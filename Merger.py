@@ -106,10 +106,11 @@ def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
     if 'MC' in sample_title:
         isMC = True
     data_set_file = "samples_{}.json".format(sample_title)
-    if isMC:
-        sample_dir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
-    else:
-        sample_dir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"
+    sample_dir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
+    #if isMC:
+    #    sample_dir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
+    #else:
+    #    sample_dir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"
 
     output_files = []
     file_list = []
@@ -120,13 +121,7 @@ def produce(sample_title, LHE_weight=False, PU_weight=False, isSignal=False):
         if isSignal: output_files.append("merged_files/merged_trig_{}.root".format(title))
         j = 0
         while True:
-            if title == "data_2018_D":      ## remove later FIXME
-                adhoc = "parallel_execution/"
-                print "using pararallel execution branch for now"
-            else:
-                adhoc = ""     
-            file_path = sample_dir+adhoc+title+"/"+title+"_flatTuple_{}.root".format(j)  ## remove later FIXME
-            #file_path = sample_dir+title+"/"+title+"_flatTuple_{}.root".format(j) 
+            file_path = sample_dir+title+"/"+title+"_flatTuple_{}.root".format(j) 
             if os.path.exists(file_path):
                 file_list.append(file_path)
                 j += 1
