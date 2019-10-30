@@ -14,7 +14,8 @@ from ROOT import RooFit, RooRealVar, RooDataHist, RooDataSet, RooAbsData, RooAbs
 from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooPolynomial, RooChebychev, RooBreitWigner, RooCBShape, RooExtendPdf, RooAddPdf
 
 from rooUtils import *
-#from samples import sample
+from samples import sample
+from aliases import alias
 #from selections import selection
 #from utils import *
 
@@ -36,6 +37,13 @@ parser.add_option("-u", "--unskimmed", action="store_true", default=False, dest=
 #if options.bash: gROOT.SetBatch(True)
 gROOT.SetBatch(True) #suppress immediate graphic output
 if options.test: print "performing test run on small QCD MC sample"
+
+if options.test and not options.isMC:
+    print "There is no test sample on data. Select -M if you want to test on MC QCD 2016."
+    sys.exit()
+if options.test and not options.unskimmed:
+    print "There is no skimmed test sample on data. Select -u if you want to test on the unskimmed MC QCD 2016."
+    sys.exit()
 
 ########## SETTINGS ##########
 
@@ -62,7 +70,6 @@ VARBINS     = False
 BIAS        = options.bias
 YEAR        = options.year
 ISMC        = options.isMC
-BTAG_THRESHOLD = 0.1
 
 if YEAR=='2016':
     LUMI=35920.
@@ -82,7 +89,7 @@ PLOTDIR     = "plots/skimmed/{}_{}".format(DATA_TYPE, YEAR)
 if options.category in ['', 'bb', 'bq']: PLOTDIR+="_btagged"
 if options.test: PLOTDIR += "_test"
 
-if options.unskimmed:
+if options.unskimmed or options.test:
     NTUPLEDIR="/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/" 
     CARDDIR  .replace("skimmed/","")
     WORKDIR  .replace("skimmed/","")
@@ -92,7 +99,6 @@ signalList = ['Zprime_to_bb']
 categories = ['bb', 'bq', 'qq']
 
 genPoints = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
-#massPoints = [x for x in range(1000, 4500+1, 100)] #if not HVTMODEL else genPoints
 massPoints = genPoints
 
 #bins = [985, 1085, 1185, 1285, 1385, 1485, 1585, 1685, 1785, 1885, 1985, 2085, 2185, 2285, 2385, 2485, 2585, 2685, 2785, 2885, 2985, 3085, 3185, 3285, 3385, 3485, 3585, 3685, 3785, 3885, 3985, 4085, 4185, 4285, 4385, 4485, 4585, 4685, 4785, 4885, 4985, 5085, ] # 100 GeV
@@ -122,24 +128,24 @@ def dijet(category):
  
     samples = data if isData else back
     pd = []
-    if isData:
-        alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-        for letter in alphabet: pd.append("data_"+YEAR+"_"+letter)
-    else:
-        if options.test:
+    if options.test:
+        if ISMC:
             pd.append("MC_QCD_"+YEAR)
             nTupleDir = NTUPLEDIR.replace("weighted/","test_for_fit/")
         else:
-            HT_bins = ['50to100', '100to200', '200to300', '300to500', '500to700', '700to1000', '1000to1500', '1500to2000', '2000toInf']
-            for HT_bin in HT_bins: pd.append("MC_QCD_"+YEAR+"_HT"+HT_bin)
-
+            print "No test sample for real data was implemented. Select '-M' if you want to test on a small MC QCD sample."
+            sys.exit()
+    else:
+        for sample_name in samples:
+            pd += [x for x in sample[sample_name]['files'] if YEAR in x]
+    print "datasets:", pd
     if not os.path.exists(PLOTDIR): os.makedirs(PLOTDIR)
     if BIAS: print "Running in BIAS mode"
     
     order = 0
     RSS = {}
     
-    X_mass = RooRealVar(        "jj_mass",              "m_{jj}",       1200.,  9000.,  "GeV")
+    X_mass = RooRealVar(        "jj_mass",              "m_{jj}",       1400.,  9000.,  "GeV")
     #j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
     #j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
     j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     4500.,  "GeV")
@@ -171,21 +177,13 @@ def dijet(category):
     if VARBINS: binsXmass = RooBinning(len(abins)-1, abins)
     else: binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
     
-    baseCut = "HLT_AK8PFJet{0}==1. &&  HLT_PFJet{0}==1. && HLT_CaloJet{0}_NoJetID==1. && HLT_PFHT{1}==1.".format(500 if YEAR=='2016' else 550, 900 if YEAR=='2016' else 1050)
-
-    baseCut += " && jpt_1>500 && jj_deltaEta<1.3"
-
-    if category=='bb':
-        baseCut += " && jdeepFlavour_1>={0} && jdeepFlavour_2>={0}".format(BTAG_THRESHOLD)
-    elif category=='bq':
-        baseCut += " && ((jdeepFlavour_1>={0} && jdeepFlavour_2<{0}) || (jdeepFlavour_1<{0} && jdeepFlavour_2>={0}))".format(BTAG_THRESHOLD)
+    baseCut = alias[category]
 
     print stype, "|", baseCut
-    
-    file = {}
+ 
     print " - Reading from Tree"
     treeBkg = TChain("tree")
-    if options.unskimmed:
+    if options.unskimmed or options.test:
         for i, ss in enumerate(pd):
             j = 0
             while True:
@@ -327,7 +325,8 @@ def dijet(category):
                 #break
         else:
             print "%d par are needed" % (o2+1),
-            order = o2
+            if not CL_high:
+                order = o2
         print "\\\\"
     print "\\hline"
     print "-"*25   

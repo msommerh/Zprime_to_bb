@@ -26,16 +26,13 @@ parser.add_option("-y", "--year", action="store", type="string", dest="year", de
 parser.add_option("-n", "--norm", action="store_true", default=False, dest="norm")
 parser.add_option("-t", "--top", action="store_true", default=False, dest="top")
 parser.add_option("-a", "--all", action="store_true", default=False, dest="all")
-#parser.add_option("-b", "--bash", action="store_true", default=False, dest="bash")
 parser.add_option("-B", "--blind", action="store_true", default=False, dest="blind")
 parser.add_option("-f", "--final", action="store_true", default=False, dest="final")
 (options, args) = parser.parse_args()
-#if options.bash: gROOT.SetBatch(True)
-gROOT.SetBatch(True)
 
 ########## SETTINGS ##########
 
-#gROOT.SetBatch(True)
+gROOT.SetBatch(True)
 #gROOT.ProcessLine("TSystemDirectory::SetDirectory(0)")
 #gROOT.ProcessLine("TH1::AddDirectory(kFALSE);")
 gStyle.SetOptStat(0)

@@ -15,8 +15,8 @@ from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooP
 
 #from alpha import drawPlot
 from rooUtils import *
-#from samples import sample
-#from selections import selection
+from samples import sample
+from aliases import alias
 
 
 import optparse
@@ -55,15 +55,14 @@ colour = [
 channel = 'bb'
 stype = 'Zprime' 
 #category = options.category
-selection = {'bb':'', 'SR':''} #no selection so far
-#genPoints = [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+#selection = {'bb':'', 'SR':''} #no selection so far
 genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 massPoints = [x for x in range(600, 8000+1, 100)]
-sample = {}
-for j, m in enumerate(massPoints):
-    sample["%s%s_M%d" % (stype, channel, m)] = {'linecolor':j}
-for j, m in enumerate(genPoints):
-    sample["%s%s_M%d" % (stype, channel, m)] = {'linecolor':j%9+1}
+#sample = {}
+#for j, m in enumerate(massPoints):
+#    sample["%s%s_M%d" % (stype, channel, m)] = {'linecolor':j}
+#for j, m in enumerate(genPoints):
+#    sample["%s%s_M%d" % (stype, channel, m)] = {'linecolor':j%9+1}
 #FIXME
 
 # Silent RooFit
@@ -134,10 +133,11 @@ def signal(category):
     #              Variables and selections                 #
     #                                                       #
     #*******************************************************#
-    X_mass  = RooRealVar (      "jj_mass",              "m_{jj}",       0.,     10000.,  "GeV")
+    X_mass  = RooRealVar (      "jj_mass",              "m_{jj}",       1400.,     10000.,  "GeV")
     #j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
     #j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
-    #j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     4500.,  "GeV")
+    j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     4500.,  "GeV")
+    jj_deltaEta = RooRealVar(    "jj_deltaEta",                "",      0.,     5.)
     #j2_pt = RooRealVar(         "jpt_2",                "jet2 pt",      0.,     4500.,  "GeV")
     #jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",             -2.,   1.       )
     #jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",             -2.,   1.       )
@@ -165,7 +165,7 @@ def signal(category):
     # Define the RooArgSet which will include all the variables defined before
     # there is a maximum of 9 variables in the declaration, so the others need to be added with 'add'
     variables = RooArgSet(X_mass)
-    variables.add(RooArgSet(jdeepFlavour_1, jdeepFlavour_2, weight))
+    variables.add(RooArgSet(j1_pt, jj_deltaEta, jdeepFlavour_1, jdeepFlavour_2, weight))
     #variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2))
     #variables.add(RooArgSet(MET_over_sumEt, weight))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
@@ -179,12 +179,13 @@ def signal(category):
     massArg = RooArgSet(X_mass)
 
     # Cuts
-    SRcut = "HLT_AK8PFJet{0}==1. &&  HLT_PFJet{0}==1. && HLT_CaloJet{0}_NoJetID==1. && HLT_PFHT{1}==1.".format(500 if YEAR=='2016' else 550, 900 if YEAR=='2016' else 1050)
+    #SRcut = "HLT_AK8PFJet{0}==1. &&  HLT_PFJet{0}==1. && HLT_CaloJet{0}_NoJetID==1. && HLT_PFHT{1}==1.".format(500 if YEAR=='2016' else 550, 900 if YEAR=='2016' else 1050)
 
-    if category=='bb':
-        SRcut += " && jdeepFlavour_1>={0} && jdeepFlavour_2>={0}".format(BTAG_THRESHOLD)
-    elif category=='bq':
-        SRcut += " && ((jdeepFlavour_1>={0} && jdeepFlavour_2<{0}) || (jdeepFlavour_1<{0} && jdeepFlavour_2>={0}))".format(BTAG_THRESHOLD)
+    #if category=='bb':
+    #    SRcut += " && jdeepFlavour_1>={0} && jdeepFlavour_2>={0}".format(BTAG_THRESHOLD)
+    #elif category=='bq':
+    #    SRcut += " && ((jdeepFlavour_1>={0} && jdeepFlavour_2<{0}) || (jdeepFlavour_1<{0} && jdeepFlavour_2>={0}))".format(BTAG_THRESHOLD)
+    SRcut = alias[category]
 
     print "  Cut:\t", SRcut
     #SRcut = SRcut.replace('isVtoQQ', '0==0')
@@ -276,13 +277,13 @@ def signal(category):
     # the alpha method is now done.
     for m in massPoints:
 
-        signalString = "M%d" % m
+        #signalString = "M%d" % m
         signalMass = "%s_M%d" % (stype, m)
         #signalName = "%s%s_M%d" % (stype, category, m)
-        signalName = "%s%s_M%d" % (stype, channel, m)
+        #signalName = "%s%s_M%d" % (stype, channel, m)
+        signalName = "ZpBB_M{}".format(m)
  
         signalColor = sample[signalName]['linecolor'] if signalName in sample else 1
-        #signalColor = 1 #just put something FIXME
         # fit the shape of the signal and put everything together in the datacard and workspace
         # for the time being the signal is fitted using 1 Gaussian in a range defined below (hardcoded)
 
@@ -333,7 +334,15 @@ def signal(category):
 
             # define the dataset for the signal applying the SR cuts
             treeSign[m] = TChain("tree")
-            ss = "MC_signal_"+YEAR+"_M"+str(m)
+
+            ss = [x for x in sample[signalName]['files'] if YEAR in x]
+            if len(ss)>1:
+                print "multiple files given for a single masspoint/year:",ss
+                sys.exit()
+            else:
+                ss = ss[0]
+            
+            #ss = "MC_signal_"+YEAR+"_M"+str(m)
             if options.unskimmed:
                 j=0
                 while True:
@@ -540,8 +549,9 @@ def signal(category):
         if not m in signalNorm.keys(): continue
         #if not signalNorm[m].getVal() > 1.: continue
         if signalNorm[m].getVal() < 1.e-6: continue
-        signalString = "M%d" % m
-        signalName = "%s_M%d" % (stype, m)
+        #signalString = "M%d" % m
+        #signalName = "%s_M%d" % (stype, m)
+        
 
         if gnorm.GetMaximum() < signalNorm[m].getVal(): gnorm.SetMaximum(signalNorm[m].getVal())
         gnorm.SetPoint(n, m, signalNorm[m].getVal())
@@ -573,7 +583,7 @@ def signal(category):
     gnorm.Fit(fnorm, "Q", "SAME", 700, 6000)
 
     for m in massPoints:
-        signalName = "%s_M%d" % (stype, m)
+        #signalName = "%s_M%d" % (stype, m)
 
         # set parameters
         # Fit method
@@ -638,7 +648,7 @@ def signal(category):
     gsigma.SetMinimum(0.)
     gsigma.Draw("APL")
     isigma.Draw("P, SAME")
-    drawRegian(channel)
+    drawRegion(channel)
 #    esigma = TGraphErrors(gsigma)
 #    esigma.SetFillStyle(3003)
 #    esigma.SetFillColor(1)
