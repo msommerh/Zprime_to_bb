@@ -31,6 +31,7 @@ parser.add_option("-t", "--test_run", action="store_true", default=False, dest="
 parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
+parser.add_option("-u", "--unskimmed", action="store_true", default=False, dest="unskimmed")
 (options, args) = parser.parse_args()
 #if options.bash: gROOT.SetBatch(True)
 gROOT.SetBatch(True) #suppress immediate graphic output
@@ -47,13 +48,9 @@ gStyle.SetPadTopMargin(0.06)
 gStyle.SetPadRightMargin(0.05)
 gStyle.SetErrorX(0.)
 
-NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
-#if options.isMC:
-#    NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
-#else:
-#     NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"   
-CARDDIR     = "datacards/"
-WORKDIR     = "workspace/"
+NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"
+CARDDIR     = "datacards/skimmed/"
+WORKDIR     = "workspace/skimmed/"
 RATIO       = 4
 SHOWERR     = True
 BLIND       = False
@@ -81,9 +78,15 @@ if ISMC:
     DATA_TYPE = "MC_QCD"
 else:
     DATA_TYPE = "data"
-PLOTDIR     = "plots/{}_{}".format(DATA_TYPE, YEAR)
+PLOTDIR     = "plots/skimmed/{}_{}".format(DATA_TYPE, YEAR)
 if options.category in ['', 'bb', 'bq']: PLOTDIR+="_btagged"
 if options.test: PLOTDIR += "_test"
+
+if options.unskimmed:
+    NTUPLEDIR="/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/" 
+    CARDDIR  .replace("skimmed/","")
+    WORKDIR  .replace("skimmed/","")
+    PLOTDIR  .replace("skimmed/","")
 
 signalList = ['Zprime_to_bb']
 categories = ['bb', 'bq', 'qq']
@@ -182,15 +185,22 @@ def dijet(category):
     file = {}
     print " - Reading from Tree"
     treeBkg = TChain("tree")
-    for i, ss in enumerate(pd):
-        j = 0
-        while True:
-            if os.path.exists(nTupleDir + ss + "/" + ss + "_flatTuple_{}.root".format(j)):
-                treeBkg.Add(nTupleDir + ss + "/" + ss + "_flatTuple_{}.root".format(j))
-                j += 1
+    if options.unskimmed:
+        for i, ss in enumerate(pd):
+            j = 0
+            while True:
+                if os.path.exists(nTupleDir + ss + "/" + ss + "_flatTuple_{}.root".format(j)):
+                    treeBkg.Add(nTupleDir + ss + "/" + ss + "_flatTuple_{}.root".format(j))
+                    j += 1
+                else:
+                    print "found {} files for sample:".format(j), ss
+                    break
+    else:
+        for ss in pd:
+            if os.path.exists(nTupleDir + ss + ".root"):
+                treeBkg.Add(nTupleDir + ss + ".root")
             else:
-                print "found {} files for sample:".format(j), ss
-                break
+                print "found no file for sample:", ss
     #setData = RooDataSet("setData", "Data" if isData else "Data (QCD MC)", variables, RooFit.Cut(baseCut), RooFit.WeightVar(weight), RooFit.Import(treeBkg))
     if isData or options.test:
         setData = RooDataSet("setData", "Data", variables, RooFit.Cut(baseCut), RooFit.Import(treeBkg))
@@ -241,7 +251,7 @@ def dijet(category):
     fitRes2.Print()
     
     # 3 parameters
-    print "fitting 3 paramter model"
+    print "fitting 3 parameter model"
     p3_1 = RooRealVar("CMS"+YEAR+"_"+category+"_p3_1", "p1", p2_1.getVal(), -2000., 2000.)
     p3_2 = RooRealVar("CMS"+YEAR+"_"+category+"_p3_2", "p2", p2_2.getVal(), -400., 2000.)
     p3_3 = RooRealVar("CMS"+YEAR+"_"+category+"_p3_3", "p3", -2.5, -500., 500.)
@@ -299,22 +309,25 @@ def dijet(category):
     print "function & $\\chi^2$ & RSS & ndof & F-test & result \\\\"
     print "\\multicolumn{6}{c}{", "Zprime_to_bb", "} \\\\"
     print "\\hline"
+    CL_high = False
     for o1 in range(1, 5):
         o2 = min(o1 + 1, 5)
         print "%d par & %.2f & %.2f & %d & " % (o1+1, RSS[o1]["chi2"], RSS[o1]["rss"], RSS[o1]["nbins"]-RSS[o1]["npar"]),
         if o2 > len(RSS):
             print "\\\\"
             continue #order==0 and 
-        CL = fisherTest(RSS[o1]['rss'], RSS[o2]['rss'], o1+1, o2+1, RSS[o1]["nbins"])
-        print "%d par vs %d par CL=%.2f & " % (o1+1, o2+1, CL),
+        CL = fisherTest(RSS[o1]['rss'], RSS[o2]['rss'], o1+1., o2+1., RSS[o1]["nbins"])
+        print "%d par vs %d par CL=%f & " % (o1+1, o2+1, CL),
         if CL > 0.10: # The function with less parameters is enough
-            if not order:
+            if not CL_high:
+            #if not order:
                 order = o1
                 print "%d par are sufficient" % (o1+1),
+                CL_high=True
                 #break
         else:
             print "%d par are needed" % (o2+1),
-            #order = o2
+            order = o2
         print "\\\\"
     print "\\hline"
     print "-"*25   

@@ -33,6 +33,7 @@ parser.add_option("-e", "--efficiency", action="store_true", default=False, dest
 parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose")
 parser.add_option("-y", "--year", action="store", type="string", dest="year",default="2017")
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
+parser.add_option("-u", "--unskimmed", action="store_true", default=False, dest="unskimmed")
 (options, args) = parser.parse_args()
 #if options.bash: gROOT.SetBatch(True)
 gROOT.SetBatch(True)
@@ -74,10 +75,10 @@ gStyle.SetPadTopMargin(0.06)
 gStyle.SetPadRightMargin(0.05)
 gStyle.SetErrorX(0.)
 
-NTUPLEDIR   = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"
-PLOTDIR     = "plots/"
-CARDDIR     = "datacards/"
-WORKDIR     = "workspace/"
+NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"
+PLOTDIR     = "plots/skimmed/"
+CARDDIR     = "datacards/skimmed/"
+WORKDIR     = "workspace/skimmed/"
 RATIO       = 4
 YEAR        = options.year
 #LUMI        = 35867
@@ -95,6 +96,12 @@ elif YEAR=='2018':
 else:
     print "unknown year:",YEAR
     sys.exit()
+
+if options.unskimmed:
+    NTUPLEDIR="/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
+    CARDDIR  .replace("skimmed/","")
+    WORKDIR  .replace("skimmed/","")
+    PLOTDIR  .replace("skimmed/","")
 
 channelList = ['bb']
 signalList = ['Zprbb']
@@ -326,15 +333,21 @@ def signal(category):
 
             # define the dataset for the signal applying the SR cuts
             treeSign[m] = TChain("tree")
-            j = 0
             ss = "MC_signal_"+YEAR+"_M"+str(m)
-            while True:
-                if os.path.exists(NTUPLEDIR + ss + "/" + ss + "_flatTuple_{}.root".format(j)):
-                    treeSign[m].Add(NTUPLEDIR + ss + "/" + ss + "_flatTuple_{}.root".format(j))
-                    j += 1
+            if options.unskimmed:
+                j=0
+                while True:
+                    if os.path.exists(NTUPLEDIR + ss + "/" + ss + "_flatTuple_{}.root".format(j)):
+                        treeSign[m].Add(NTUPLEDIR + ss + "/" + ss + "_flatTuple_{}.root".format(j))
+                        j += 1
+                    else:
+                        print "found {} files for sample:".format(j), ss
+                        break
+            else:
+                if os.path.exists(NTUPLEDIR + ss + ".root"):
+                    treeSign[m].Add(NTUPLEDIR + ss + ".root")
                 else:
-                    print "found {} files for sample:".format(j), ss
-                    break
+                    print "found no file for sample:", ss
             
             if treeSign[m].GetEntries() <= 0.:
                 if VERBOSE: print " - 0 events available for mass", m, "skipping mass point..."

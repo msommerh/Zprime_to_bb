@@ -26,11 +26,12 @@ parser.add_option("-y", "--year", action="store", type="string", dest="year", de
 parser.add_option("-n", "--norm", action="store_true", default=False, dest="norm")
 parser.add_option("-t", "--top", action="store_true", default=False, dest="top")
 parser.add_option("-a", "--all", action="store_true", default=False, dest="all")
-parser.add_option("-b", "--bash", action="store_true", default=False, dest="bash")
+#parser.add_option("-b", "--bash", action="store_true", default=False, dest="bash")
 parser.add_option("-B", "--blind", action="store_true", default=False, dest="blind")
 parser.add_option("-f", "--final", action="store_true", default=False, dest="final")
 (options, args) = parser.parse_args()
-if options.bash: gROOT.SetBatch(True)
+#if options.bash: gROOT.SetBatch(True)
+gROOT.SetBatch(True)
 
 ########## SETTINGS ##########
 
@@ -272,10 +273,11 @@ def plot(var, cut, year, norm=False, nm1=False):
     c1.Update()
     
     if gROOT.IsBatch():
+        if channel=="": channel="nocut"
         varname = var.replace('.', '_').replace('()', '')
         if not os.path.exists("plots/"+channel): os.makedirs("plots/"+channel)
-        c1.Print("plots/"+channel+"/"+varname+".png")
-        c1.Print("plots/"+channel+"/"+varname+".pdf")
+        c1.Print("plots/"+channel+"/"+varname+"_"+year+".png")
+        c1.Print("plots/"+channel+"/"+varname+"_"+year+".pdf")
     
     # Print table
     printTable(hist, sign)
