@@ -25,6 +25,7 @@ parser.add_option("-t", "--test_run", action="store_true", default=False, dest="
 parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
+parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
 (options, args) = parser.parse_args()
 gROOT.SetBatch(True) #suppress immediate graphic output
 if options.test: print "performing test run on small QCD MC sample"
@@ -34,10 +35,17 @@ if options.test: print "performing test run on small QCD MC sample"
 CARDDIR     = "datacards/"
 YEAR        = options.year
 ISMC        = options.isMC
+BTAGGING    = options.btagging
 
-if YEAR not in ['2016', '2017', '2018']:
+if YEAR not in ['2016', '2017', '2018', 'run2']:
     print "unknown year:",YEAR
     sys.exit()
+
+if BTAGGING not in ['tight', 'medium', 'loose']:
+    print "unknown btagging requirement:", BTAGGING
+    sys.exit()
+
+CARDDIR = CARDDIR+BTAGGING+"/"
 
 categories = ['bb', 'bq']
 
@@ -48,17 +56,17 @@ massPoints = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 
 def datacards(category):
 
     for i, m in enumerate(massPoints):
-        generate_datacard(YEAR, category, m, CARDDIR+"%s_%s_M%d%s%s.txt" % (category, YEAR, m, "_MC" if ISMC else "" , "_test" if options.test else ""))
+        generate_datacard(YEAR, category, m, BTAGGING, CARDDIR+"%s_%s_M%d%s%s.txt" % (category, YEAR, m, "_MC" if ISMC else "" , "_test" if options.test else ""))
 
 
-def generate_datacard(year, category, masspoint, outname):
+def generate_datacard(year, category, masspoint, btagging, outname):
     card  = "imax 1\n"
     card += "jmax 1\n"
     card += "kmax *\n"
     card += "-----------------------------------------------------------------------------------\n"
-    card += "shapes            sig  *    signal_workspace/MC_signal_{year}_{category}.root     Zprime_{year}:Zprimebb_{masspoint}\n".format(year=year, category=category, masspoint=masspoint)
-    card += "shapes            bkg  *    bkg_workspace/data_{year}_{category}.root    Zprime_{year}:Bkg_{category}\n".format(year=year, category=category)
-    card += "shapes            data_obs  *    bkg_workspace/data_{year}_{category}.root    Zprime_{year}:data_obs\n".format(year=year, category=category)
+    card += "shapes            sig  *    signal_workspace/skimmed/{btagging}/MC_signal_{year}_{category}.root     Zprime_{year}:ZpBB_M{masspoint}\n".format(year=year, category=category, masspoint=masspoint, btagging=btagging)
+    card += "shapes            bkg  *    bkg_workspace/skimmed/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:Bkg_{category}\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging)
+    card += "shapes            data_obs  *    bkg_workspace/skimmed/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:data_obs\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging)
     card += "-----------------------------------------------------------------------------------\n"
     card += "bin               {}\n".format(category)
     card += "observation       -1\n"

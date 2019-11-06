@@ -16,12 +16,11 @@ if __name__ == "__main__":
                                          help="select queue for submission" )
   parser.add_argument('-v', '--verbose', dest='verbose', default=False, action='store_true',
                                          help="set verbose" )
-  parser.add_argument('-y', '--year',    dest='year', type=int, default=2016, action='store',
-                                         help="set year, type '0' for QCD" )
-  parser.add_argument('-MC', '--isMC',   dest='isMC', type=int, action='store', default=1,
-                                         help="Set to '1' if the sample is MC, '0' if it is data." )
-  parser.add_argument('-BG', '--isBG',   dest='isBG', type=int, action='store', default=0,
-                                         help="Set to '1' if the sample is MC QCD background, '0' if it is signal." )
+  parser.add_argument('-y', '--year',    dest='year', type=str, default='2016', action='store',
+                                         help="set year." )
+  parser.add_argument('-MC', '--isMC',   dest='isMC',  action='store_true', default=False,
+                                         help="Select this if the sample is MC, otherwise it is flagged as data.")
+  parser.add_argument('-MT', '--mcType',   dest='mcType', type=str, action='store', default="QCD", choices=['QCD', 'TTbar', 'signal'],                                        help="Select the type of MC. Either signal, QCD or TTbar." )
   parser.add_argument('-rs', '--resubmit',   dest='resubmit', type=str, action='store', default="",
                                          help="Indicate file containing titles of the sample for resubmission." )
   parser.add_argument('-rf', '--resubmit_file',   dest='resubmit_file', type=int, action='store', default=-1,
@@ -42,7 +41,6 @@ if __name__ == "__main__":
 #jobflavour = 'workday' #max 8h
 #jobflavour = 'tomorrow' #max 1d
 #jobflavour = 'testmatch' #max 3d
-
 
 else:
   args = None
@@ -110,14 +108,13 @@ def submitJobs(title, infiles, outdir, jobflavour):
         fout.write("cd CMSSW_10_3_3/src\n")
         fout.write("eval `scram runtime -sh`\n")
         fout.write("cd -\n" )
-        #fout.write("cd /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer\n")
         fout.write("echo 'cmssw release = ' $CMSSW_BASE\n")
         fout.write("source /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/setupEnv.sh\n")
 
         fout.write("export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh\n")
         fout.write("use_x509userproxy=true\n")
 
-        fout.write("./postprocessors/Zprime_to_bb.py -t {} -i {} -o {} -y {} -MC {} -n {} -r {}{}\n".format(title, infiles, outdir+title, args.year, args.isMC, args.nFiles, args.resubmit_file, " -mp" if args.cores>1 else ""))
+        fout.write("./postprocessors/Zprime_to_bb.py -t {} -i {} -o {} -y {}{} -n {} -r {}{}\n".format(title, infiles, outdir+title, args.year, ' -MC' if args.isMC else '', args.nFiles, args.resubmit_file, " -mp" if args.cores>1 else ""))
         fout.write("echo 'STOP---------------'\n")
         fout.write("echo\n")
         fout.write("echo\n")
@@ -179,23 +176,13 @@ def main():
         else:
 
             ## load data sets from file
-            if args.isMC == 1:
-                    data_type="MC"
-                    if args.isBG == 1:
-                            data_type += "_QCD"
-                    elif args.isBG == 0:
-                            data_type += "_signal"
-                    else:
-                            print "Invalid input to isBG. Abort submission!!"
-                            sys.exit()
-            elif args.isMC == 0:
-                    data_type="data"
+            if args.isMC:
+                    data_type="MC_"+args.mcType
             else:
-                    print "Invalid input to isMC. Abort submission!!"
-                    sys.exit()
+                    data_type="data"
     
-            if args.year in [2016,2017,2018]:
-                    data_set_file = 'samples_{}_{}.json'.format(data_type, args.year)
+            if args.year in ['2016','2017','2018']:
+                    data_set_file = 'samples/samples_{}_{}.json'.format(data_type, args.year)
             else:
                     print "Unknown year. Abort submission!!"
                     sys.exit()

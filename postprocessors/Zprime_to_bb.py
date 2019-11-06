@@ -16,14 +16,11 @@ from math import ceil
 import multiprocessing
 
 def Run(subsample, branchsel, module2run, postfix, json, isMC):
-    if int(isMC) == 1:
+    if isMC:
         p = PostProcessor('.', subsample, None, branchsel, noOut=True, modules=[module2run()], provenance=False, postfix=postfix.replace('.root', '_'+str(
 n)+'.root'), compression=0)
-    elif int(isMC) == 0:
-        p = PostProcessor('.', subsample, None, branchsel, noOut=True, modules=[module2run()], provenance=False, jsonInput=json, postfix=postfix.replace('.root', '_'+str(n)+'.root'), compression=0)
     else:
-        print "Invalid isMC input:",isMC, "!! Aborting postprocessing!!"
-        sys.exit()
+        p = PostProcessor('.', subsample, None, branchsel, noOut=True, modules=[module2run()], provenance=False, jsonInput=json, postfix=postfix.replace('.root', '_'+str(n)+'.root'), compression=0)
     p.run()
 
 parser = ArgumentParser()
@@ -32,7 +29,7 @@ parser.add_argument('-i', '--infiles',  dest='infiles',   action='store', type=s
 parser.add_argument('-o', '--outdir',   dest='outdir',    action='store', type=str, default='test_outfiles')
 parser.add_argument('-n', '--nFiles',  dest='nFiles',   action='store', type=int, default=10)
 parser.add_argument('-y', '--year',  dest='year',   action='store', type=int, default=2016)
-parser.add_argument('-MC', '--isMC',  dest='isMC',   action='store', type=int, default=1)
+parser.add_argument('-MC', '--isMC',   dest='isMC',  action='store_true', default=False)
 parser.add_argument('-r', '--resubmit',  dest='resubmit',   action='store', type=int, default=-1)
 parser.add_argument('-mp', '--multiprocessing',  dest='multiprocessing',   action='store_true', default=False)
 args = parser.parse_args()
@@ -76,7 +73,7 @@ for n in range(int(ceil(float(len(infiles))/nFiles))):
         sys.stderr.write("working on file nr "+str(n)+"\n")
         if args.resubmit != -1 and n != args.resubmit: continue
         subsample = infiles[n*nFiles:(n+1)*nFiles]
-        module2run = lambda: ZprimetobbProducer(postfix.replace('.root', '_'+str(n)+'.root'), isMC=bool(args.isMC), year=year)
+        module2run = lambda: ZprimetobbProducer(postfix.replace('.root', '_'+str(n)+'.root'), isMC=args.isMC, year=year)
         
         RunProcess = lambda : Run(subsample, branchsel, module2run, postfix, json, args.isMC)
         

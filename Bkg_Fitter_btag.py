@@ -15,7 +15,7 @@ from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooP
 
 from rooUtils import *
 from samples import sample
-from aliases import alias
+from aliases import alias, deepFlavour
 #from selections import selection
 #from utils import *
 
@@ -31,6 +31,7 @@ parser.add_option("-t", "--test_run", action="store_true", default=False, dest="
 parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
+parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
 parser.add_option("-u", "--unskimmed", action="store_true", default=False, dest="unskimmed")
 parser.add_option("-S", "--submitted", action="store_true", default=False, dest="submitted")
 (options, args) = parser.parse_args()
@@ -69,6 +70,7 @@ VARBINS     = False
 BIAS        = options.bias
 YEAR        = options.year
 ISMC        = options.isMC
+BTAGGING    = options.btagging
 
 if YEAR=='2016':
     LUMI=35920.
@@ -82,13 +84,18 @@ else:
     print "unknown year:",YEAR
     sys.exit()
 
+if BTAGGING not in ['tight', 'medium', 'loose']:
+    print "unknown btagging requirement:", BTAGGING
+    sys.exit()
+
+WORKDIR = WORKDIR+BTAGGING+"/"
+
 if ISMC:
     #DATA_TYPE = "MC_QCD"
     DATA_TYPE = "MC_QCD_TTbar"
 else:
     DATA_TYPE = "data"
-PLOTDIR     = "plots/skimmed/{}_{}".format(DATA_TYPE, YEAR)
-if options.category in ['', 'bb', 'bq']: PLOTDIR+="_btagged"
+PLOTDIR     = "plots/skimmed/"+BTAGGING+"/{}_{}".format(DATA_TYPE, YEAR)
 if options.test: PLOTDIR += "_test"
 
 if options.unskimmed or options.test:
@@ -187,7 +194,8 @@ def dijet(category):
     if VARBINS: binsXmass = RooBinning(len(abins)-1, abins)
     else: binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
     
-    baseCut = alias[category]
+    #baseCut = alias[category]
+    baseCut = alias[category].format(b_threshold=deepFlavour[BTAGGING][YEAR])
 
     print stype, "|", baseCut
  

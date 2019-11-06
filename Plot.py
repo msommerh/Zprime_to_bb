@@ -49,7 +49,8 @@ LUMI        = {"run2" : 137190, "2016" : 35920, "2017" : 41530, "2018" : 59740}
 
 ########## SAMPLES ##########
 data = ["data_obs"]
-back = ["QCD"]
+#back = ["QCD", "TTbar"]
+back = ["TTbar", "QCD"]
 #back = ["VV", "ST", "TTbarSL", "WJetsToLNu_HT", "DYJetsToNuNu_HT", "DYJetsToLL_HT"]
 sign = ['ZpBB_M2000', 'ZpBB_M4000', 'ZpBB_M6000', 'ZpBB_M8000']
 #sign = ['ZpBB_M1000', 'ZpBB_M1200', 'ZpBB_M1400', 'ZpBB_M1600', 'ZpBB_M1800', 'ZpBB_M2000', 'ZpBB_M2500', 'ZpBB_M3000', 'ZpBB_M3500', 'ZpBB_M4000', 'ZpBB_M4500', 'ZpBB_M5000', 'ZpBB_M5500', 'ZpBB_M6000', 'ZpBB_M7000', 'ZpBB_M8000']
@@ -137,9 +138,9 @@ def plot(var, cut, year, norm=False, nm1=False):
         for i, s in enumerate(back + ['BkgSum']): hist[s].Scale(hist[data[0]].Integral()/hist['BkgSum'].Integral())
 
     # Create data and Bkg sum histograms
-#    if options.blind or 'SR' in channel:
-#        hist['data_obs'] = hist['BkgSum'].Clone("data_obs")
-#        hist['data_obs'].Reset("MICES")
+    if options.blind or 'SR' in channel:
+        hist['data_obs'] = hist['BkgSum'].Clone("data_obs")
+        hist['data_obs'].Reset("MICES")
     # Set histogram style
     hist['data_obs'].SetMarkerStyle(20)
     hist['data_obs'].SetMarkerSize(1.25)

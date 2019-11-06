@@ -516,7 +516,19 @@ def drawCMS(lumi, text, onTop=False):
     latex.SetTextFont(42)
     latex.SetTextAlign(33)
     if (type(lumi) is float or type(lumi) is int):
-        if float(lumi) > 0: latex.DrawLatex(0.95, 0.99, "%.1f fb^{-1}  (13 TeV)" % (float(lumi)/1000.))
+        if float(lumi) > 0: 
+            latex.DrawLatex(0.95, 0.99, "%.1f fb^{-1}  (13 TeV)" % (float(lumi)/1000.))
+            if lumi==35920.:
+                year = '2016'
+            elif lumi==41530.:
+                year = '2017'
+            elif lumi==59740.:
+                year = '2018'
+            elif lumi==137190.:
+                year = 'RunII'
+            else: 
+                year = ''
+            latex.DrawLatex(0.24, 0.99, year)
         else: latex.DrawLatex(0.95, 0.99, "(13 TeV)")
     elif type(lumi) is str: latex.DrawLatex(0.95, 0.985, "%s  (13 TeV)" % lumi)
     if not onTop: latex.SetTextAlign(11)

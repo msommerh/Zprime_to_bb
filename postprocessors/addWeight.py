@@ -7,23 +7,20 @@ from ROOT import TFile, TH1, TF1, TLorentzVector
 import ROOT
 import sys
 
-import optparse
-usage = 'usage: %prog [options]'
-parser = optparse.OptionParser(usage)
-parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2017')
-parser.add_option('-f', '--filter', action='store', type='string', dest='filter', default='')
-parser.add_option('-s', '--single', action='store_true', dest='single', default=False)
-parser.add_option('-v', '--verbose', action='store_true', dest='verbose', default=False)
-parser.add_option('-S', '--isSignal', action='store_true', dest='isSignal', default=False)
-parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
-(options, args) = parser.parse_args()
+from argparse import ArgumentParser
+parser = ArgumentParser()
+parser.add_argument('-y', '--year', action='store', type=str, dest='year',default='2017')
+parser.add_argument('-s', '--single', action='store_true', dest='single', default=False)
+parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False)
+parser.add_argument("-MC", "--isMC", action="store_true", default=False, dest="isMC")
+parser.add_argument('-MT', '--mcType',   dest='mcType', type=str, action='store', default="QCD", choices=['signal', 'QCD', 'TTbar'])
+args = parser.parse_args()
 
-filterset   = options.filter
-singlecore  = options.single
-verboseout  = options.verbose
-year        = options.year
-isMC        = options.isMC
-isSignal    = options.isSignal
+singlecore  = args.single
+verboseout  = args.verbose
+year        = args.year
+isMC        = args.isMC
+mcType      = args.mcType
 
 if year=='2016':
     LUMI=35920.
@@ -33,16 +30,14 @@ elif year=='2018':
     LUMI=59740.
 
 
-
 ##############################
 
 def getXsec(sample):
   print "Xsec("+sample+")"
-  if sample.find( "QCD_Pt_170to300_"                     ) !=-1 : return 117276.;
+  if sample.find( "QCD_Pt_170to300_"                       ) !=-1 : return 117276.;
   elif sample.find( "QCD_Pt_300to470_"                     ) !=-1 : return 7823.;
   elif sample.find( "QCD_Pt_470to600_"                     ) !=-1 : return 648.2;
   elif sample.find( "QCD_Pt_600to800_"                     ) !=-1 : return 186.9;
-  elif sample.find( "QCD_Pt_800to1000_"                    ) !=-1 : return 32.293;
   elif sample.find( "QCD_Pt_1000to1400_"                   ) !=-1 : return 9.4183;
   elif sample.find( "QCD_Pt_1400to1800_"                   ) !=-1 : return 0.84265;
   elif sample.find( "QCD_Pt_1800to2400_"                   ) !=-1 : return 0.114943;
@@ -56,6 +51,7 @@ def getXsec(sample):
   elif sample.find( "QCD_HT1000to1500"                     ) !=-1 : return 1207.;
   elif sample.find( "QCD_HT1500to2000"                     ) !=-1 : return 119.9;
   elif sample.find( "QCD_HT2000toInf"                      ) !=-1 : return 25.24;
+  elif sample.find( "TTToHadronic"                         ) !=-1 : return 831.76*0.6741*0.6741;
   elif sample.find( "MC_signal_M"                       ) != -1 : return 1.;
   #elif sample.find( "MC_signal_M500"                       ) != -1 : return 170.378; 
   #elif sample.find( "MC_signal_M600"                       ) != -1 : return 85.0684;
@@ -235,12 +231,18 @@ data_2018_letters = ["A", "B", "C", "D"]
 #sample_names = [sample_name] ## for testing
 
 sample_names = []
-if isMC and not isSignal:
-    for HT_bin in HT_bins:  
-        sample_names.append("MC_QCD_{}_HT{}".format(year, HT_bin))
-elif isMC:
-    for mass_bin in mass_bins:
-        sample_names.append("MC_signal_{}_M{}".format(year, mass_bin))
+if isMC:
+    if mcType=="QCD":
+        for HT_bin in HT_bins:  
+            sample_names.append("MC_QCD_{}_HT{}".format(year, HT_bin))
+    elif mcType=="signal":
+        for mass_bin in mass_bins:
+            sample_names.append("MC_signal_{}_M{}".format(year, mass_bin))
+    elif mcType=="TTbar":
+        sample_names.append("MC_TTbar_{}_TTToHadronic".format(year))
+    else:
+        print "MC typer unknown!! Aborting.."
+        sys.exit()
 else:
     if year=='2016':
         letters = data_2016_letters
@@ -271,4 +273,3 @@ for d in sample_names:
         p = multiprocessing.Process(target=processFile, args=(d, origin, target, verboseout,))
         jobs.append(p)
         p.start()
-

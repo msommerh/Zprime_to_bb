@@ -46,7 +46,7 @@ sample = {
         'plot': True,
     },
     'TTbar' : {
-        'files' : ['TT', 'TTWJetsToLNu', 'TTZToLLNuNu'],
+        'files' : ['MC_TTbar_2016_TTToHadronic', 'MC_TTbar_2017_TTToHadronic', 'MC_TTbar_2018_TTToHadronic'],
         'fillcolor' : 798,
         'fillstyle' : 1001,
         'linecolor' : 798,
