@@ -189,7 +189,7 @@ def limit():
     Exp2s.GetXaxis().SetTitleSize(Exp2s.GetXaxis().GetTitleSize()*1.25)
     Exp2s.GetXaxis().SetNoExponent(True)
     Exp2s.GetXaxis().SetMoreLogLabels(True)
-    #Exp2s.GetYaxis().SetTitle("#sigma("+particleP+") #bf{#it{#Beta}}("+particleP+" #rightarrow "+particle+"h) #bf{#it{#Beta}}(h #rightarrow bb) (fb)")
+    Exp2s.GetYaxis().SetTitle("#sigma("+particleP+") #bf{#it{#Beta}}("+particleP+" #rightarrow "+particle+") (fb)")
     Exp2s.GetYaxis().SetTitleOffset(1.5)
     Exp2s.GetYaxis().SetNoExponent(True)
     Exp2s.GetYaxis().SetMoreLogLabels()
@@ -278,93 +278,93 @@ def limit():
     leg2.SetFillColor(0)
     c1.GetPad(0).RedrawAxis()
 
-    if False and channel.endswith('sl'):
-        massAH, valAH = fillValues("./combine/dijet/X"+particle+"Hah_M%d.txt")
-        ExpAH, ObsAH = TGraphAsymmErrors(), TGraphAsymmErrors()
-        for i, m in enumerate(massAH):
-            if not m in val: continue
-            ExpAH.SetPoint(ExpAH.GetN(), m, valAH[m][3]*multF)
-            ObsAH.SetPoint(ObsAH.GetN(), m, valAH[m][0]*multF)
-        ExpAH.SetLineWidth(3)
-        ExpAH.SetLineColor(602) #602
-        ExpAH.SetLineStyle(5)
-        ObsAH.SetLineWidth(3)
-        ObsAH.SetLineColor(602)
-        ExpAH.Draw("SAME, L")
-        #ObsAH.Draw("SAME, L")
+    #if False and channel.endswith('sl'):
+    #    massAH, valAH = fillValues("./combine/dijet/X"+particle+"Hah_M%d.txt")
+    #    ExpAH, ObsAH = TGraphAsymmErrors(), TGraphAsymmErrors()
+    #    for i, m in enumerate(massAH):
+    #        if not m in val: continue
+    #        ExpAH.SetPoint(ExpAH.GetN(), m, valAH[m][3]*multF)
+    #        ObsAH.SetPoint(ObsAH.GetN(), m, valAH[m][0]*multF)
+    #    ExpAH.SetLineWidth(3)
+    #    ExpAH.SetLineColor(602) #602
+    #    ExpAH.SetLineStyle(5)
+    #    ObsAH.SetLineWidth(3)
+    #    ObsAH.SetLineColor(602)
+    #    ExpAH.Draw("SAME, L")
+    #    #ObsAH.Draw("SAME, L")
 
-        mass15, val15 = fillValues("./combine/Vh_2015/X"+particle+"h_M%d.txt")
-        Exp15, Obs15 = TGraphAsymmErrors(), TGraphAsymmErrors()
-        for i, m in enumerate(mass15):
-            if not m in val: continue
-            Exp15.SetPoint(Exp15.GetN(), m, val15[m][3]*multF*Theory['B3'].GetY()[i]*(0.625 if particle=='V' and m>3000 else 1.))
-            Obs15.SetPoint(Obs15.GetN(), m, val15[m][0]*multF*Theory['B3'].GetY()[i]*(0.625 if particle=='V' and m>3000 else 1.))
-        Exp15.SetLineWidth(3)
-        Exp15.SetLineColor(856) #602
-        Exp15.SetLineStyle(6)
-        Obs15.SetLineWidth(3)
-        Obs15.SetLineColor(856)
-        Exp15.Draw("SAME, L")
-        #Obs15.Draw("SAME, L")
+    #    mass15, val15 = fillValues("./combine/Vh_2015/X"+particle+"h_M%d.txt")
+    #    Exp15, Obs15 = TGraphAsymmErrors(), TGraphAsymmErrors()
+    #    for i, m in enumerate(mass15):
+    #        if not m in val: continue
+    #        Exp15.SetPoint(Exp15.GetN(), m, val15[m][3]*multF*Theory['B3'].GetY()[i]*(0.625 if particle=='V' and m>3000 else 1.))
+    #        Obs15.SetPoint(Obs15.GetN(), m, val15[m][0]*multF*Theory['B3'].GetY()[i]*(0.625 if particle=='V' and m>3000 else 1.))
+    #    Exp15.SetLineWidth(3)
+    #    Exp15.SetLineColor(856) #602
+    #    Exp15.SetLineStyle(6)
+    #    Obs15.SetLineWidth(3)
+    #    Obs15.SetLineColor(856)
+    #    Exp15.Draw("SAME, L")
+    #    #Obs15.Draw("SAME, L")
 
-        leg2.AddEntry(Exp15, "B2G-16-003", "l")
-        leg2.AddEntry(ExpAH, "B2G-17-002", "l")
+    #    leg2.AddEntry(Exp15, "B2G-16-003", "l")
+    #    leg2.AddEntry(ExpAH, "B2G-17-002", "l")
 
-    if True and channel=='AZh':
-        massLL, valLL = fillValues("./combine/AZh/AZhll_M%d.txt")
-        ExpLL, ObsLL = TGraphAsymmErrors(), TGraphAsymmErrors()
-        for i, m in enumerate(massLL):
-            if not m in val: continue
-            ExpLL.SetPoint(ExpLL.GetN(), m, valLL[m][3]*multF)
-            ObsLL.SetPoint(ObsLL.GetN(), m, valLL[m][0]*multF)
-        ExpLL.SetLineWidth(3)
-        ExpLL.SetLineColor(833) #602
-        ExpLL.SetLineStyle(5)
-        ObsLL.SetLineWidth(3)
-        ObsLL.SetLineColor(833)
-        ExpLL.Draw("SAME, L")
-        #ObsLL.Draw("SAME, L")
+    #if True and channel=='AZh':
+    #    massLL, valLL = fillValues("./combine/AZh/AZhll_M%d.txt")
+    #    ExpLL, ObsLL = TGraphAsymmErrors(), TGraphAsymmErrors()
+    #    for i, m in enumerate(massLL):
+    #        if not m in val: continue
+    #        ExpLL.SetPoint(ExpLL.GetN(), m, valLL[m][3]*multF)
+    #        ObsLL.SetPoint(ObsLL.GetN(), m, valLL[m][0]*multF)
+    #    ExpLL.SetLineWidth(3)
+    #    ExpLL.SetLineColor(833) #602
+    #    ExpLL.SetLineStyle(5)
+    #    ObsLL.SetLineWidth(3)
+    #    ObsLL.SetLineColor(833)
+    #    ExpLL.Draw("SAME, L")
+    #    #ObsLL.Draw("SAME, L")
 
-        massNN, valNN = fillValues("./combine/AZh/AZhnn_M%d.txt")
-        ExpNN, ObsNN = TGraphAsymmErrors(), TGraphAsymmErrors()
-        for i, m in enumerate(massNN):
-            if not m in val: continue
-            ExpNN.SetPoint(ExpNN.GetN(), m, valNN[m][3]*multF)
-            ObsNN.SetPoint(ObsNN.GetN(), m, valNN[m][0]*multF)
-        ExpNN.SetLineWidth(3)
-        ExpNN.SetLineColor(855) #602
-        ExpNN.SetLineStyle(6)
-        ObsNN.SetLineWidth(3)
-        ObsNN.SetLineColor(855)
-        ExpNN.Draw("SAME, L")
-        #ObsNN.Draw("SAME, L")
+    #    massNN, valNN = fillValues("./combine/AZh/AZhnn_M%d.txt")
+    #    ExpNN, ObsNN = TGraphAsymmErrors(), TGraphAsymmErrors()
+    #    for i, m in enumerate(massNN):
+    #        if not m in val: continue
+    #        ExpNN.SetPoint(ExpNN.GetN(), m, valNN[m][3]*multF)
+    #        ObsNN.SetPoint(ObsNN.GetN(), m, valNN[m][0]*multF)
+    #    ExpNN.SetLineWidth(3)
+    #    ExpNN.SetLineColor(855) #602
+    #    ExpNN.SetLineStyle(6)
+    #    ObsNN.SetLineWidth(3)
+    #    ObsNN.SetLineColor(855)
+    #    ExpNN.Draw("SAME, L")
+    #    #ObsNN.Draw("SAME, L")
 
-        leg2.AddEntry(ExpLL, "Expected, A #rightarrow Zh #rightarrow llb#bar{b}", "l")
-        leg2.AddEntry(ExpNN, "Expected, A #rightarrow Zh #rightarrow #nu#nub#bar{b}", "l")
-    
-    if method=='combo':
-        massAH, valAH = fillValues("./combine/dijet/X"+particle+"Hah_M%d.txt")
-        ExpAH = TGraphAsymmErrors()
-        for i, m in enumerate(massAH):
-            if not m in val: continue
-            ExpAH.SetPoint(ExpAH.GetN(), m, valAH[m][3]*multF)
-        ExpAH.SetLineWidth(2)
-        ExpAH.SetLineColor(602) #602
-        ExpAH.SetLineStyle(4)
-        ExpAH.Draw("SAME, L")
+    #    leg2.AddEntry(ExpLL, "Expected, A #rightarrow Zh #rightarrow llb#bar{b}", "l")
+    #    leg2.AddEntry(ExpNN, "Expected, A #rightarrow Zh #rightarrow #nu#nub#bar{b}", "l")
+    #
+    #if method=='combo':
+    #    massAH, valAH = fillValues("./combine/dijet/X"+particle+"Hah_M%d.txt")
+    #    ExpAH = TGraphAsymmErrors()
+    #    for i, m in enumerate(massAH):
+    #        if not m in val: continue
+    #        ExpAH.SetPoint(ExpAH.GetN(), m, valAH[m][3]*multF)
+    #    ExpAH.SetLineWidth(2)
+    #    ExpAH.SetLineColor(602) #602
+    #    ExpAH.SetLineStyle(4)
+    #    ExpAH.Draw("SAME, L")
 
-        massSL, valSL = fillValues("./combine/alpha/X"+particle+"Hsl_M%d.txt")
-        ExpSL = TGraphAsymmErrors()
-        for i, m in enumerate(massSL):
-            if not m in val: continue
-            ExpSL.SetPoint(ExpSL.GetN(), m, valSL[m][3]*multF)
-        ExpSL.SetLineWidth(3)
-        ExpSL.SetLineColor(860-9) #602
-        ExpSL.SetLineStyle(7)
-        ExpSL.Draw("SAME, L")
+    #    massSL, valSL = fillValues("./combine/alpha/X"+particle+"Hsl_M%d.txt")
+    #    ExpSL = TGraphAsymmErrors()
+    #    for i, m in enumerate(massSL):
+    #        if not m in val: continue
+    #        ExpSL.SetPoint(ExpSL.GetN(), m, valSL[m][3]*multF)
+    #    ExpSL.SetLineWidth(3)
+    #    ExpSL.SetLineColor(860-9) #602
+    #    ExpSL.SetLineStyle(7)
+    #    ExpSL.Draw("SAME, L")
 
-        leg2.AddEntry(ExpAH, "B2G-17-002", "l")
-        leg2.AddEntry(ExpSL, "B2G-17-004", "l")
+    #    leg2.AddEntry(ExpAH, "B2G-17-002", "l")
+    #    leg2.AddEntry(ExpSL, "B2G-17-004", "l")
 
     leg2.Draw()
     if not options.blind: Obs0s.Draw("SAME, L")
@@ -398,6 +398,9 @@ def limit():
     print "]"
 
     #if not 'ah' in channel and not 'sl' in channel: return
+    
+    return ##FIXME
+
 
     # ---------- Significance ----------
     c2 = TCanvas("c2", "Significance", 800, 600)

@@ -12,3 +12,4 @@ CMSSW_10_3_3/
 *.pdf
 *.txt
 datacards/
+._*
