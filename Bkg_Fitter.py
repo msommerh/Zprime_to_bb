@@ -15,7 +15,7 @@ from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooP
 
 from rooUtils import *
 from samples import sample
-from aliases import alias
+from aliases import alias, deepFlavour
 #from selections import selection
 #from utils import *
 
@@ -31,8 +31,9 @@ parser.add_option("-t", "--test_run", action="store_true", default=False, dest="
 parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
+parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
 parser.add_option("-u", "--unskimmed", action="store_true", default=False, dest="unskimmed")
-parser.add_option("-S", "--submitted", action="store_true", default=False, dest="submitted")
+#parser.add_option("-S", "--submitted", action="store_true", default=False, dest="submitted")
 (options, args) = parser.parse_args()
 gROOT.SetBatch(True) #suppress immediate graphic output
 if options.test: print "performing test run on small QCD MC sample"
@@ -55,16 +56,15 @@ gStyle.SetPadTopMargin(0.06)
 gStyle.SetPadRightMargin(0.05)
 gStyle.SetErrorX(0.)
 
+BTAGGING    = options.btagging
 NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"
-CARDDIR     = "datacards/skimmed/"
-WORKDIR     = "workspace/skimmed/"
+#CARDDIR     = "datacards/"+BTAGGING+"/"
+WORKDIR     = "workspace/"+BTAGGING+"/"
 RATIO       = 4
 SHOWERR     = True
 BLIND       = False
-#LUMI        = 35920 #2016, need to generalize to different years someday
 VERBOSE     = options.verbose
 CUTCOUNT    = False
-#VARBINS     = True
 VARBINS     = False
 BIAS        = options.bias
 YEAR        = options.year
@@ -82,40 +82,32 @@ else:
     print "unknown year:",YEAR
     sys.exit()
 
+if BTAGGING not in ['tight', 'medium', 'loose']:
+    print "unknown btagging requirement:", BTAGGING
+    sys.exit()
+
 if ISMC:
     #DATA_TYPE = "MC_QCD"
     DATA_TYPE = "MC_QCD_TTbar"
 else:
     DATA_TYPE = "data"
-PLOTDIR     = "plots/skimmed/{}_{}".format(DATA_TYPE, YEAR)
-if options.category in ['', 'bb', 'bq']: PLOTDIR+="_btagged"
+PLOTDIR     = "plots/"+BTAGGING+"/{}_{}".format(DATA_TYPE, YEAR)
 if options.test: PLOTDIR += "_test"
 
 if options.unskimmed or options.test:
     NTUPLEDIR="/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/" 
-    CARDDIR = CARDDIR.replace("skimmed/","")
-    WORKDIR = WORKDIR.replace("skimmed/","")
-    PLOTDIR = PLOTDIR.replace("skimmed/","")
 
-if options.submitted:
-    CARDDIR = CARDDIR.replace("skimmed/","submitted/")
-    WORKDIR = WORKDIR.replace("skimmed/","submitted/")
-    PLOTDIR = PLOTDIR.replace("skimmed/","submitted/")
+#if options.submitted:
+#    CARDDIR +="submitted/"
+#    WORKDIR +="submitted/"
+#    PLOTDIR +="submitted/"
 
 signalList = ['Zprime_to_bb']
 categories = ['bb', 'bq', 'qq']
 
-genPoints = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
-massPoints = genPoints
-
-#bins = [985, 1085, 1185, 1285, 1385, 1485, 1585, 1685, 1785, 1885, 1985, 2085, 2185, 2285, 2385, 2485, 2585, 2685, 2785, 2885, 2985, 3085, 3185, 3285, 3385, 3485, 3585, 3685, 3785, 3885, 3985, 4085, 4185, 4285, 4385, 4485, 4585, 4685, 4785, 4885, 4985, 5085, ] # 100 GeV
-#bins = [985, 1034, 1086, 1140, 1197, 1257, 1320, 1386, 1455, 1528, 1604, 1685, 1769, 1857, 1950, 2048, 2150, 2258, 2371, 2489, 2613, 2744, 2881, 3025, 3177, 3336, 3502, 3677, 3861, 4054, 4257, 4470, 4693, 4928, 5175, ] # 5%
-#bins = [985, 1064, 1149, 1241, 1340, 1447, 1563, 1688, 1823, 1969, 2127, 2297, 2480, 2679, 2893, 3125, 3375, 3645, 3936, 4251, 4591, 4958, ] # 8%
-#bins = [985, 1085, 1190, 1300, 1416, 1538, 1665, 1799, 1940, 2088, 2243, 2406, 2577, 2756, 2945, 3143, 3351, 3569, 3798, 4039, 4292, 4557, 4836, 5128, ] # new 5%
 dijet_bins = [955, 1000, 1058, 1118, 1181, 1246, 1313, 1383, 1455, 1530, 1607, 1687, 1770, 1856, 1945, 2037, 2132, 2231, 2332, 2438, 2546, 2659, 2775, 2895, 3019, 3147, 3279, 3416, 3558, 3704, 3854, 4010, 4171, 4337, 4509, 4686, 4869, 5058, 5253, 5455, 5663, 5877, 6099, 6328, 6564, 6808]
 bins = [x+30 for x in dijet_bins]
 abins = array( 'd', bins )
-#abins = array( 'd', [985, 1084, 1192, 1311, 1442, 1586, 1745, 1919, 2111, 2323, 2555, 2810, 3091, 3400, 3741, 4115, 4526, 4979 ] )
 
 data = ["data_obs"]
 back = ["QCD", "TTbar"]
@@ -124,12 +116,9 @@ back = ["QCD", "TTbar"]
 
 def dijet(category):
 
-    #channel = "Zprime_to_bbar"
-    #category = "Zprbb"
     channel = 'bb'
-    #category = "bb"
     stype = channel
-    isSB = True  #no idea what this does!! --> apparently stands for side bands
+    isSB = True  # apparently stands for side bands
     isData = not ISMC 
     nTupleDir = NTUPLEDIR
  
@@ -179,15 +168,13 @@ def dijet(category):
     variables = RooArgSet(X_mass)
     variables.add(RooArgSet(jdeepFlavour_1, jdeepFlavour_2, weight))
     variables.add(RooArgSet(j1_pt, jj_deltaEta))
-    #variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2))
-    #variables.add(RooArgSet(MET_over_sumEt, weight))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))
 
     if VARBINS: binsXmass = RooBinning(len(abins)-1, abins)
     else: binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
     
-    baseCut = alias[category]
+    baseCut = alias[category].format(b_threshold=deepFlavour[BTAGGING][YEAR])
 
     print stype, "|", baseCut
  
@@ -234,7 +221,6 @@ def dijet(category):
     print "fitting 1 parameter model"
     p1_1 = RooRealVar("CMS"+YEAR+"_"+category+"_p1_1", "p1", 7.0, 0., 2000.)
     modelBkg1 = RooGenericPdf("Bkg1", "Bkg. fit (2 par.)", "1./pow(@0/13000, @1)", RooArgList(X_mass, p1_1))
-    #normzBkg1 = RooRealVar(modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15) #increased range!
     normzBkg1 = RooRealVar(modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents) #range dependent of actual number of events!
     modelExt1 = RooExtendPdf(modelBkg1.GetName()+"_ext", modelBkg1.GetTitle(), modelBkg1, normzBkg1)
     print "starting actual fit"
@@ -249,7 +235,6 @@ def dijet(category):
     p2_1 = RooRealVar("CMS"+YEAR+"_"+category+"_p2_1", "p1", 0., -100., 1000.)
     p2_2 = RooRealVar("CMS"+YEAR+"_"+category+"_p2_2", "p2", p1_1.getVal(), -100., 600.)
     modelBkg2 = RooGenericPdf("Bkg2", "Bkg. fit (3 par.)", "pow(1-@0/13000, @1) / pow(@0/13000, @2)", RooArgList(X_mass, p2_1, p2_2))
-    #normzBkg2 = RooRealVar(modelBkg2.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
     normzBkg2 = RooRealVar(modelBkg2.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
     modelExt2 = RooExtendPdf(modelBkg2.GetName()+"_ext", modelBkg2.GetTitle(), modelBkg2, normzBkg2)
     print "starting actual fit"
@@ -264,7 +249,6 @@ def dijet(category):
     p3_2 = RooRealVar("CMS"+YEAR+"_"+category+"_p3_2", "p2", p2_2.getVal(), -400., 2000.)
     p3_3 = RooRealVar("CMS"+YEAR+"_"+category+"_p3_3", "p3", -2.5, -500., 500.)
     modelBkg3 = RooGenericPdf("Bkg3", "Bkg. fit (4 par.)", "pow(1-@0/13000, @1) / pow(@0/13000, @2+@3*log(@0/13000))", RooArgList(X_mass, p3_1, p3_2, p3_3))
-    #normzBkg3 = RooRealVar(modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
     normzBkg3 = RooRealVar(modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
     modelExt3 = RooExtendPdf(modelBkg3.GetName()+"_ext", modelBkg3.GetTitle(), modelBkg3, normzBkg3)
     print "starting actual fit"
@@ -280,7 +264,6 @@ def dijet(category):
     p4_3 = RooRealVar("CMS"+YEAR+"_"+category+"_p4_3", "p3", p3_3.getVal(), -50., 50.)
     p4_4 = RooRealVar("CMS"+YEAR+"_"+category+"_p4_4", "p4", 0.1, -50., 50.)
     modelBkg4 = RooGenericPdf("Bkg4", "Bkg. fit (5 par.)", "pow(1 - @0/13000, @1) / pow(@0/13000, @2+@3*log(@0/13000)+@4*pow(log(@0/13000), 2))", RooArgList(X_mass, p4_1, p4_2, p4_3, p4_4))
-    #normzBkg4 = RooRealVar(modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 1.e15)
     normzBkg4 = RooRealVar(modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
     modelExt4 = RooExtendPdf(modelBkg4.GetName()+"_ext", modelBkg4.GetTitle(), modelBkg4, normzBkg4)
     print "starting actual fit"
@@ -328,11 +311,9 @@ def dijet(category):
         print "%d par vs %d par CL=%f & " % (o1+1, o2+1, CL),
         if CL > 0.10: # The function with less parameters is enough
             if not CL_high:
-            #if not order:
                 order = o1
                 print "%d par are sufficient" % (o1+1),
                 CL_high=True
-                #break
         else:
             print "%d par are needed" % (o2+1),
             if not CL_high:
@@ -407,9 +388,6 @@ def dijet(category):
     modelBkg.plotOn(frame, RooFit.VisualizeError(fitRes, 1, False), RooFit.LineColor(602), RooFit.FillColor(590), RooFit.FillStyle(1001), RooFit.DrawOption("FL"), RooFit.Name("1sigma"))
     modelBkg.plotOn(frame, RooFit.LineColor(602), RooFit.FillColor(590), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(modelBkg.GetName()))
     modelAlt.plotOn(frame, RooFit.LineStyle(7), RooFit.LineColor(613), RooFit.FillColor(609), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(modelAlt.GetName()))
-    #modelBkg3.plotOn(frame, RooFit.VisualizeError(fitRes3, 1, False), RooFit.LineColor(602), RooFit.FillColor(602), RooFit.FillStyle(3003), RooFit.DrawOption("FL"), RooFit.Name("1sigma"))
-    #modelBkg3.plotOn(frame, RooFit.LineStyle(3), RooFit.LineColor(602), RooFit.FillColor(596), RooFit.FillStyle(3003), RooFit.DrawOption("L"), RooFit.Name(modelBkg3.GetName()))
-    #modelBkg4.plotOn(frame, RooFit.LineStyle(5), RooFit.LineColor(613), RooFit.FillColor(609), RooFit.FillStyle(3003), RooFit.DrawOption("L"), RooFit.Name(modelBkg4.GetName()))
     if not isSB and signal[0] is not None: # FIXME remove /(2./3.)
         signal[0].plotOn(frame, RooFit.Normalization(signal[1]*signal[2], RooAbsReal.NumEvent), RooFit.LineStyle(3), RooFit.LineWidth(6), RooFit.LineColor(629), RooFit.DrawOption("L"), RooFit.Name("Signal"))
     graphData = setData.plotOn(frame, RooFit.Binning(binsXmass), RooFit.Scaling(False), RooFit.XErrorSize(0 if not VARBINS else 1), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.DrawOption("PE0"), RooFit.Name(setData.GetName()))
@@ -439,10 +417,8 @@ def dijet(category):
     leg.SetFillStyle(0) #1001
     leg.SetFillColor(0)
     leg.AddEntry(setData.GetName(), setData.GetTitle()+" (%d events)" % nevents, "PEL")
-    #leg.AddEntry(modelBkg1.GetName(), "Bkg. fit (1 par.)", "L")
     leg.AddEntry(modelBkg.GetName(), modelBkg.GetTitle(), "FL")#.SetTextColor(629)
     leg.AddEntry(modelAlt.GetName(), modelAlt.GetTitle(), "L")
-    #leg.AddEntry(modelBkg4.GetName(), "Bkg. fit (4 par.)", "L")
     if not isSB and signal[0] is not None: leg.AddEntry("Signal", signal[0].GetTitle(), "L")
     leg.SetY1(0.9-leg.GetNRows()*0.05)
     leg.Draw()
@@ -460,7 +436,6 @@ def dijet(category):
     frame_res.addPlotable(pulls, "P")
     setBotStyle(frame_res, RATIO, False)
     if VARBINS: frame_res.GetXaxis().SetRangeUser(X_mass.getMin(), lastBin)
-    #frame_res.GetXaxis().SetRangeUser(HBINMIN, HBINMAX)
     frame_res.GetYaxis().SetRangeUser(-5, 5)
     frame_res.GetYaxis().SetTitle("(N^{data}-N^{bkg})/#sigma")
     frame_res.Draw()
@@ -470,15 +445,12 @@ def dijet(category):
     line = drawLine(X_mass.getMin(), 0, lastBin, 0)
 
     if VARBINS:
-        c.SaveAs(PLOTDIR+"/BkgSR_"+category+".pdf")
+        #c.SaveAs(PLOTDIR+"/BkgSR_"+category+".pdf")
         c.SaveAs(PLOTDIR+"/BkgSR_"+category+".png")
     else:
-        c.SaveAs(PLOTDIR+"/BkgSR_"+category+".pdf")
+        #c.SaveAs(PLOTDIR+"/BkgSR_"+category+".pdf")
         c.SaveAs(PLOTDIR+"/BkgSR_"+category+".png")
  
-    #if isSB: exit()
-  
-    ## don't yet know how to handle the commented out part below FIXME
      
     ##*******************************************************#
     ##                                                       #
@@ -665,8 +637,8 @@ def dijet(category):
     #    getattr(w, "import")(signal[m], RooFit.Rename(signal[m].GetName()))
     #    getattr(w, "import")(signalYield[m], RooFit.Rename(signalYield[m].GetName()))
     #w.Print()
-    w.writeToFile("bkg_%s%s_%s%s.root" % (WORKDIR, DATA_TYPE+"_"+YEAR, category, "_test" if options.test else ""), True)
-    print "Workspace", "bkg_%s%s_%s%s.root" % (WORKDIR, DATA_TYPE+"_"+YEAR, category, "_test" if options.test else ""), "saved successfully"
+    w.writeToFile(WORKDIR+"%s_%s%s.root" % (DATA_TYPE+"_"+YEAR, category, "_test" if options.test else ""), True)
+    print "Workspace", WORKDIR+"%s_%s%s.root" % (DATA_TYPE+"_"+YEAR, category, "_test" if options.test else ""), "saved successfully"
     
     if VERBOSE: raw_input("Press Enter to continue...")
     # ======   END PLOT   ======
@@ -719,9 +691,6 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     graphData = dataset.plotOn(frame, RooFit.Binning(binning), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.DrawOption("PE0"), RooFit.Name(dataset.GetName()))
     print "."
     fixData(graphData.getHist(), True, True, not isData)
-    #print "non-erroneous frame.pullHist(dataset.GetName(), model.GetName(), True) step coming now"
-    #print "dataset.GetName() =", dataset.GetName()
-    #print "model.GetName() =", model.GetName()
     pulls = frame.pullHist(dataset.GetName(), model.GetName(), True)
     residuals = frame.residHist(dataset.GetName(), model.GetName(), False, True) # this is y_i - f(x_i)
     roochi2 = frame.chiSquare()#dataset.GetName(), model.GetName()) #model.GetName(), dataset.GetName()
@@ -772,7 +741,7 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     line = drawLine(variable.getMin(), 0, variable.getMax(), 0)
 
     if len(name) > 0 and len(category) > 0:
-        c.SaveAs(PLOTDIR+"/"+name+"_"+category+".pdf")
+        #c.SaveAs(PLOTDIR+"/"+name+"_"+category+".pdf")
         c.SaveAs(PLOTDIR+"/"+name+"_"+category+".png")
 
 #    if( hMassNEW.GetXaxis().GetBinLowEdge(bin+1)>=fFitXmin and hMassNEW.GetXaxis().GetBinUpEdge(bin-1)<=fFitXmax ):

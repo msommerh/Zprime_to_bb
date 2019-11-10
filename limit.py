@@ -12,7 +12,7 @@ from ROOT import TLegend, TLatex, TText, TColor
 
 #from DMPD.Heppy.tools.samples import *
 from utils import *
-#from hvtXs import HVT
+from theory import HVT
 #from thdmXs import THDM
 
 # Combine output
@@ -67,17 +67,10 @@ LUMI        = luminosities[YEAR]
 #signals = range(800, 4500+1, 100)
 signals = range(1400, 8000+1, 100)
 
-VBr = {"XZHll" : 0.05826, "XZHee" : 0.05826/3., "XZHmm" : 0.05826/3., "XZHnn" : 0.1154, "XWHln" : 0.18712, "XWHen" : 0.18712/3., "XWHmn" : 0.18712/3.}
-XVHahExp = { 1000.0 : 69.8125 , 1100.0 : 35.5 , 1200.0 : 20.0625 , 1300.0 : 14.9375 , 1400.0 : 11.8438 , 1500.0 : 9.4062 , 1600.0 : 7.4688 , 1700.0 : 6.0156 , 1800.0 : 5.0 , 1900.0 : 4.2344 , 2000.0 : 3.6406 , 2100.0 : 3.2031 , 2200.0 : 2.8359 , 2300.0 : 2.5547 , 2400.0 : 2.3203 , 2500.0 : 2.1094 , 2600.0 : 1.9297 , 2700.0 : 1.7734 , 2800.0 : 1.6562 , 2900.0 : 1.5352 , 3000.0 : 1.4336 , 3100.0 : 1.3398 , 3200.0 : 1.2578 , 3300.0 : 1.1914 , 3400.0 : 1.1367 , 3500.0 : 1.082 , 3600.0 : 1.043 , 3700.0 : 1.0039 , 3800.0 : 0.9805 , 3900.0 : 0.957 , 4000.0 : 0.9336 , 4100.0 : 0.918 , 4200.0 : 0.8945 , 4300.0 : 0.8789 , 4400.0 : 0.8633 , 4500.0 : 0.8398 , }
-
-
-decay = {'nn' : "#nu#nu", 'ln' : "l#nu", 'en' : "eu#nu", 'mn' : "#mu#nu", 'll' : "ll", 'ee' : "ee", 'mm' : "#mu#mu", 'qq' : "q#bar{q}", 'wr' : "q#bar{q}", 'zr' : "q#bar{q}", 'b' : "b#bar{q}", '' : "q#bar{q}"}
-
 theoryLabel = {'B3' : "HVT model B", 'A1' : "HVT model A", 'T1' : "2HDM Type-I", 'T2' : "2HDM Type-II"}
 theoryLineColor = {'B3' : 629, 'A1' : 616-3, 'T1' : 880-4, 'T2' : 602}
 theoryFillColor = {'B3' : 625, 'A1' : 616-7, 'T1' : 880-9, 'T2' : 856}
 theoryFillStyle = {'B3' : 3002, 'A1' : 3013, 'T1' : 3002, 'T2' : 3013}
-
 
 
 def fillValues(filename):
@@ -109,9 +102,10 @@ def limit():
     particleP = "Z'"
     particle = channel
     multF = ZPTOBB
-    THEORY = []
+    THEORY = ["Z'"]
     
     suffix = "_"+BTAGGING
+    if ISMC: suffix += "_MC"
     #if method=="cls": suffix="_CLs"
 
     filename = "./combine/limits/" + BTAGGING + "/"+ YEAR + "_M%d.txt"
@@ -148,30 +142,25 @@ def limit():
         if len(val[m]) > 10: Best.SetPointError(n, 0., 0., abs(val[m][9]), val[m][10])
 
 
-    #for t in THEORY:
-    #    Theory[t] = TGraphAsymmErrors()
-    #    addXWH, addXZH = particle=='W' or particle=='V', particle=='Z' or particle=='V'
-    #    for m in sorted(HVT[t]['W']['XS'].keys()):
-    #        if m < mass[0] or m > mass[-1]: continue
-    #        XsW, XsW_Up, XsW_Down, XsZ, XsZ_Up, XsZ_Down = 0., 0., 0., 0., 0., 0.
-    #        if addXWH:
-    #            XsW = 1000.*HVT[t]['W']['XS'][m]*HVT[t]['W']['BR'][m]*ZPTOBB
-    #            XsW_Up = XsW*(1.+math.hypot(HVT[t]['W']['QCD'][m][0]-1., HVT[t]['W']['PDF'][m][0]-1.))
-    #            XsW_Down = XsW*(1.-math.hypot(1.-HVT[t]['W']['QCD'][m][0], 1.-HVT[t]['W']['PDF'][m][0]))
-    #        if addXZH:
-    #            XsZ = 1000.*HVT[t]['Z']['XS'][m]*HVT[t]['Z']['BR'][m]*ZPTOBB
-    #            XsZ_Up = XsZ*(1.+math.hypot(HVT[t]['Z']['QCD'][m][0]-1., HVT[t]['Z']['PDF'][m][0]-1.))
-    #            XsZ_Down = XsZ*(1.-math.hypot(1.-HVT[t]['Z']['QCD'][m][0], 1.-HVT[t]['Z']['PDF'][m][0]))
+    for t in THEORY:
+        Theory[t] = TGraphAsymmErrors()
+        #addXWH, addXZH = particle=='W' or particle=='V', particle=='Z' or particle=='V'
+        for m in sorted(HVT[t].keys()):
+            if m < mass[0] or m > mass[-1]: continue
+            XsZ, XsZ_Up, XsZ_Down = 0., 0., 0.
+            XsZ = 1000.*HVT[t]
+            #XsZ_Up = XsZ*(1.+math.hypot(HVT[t]['Z']['QCD'][m][0]-1., HVT[t]['Z']['PDF'][m][0]-1.))
+            #XsZ_Down = XsZ*(1.-math.hypot(1.-HVT[t]['Z']['QCD'][m][0], 1.-HVT[t]['Z']['PDF'][m][0]))
 
-    #        n = Theory[t].GetN()
-    #        Theory[t].SetPoint(n, m, XsW+XsZ)
-    #        Theory[t].SetPointError(n, 0., 0., (XsW-XsW_Down)+(XsZ-XsZ_Down), (XsW_Up-XsW)+(XsZ_Up-XsZ))
+            n = Theory[t].GetN()
+            Theory[t].SetPoint(n, m, XsZ)
+            Theory[t].SetPointError(n, 0., 0., (XsZ-XsZ_Down), (XsZ_Up-XsZ))
 
-    #        Theory[t].SetLineColor(theoryLineColor[t])
-    #        Theory[t].SetFillColor(theoryFillColor[t])
-    #        Theory[t].SetFillStyle(theoryFillStyle[t])
-    #        Theory[t].SetLineWidth(2)
-    #        #Theory[t].SetLineStyle(7)
+            Theory[t].SetLineColor(theoryLineColor[t])
+            Theory[t].SetFillColor(theoryFillColor[t])
+            Theory[t].SetFillStyle(theoryFillStyle[t])
+            Theory[t].SetLineWidth(2)
+            #Theory[t].SetLineStyle(7)
 
 
     Exp2s.SetLineWidth(2)
@@ -264,7 +253,7 @@ def limit():
     leg.AddEntry(Exp0s, "Expected", "l")
     leg.AddEntry(Exp1s, "#pm 1 std. deviation", "f")
     leg.AddEntry(Exp2s, "#pm 2 std. deviation", "f")
-    for t in THEORY: leg.AddEntry(Theory[t], theoryLabel[t], "fl")
+    for t in THEORY: leg.AddEntry(Theory[t], t, "fl")
     leg.Draw()
     latex = TLatex()
     latex.SetNDC()
@@ -372,11 +361,11 @@ def limit():
 
     if not gROOT.IsBatch(): raw_input("Press Enter to continue...")
 
-    c1.Print("combine/plotsLimit/ExclusionLimits/"+channel+suffix+".png")
-    c1.Print("combine/plotsLimit/ExclusionLimits/"+channel+suffix+".pdf")
+    c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".png")
+    #c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".pdf")
     if 'ah' in channel or 'sl' in channel:
-        c1.Print("combine/plotsLimit/ExclusionLimits/"+channel+suffix+".C")
-        c1.Print("combine/plotsLimit/ExclusionLimits/"+channel+suffix+".root")
+        c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".C")
+        c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".root")
 
     for t in THEORY:
         print "Model", t, ":",
@@ -414,10 +403,10 @@ def limit():
     Sign.Draw("AL3")
     drawCMS(LUMI, "Preliminary")
     drawAnalysis(channel[1:3])
-    c2.Print("combine/plotsLimit/Significance/"+channel+suffix+".png")
-    c2.Print("combine/plotsLimit/Significance/"+channel+suffix+".pdf")
-#    c2.Print("plotsLimit/Significance/"+channel+suffix+".root")
-#    c2.Print("plotsLimit/Significance/"+channel+suffix+".C")
+    c2.Print("combine/plotsLimit/Significance/"+YEAR+suffix+".png")
+    c2.Print("combine/plotsLimit/Significance/"+YEAR+suffix+".pdf")
+#    c2.Print("plotsLimit/Significance/"+YEAR+suffix+".root")
+#    c2.Print("plotsLimit/Significance/"+YEAR+suffix+".C")
 
     # ---------- p-Value ----------
     c3 = TCanvas("c3", "p-Value", 800, 600)
@@ -445,10 +434,10 @@ def limit():
 
     drawCMS(LUMI, "Preliminary")
     drawAnalysis(channel[1:3])
-    c3.Print("combine/plotsLimit/pValue/"+channel+suffix+".png")
-    c3.Print("combine/plotsLimit/pValue/"+channel+suffix+".pdf")
-#    c3.Print("plotsLimit/pValue/"+channel+suffix+".root")
-#    c3.Print("plotsLimit/pValue/"+channel+suffix+".C")
+    c3.Print("combine/plotsLimit/pValue/"+YEAR+suffix+".png")
+    c3.Print("combine/plotsLimit/pValue/"+YEAR+suffix+".pdf")
+#    c3.Print("plotsLimit/pValue/"+YEAR+suffix+".root")
+#    c3.Print("plotsLimit/pValue/"+YEAR+suffix+".C")
 
     # --------- Best Fit ----------
     c4 = TCanvas("c4", "Best Fit", 800, 600)
@@ -461,10 +450,10 @@ def limit():
     Best.Draw("AL3")
     drawCMS(LUMI, "Preliminary")
     drawAnalysis(channel[1:3])
-    c4.Print("combine/plotsLimit/BestFit/"+channel+suffix+".png")
-    c4.Print("combine/plotsLimit/BestFit/"+channel+suffix+".pdf")
-#    c4.Print("plotsLimit/BestFit/"+channel+suffix+".root")
-#    c4.Print("plotsLimit/BestFit/"+channel+suffix+".C")
+    c4.Print("combine/plotsLimit/BestFit/"+YEAR+suffix+".png")
+    c4.Print("combine/plotsLimit/BestFit/"+YEAR+suffix+".pdf")
+#    c4.Print("plotsLimit/BestFit/"+YEAR+suffix+".root")
+#    c4.Print("plotsLimit/BestFit/"+YEAR+suffix+".C")
 
     if not gROOT.IsBatch(): raw_input("Press Enter to continue...")
 

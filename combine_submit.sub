@@ -1,0 +1,9 @@
+executable            = combine.sh
+arguments             = medium 2016 1
+output                = submission_files/combine/combine.$(ClusterId).$(ProcId).out
+error                 = submission_files/combine/combine.$(ClusterId).$(ProcId).err
+log                   = submission_files/combine/combine.$(ClusterId).log
++JobFlavour           = "longlunch"
+RequestCpus           = 2
+transfer_output_files = ""
+queue

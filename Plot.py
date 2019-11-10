@@ -275,7 +275,7 @@ def plot(var, cut, year, norm=False, nm1=False):
         varname = var.replace('.', '_').replace('()', '')
         if not os.path.exists("plots/"+channel): os.makedirs("plots/"+channel)
         c1.Print("plots/"+channel+"/"+varname+"_"+year+".png")
-        c1.Print("plots/"+channel+"/"+varname+"_"+year+".pdf")
+        #c1.Print("plots/"+channel+"/"+varname+"_"+year+".pdf")
     
     # Print table
     printTable(hist, sign)

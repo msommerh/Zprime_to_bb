@@ -16,7 +16,7 @@ from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooP
 #from alpha import drawPlot
 from rooUtils import *
 from samples import sample
-from aliases import alias, deepFlavour
+from aliases import alias, deepFlavour_tight
 
 
 import optparse
@@ -33,7 +33,6 @@ parser = optparse.OptionParser(usage)
 parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose")
 parser.add_option("-y", "--year", action="store", type="string", dest="year",default="2017")
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
-parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
 parser.add_option("-u", "--unskimmed", action="store_true", default=False, dest="unskimmed")
 (options, args) = parser.parse_args()
 #if options.bash: gROOT.SetBatch(True)
@@ -55,8 +54,8 @@ colour = [
 #FIXME
 channel = 'bb'
 stype = 'Zprime' 
-genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
-#genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3500, 4000, 5000, 5500, 6000, 7000, 8000] #if 2016 is involved
+#genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3500, 4000, 5000, 5500, 6000, 7000, 8000] #if 2016 is involved
 massPoints = [x for x in range(600, 8000+1, 100)]
 #sample = {}
 #for j, m in enumerate(massPoints):
@@ -76,7 +75,7 @@ gStyle.SetErrorX(0.)
 
 NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"
 PLOTDIR     = "plots/skimmed/"
-#CARDDIR     = "datacards/skimmed/"
+CARDDIR     = "datacards/skimmed/"
 WORKDIR     = "workspace/skimmed/"
 RATIO       = 4
 YEAR        = options.year
@@ -84,7 +83,7 @@ YEAR        = options.year
 VERBOSE     = options.verbose
 #PARALLELIZE = True
 READTREE    = True
-BTAGGING    = options.btagging
+BTAG_THRESHOLD = 0.1
 
 if YEAR=='2016':
     LUMI=35920.
@@ -98,16 +97,9 @@ else:
     print "unknown year:",YEAR
     sys.exit()
 
-if BTAGGING not in ['tight', 'medium', 'loose']:
-    print "unknown btagging requirement:", BTAGGING
-    sys.exit()
-
-PLOTDIR = PLOTDIR+BTAGGING+"/"
-WORKDIR = WORKDIR+BTAGGING+"/"
-
 if options.unskimmed:
     NTUPLEDIR="/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
-    #CARDDIR  .replace("skimmed/","")
+    CARDDIR  .replace("skimmed/","")
     WORKDIR  .replace("skimmed/","")
     PLOTDIR  .replace("skimmed/","")
 
@@ -188,8 +180,13 @@ def signal(category):
     massArg = RooArgSet(X_mass)
 
     # Cuts
-    #SRcut = alias[category]
-    SRcut = alias[category].format(b_threshold=deepFlavour[BTAGGING][YEAR])
+    #SRcut = "HLT_AK8PFJet{0}==1. &&  HLT_PFJet{0}==1. && HLT_CaloJet{0}_NoJetID==1. && HLT_PFHT{1}==1.".format(500 if YEAR=='2016' else 550, 900 if YEAR=='2016' else 1050)
+
+    #if category=='bb':
+    #    SRcut += " && jdeepFlavour_1>={0} && jdeepFlavour_2>={0}".format(BTAG_THRESHOLD)
+    #elif category=='bq':
+    #    SRcut += " && ((jdeepFlavour_1>={0} && jdeepFlavour_2<{0}) || (jdeepFlavour_1<{0} && jdeepFlavour_2>={0}))".format(BTAG_THRESHOLD)
+    SRcut = alias[category]
 
     print "  Cut:\t", SRcut
     #SRcut = SRcut.replace('isVtoQQ', '0==0')

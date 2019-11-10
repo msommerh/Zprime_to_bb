@@ -18,8 +18,6 @@ if __name__ == "__main__":
                                          help="set year, type run2 for combined submission." )
   parser.add_argument('-MC', '--isMC',   dest='isMC',  action='store_true', default=False,
                                          help="Select this if the sample is MC, otherwise it is flagged as data.")
-  parser.add_argument("-c", "--category", action="store", type=str, dest="category", default="", choices=['bb','bq','qq',''],
-                                         help="b-tagging category for the fitting to run on: bb, bq, qq. Leave empty to run all three")
   parser.add_argument("-b", "--btagging", action="store", type=str, dest="btagging", default="tight", choices=['tight', 'medium', 'loose'])
   args = parser.parse_args()
   #checkFiles.args = args

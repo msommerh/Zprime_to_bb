@@ -16,7 +16,7 @@ from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooP
 #from alpha import drawPlot
 from rooUtils import *
 from samples import sample
-from aliases import alias, deepFlavour_tight
+from aliases import alias, deepFlavour
 
 
 import optparse
@@ -24,18 +24,12 @@ import optparse
 usage = "usage: %prog [options]"
 parser = optparse.OptionParser(usage)
 
-#parser.add_option("-a", "--all", action="store_true", default=False, dest="all")
-#parser.add_option("-b", "--bash", action="store_true", default=False, dest="bash")
-#parser.add_option("-c", "--channel", action="store", type="string", dest="channel", default="")
-#parser.add_option("-s", "--signal", action="store", type="string", dest="signal", default="")
-#parser.add_option("-e", "--efficiency", action="store_true", default=False, dest="efficiency")
-#parser.add_option("-p", "--parallelize", action="store_true", default=False, dest="parallelize")
 parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose")
 parser.add_option("-y", "--year", action="store", type="string", dest="year",default="2017")
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
+parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
 parser.add_option("-u", "--unskimmed", action="store_true", default=False, dest="unskimmed")
 (options, args) = parser.parse_args()
-#if options.bash: gROOT.SetBatch(True)
 gROOT.SetBatch(True)
 
 colour = [
@@ -50,40 +44,27 @@ colour = [
 
 ########## SETTINGS ##########
 
-## ad-hoc fix of missing dictionaries containing selections and line colors
-#FIXME
 channel = 'bb'
 stype = 'Zprime' 
-#genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
-genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3500, 4000, 5000, 5500, 6000, 7000, 8000] #if 2016 is involved
+genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 massPoints = [x for x in range(600, 8000+1, 100)]
-#sample = {}
-#for j, m in enumerate(massPoints):
-#    sample["%s%s_M%d" % (stype, channel, m)] = {'linecolor':j}
-#for j, m in enumerate(genPoints):
-#    sample["%s%s_M%d" % (stype, channel, m)] = {'linecolor':j%9+1}
-#FIXME
 
 # Silent RooFit
 RooMsgService.instance().setGlobalKillBelow(RooFit.FATAL)
 
-#gStyle.SetOptStat(0)
 gStyle.SetOptTitle(0)
 gStyle.SetPadTopMargin(0.06)
 gStyle.SetPadRightMargin(0.05)
 gStyle.SetErrorX(0.)
 
+BTAGGING    = options.btagging
 NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"
-PLOTDIR     = "plots/skimmed/"
-CARDDIR     = "datacards/skimmed/"
-WORKDIR     = "workspace/skimmed/"
+PLOTDIR     = "plots/"+BTAGGING+"/"
+WORKDIR     = "workspace/"+BTAGGING+"/"
 RATIO       = 4
 YEAR        = options.year
-#LUMI        = 35867
 VERBOSE     = options.verbose
-#PARALLELIZE = True
 READTREE    = True
-BTAG_THRESHOLD = 0.1
 
 if YEAR=='2016':
     LUMI=35920.
@@ -97,17 +78,19 @@ else:
     print "unknown year:",YEAR
     sys.exit()
 
+if BTAGGING not in ['tight', 'medium', 'loose']:
+    print "unknown btagging requirement:", BTAGGING
+    sys.exit()
+
 if options.unskimmed:
     NTUPLEDIR="/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
-    CARDDIR  .replace("skimmed/","")
-    WORKDIR  .replace("skimmed/","")
-    PLOTDIR  .replace("skimmed/","")
 
 channelList = ['bb']
 signalList = ['Zprbb']
 color = {'bb' : 4, 'bq': 2, 'qq':8}
 channel = 'bb'
-categories = ['bb', 'bq', 'qq']
+#categories = ['bb', 'bq', 'qq'] ## don't really need the qq category
+categories = ['bb', 'bq']
 stype = 'Zprime' 
 signalType = 'Zprime'
 
@@ -115,15 +98,10 @@ jobs = []
 
 def signal(category):
 
-    #genPoints = [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000] #defined above
-    #massPoints = [x for x in range(600, 8000+1, 100)]
     interPar = True
-
     n = len(genPoints)  
     
-    #category = channel
     cColor = color[category] if category in color else 4
-
     nBtag = category.count('b')
     isAH = False #not entirely sure what it does   
  
@@ -167,8 +145,6 @@ def signal(category):
     # there is a maximum of 9 variables in the declaration, so the others need to be added with 'add'
     variables = RooArgSet(X_mass)
     variables.add(RooArgSet(j1_pt, jj_deltaEta, jdeepFlavour_1, jdeepFlavour_2, weight))
-    #variables.add(RooArgSet(j1_mass, j2_mass, j1_pt, j2_pt, jdeepCSV_1, jdeepCSV_2, jdeepFlavour_1, jdeepFlavour_2))
-    #variables.add(RooArgSet(MET_over_sumEt, weight))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     #X_mass.setRange("X_extended_range", X_mass.getMin(), X_mass.getMax())
     X_mass.setRange("X_reasonable_range", X_mass.getMin(), X_mass.getMax())
@@ -180,16 +156,9 @@ def signal(category):
     massArg = RooArgSet(X_mass)
 
     # Cuts
-    #SRcut = "HLT_AK8PFJet{0}==1. &&  HLT_PFJet{0}==1. && HLT_CaloJet{0}_NoJetID==1. && HLT_PFHT{1}==1.".format(500 if YEAR=='2016' else 550, 900 if YEAR=='2016' else 1050)
-
-    #if category=='bb':
-    #    SRcut += " && jdeepFlavour_1>={0} && jdeepFlavour_2>={0}".format(BTAG_THRESHOLD)
-    #elif category=='bq':
-    #    SRcut += " && ((jdeepFlavour_1>={0} && jdeepFlavour_2<{0}) || (jdeepFlavour_1<{0} && jdeepFlavour_2>={0}))".format(BTAG_THRESHOLD)
-    SRcut = alias[category]
+    SRcut = alias[category].format(b_threshold=deepFlavour[BTAGGING][YEAR])
 
     print "  Cut:\t", SRcut
-    #SRcut = SRcut.replace('isVtoQQ', '0==0')
 
     #*******************************************************#
     #                                                       #
@@ -278,10 +247,7 @@ def signal(category):
     # the alpha method is now done.
     for m in massPoints:
 
-        #signalString = "M%d" % m
         signalMass = "%s_M%d" % (stype, m)
-        #signalName = "%s%s_M%d" % (stype, category, m)
-        #signalName = "%s%s_M%d" % (stype, channel, m)
         signalName = "ZpBB_M{}".format(m)
  
         signalColor = sample[signalName]['linecolor'] if signalName in sample else 1
@@ -401,7 +367,7 @@ def signal(category):
                         
             # Remove HVT cross sections
             #xs = getCrossSection(stype, channel, m)
-            xs = 1.    ## FIXME
+            xs = 1.    
             signalXS[m].setVal(xs * 1000.)
             
             signalIntegral[m] = signalExt[m].createIntegral(massArg, RooFit.NormSet(massArg), RooFit.Range("X_integration_range"))
@@ -450,7 +416,7 @@ def signal(category):
     drawAnalysis(category)
     drawRegion(category)
 
-    c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.pdf")
+    #c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.pdf")
     c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.png")
     if VERBOSE: raw_input("Press Enter to continue...")
     # ====== CONTROL PLOT ======
@@ -552,7 +518,6 @@ def signal(category):
     fslope2.SetFillColor(2)
 
 
-
     n = 0
     for i, m in enumerate(genPoints):
         if not m in signalNorm.keys(): continue
@@ -560,7 +525,6 @@ def signal(category):
         if signalNorm[m].getVal() < 1.e-6: continue
         #signalString = "M%d" % m
         #signalName = "%s_M%d" % (stype, m)
-        
 
         if gnorm.GetMaximum() < signalNorm[m].getVal(): gnorm.SetMaximum(signalNorm[m].getVal())
         gnorm.SetPoint(n, m, signalNorm[m].getVal())
@@ -708,7 +672,7 @@ def signal(category):
 #        eslope2.Draw("3, SAME")
 
 
-    c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.pdf")
+    #c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.pdf")
     c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.png")
 
 
@@ -725,7 +689,7 @@ def signal(category):
     drawCMS(-1, "Simulation")
     drawAnalysis(category)
     drawRegion(category)
-    c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.pdf")
+    #c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.pdf")
     c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.png")
 
 
@@ -753,271 +717,271 @@ def signal(category):
         getattr(w, "import")(signal[m], RooFit.Rename(signal[m].GetName()))
         getattr(w, "import")(signalNorm[m], RooFit.Rename(signalNorm[m].GetName()))
         getattr(w, "import")(signalXS[m], RooFit.Rename(signalXS[m].GetName()))
-    w.writeToFile("signal_%sMC_signal_%s_%s.root" % (WORKDIR, YEAR, category), True)      ## eventually, the idea will probably be to write it into the same file as the bkg. but for no I'd like to keep them apart FIXME
-    print "Workspace", "signal_%sMC_signal_%s_%s.root" % (WORKDIR, YEAR, category), "saved successfully"
+    w.writeToFile(WORKDIR+"MC_signal_%s_%s.root" % (YEAR, category), True)   
+    print "Workspace", WORKDIR+"MC_signal_%s_%s.root" % (YEAR, category), "saved successfully"
 
 
-def efficiency(stype, Zlep=True):
-    genPoints = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500]
-    eff = {}
-    
-    channels = [x for x in channelList if len(x)<5]
-
-    for channel in channels:
-        isAH = ('hp' in channel or 'lp' in channel)
-        treeSign = {}
-        ngenSign = {}
-        nevtSign = {}
-        eff[channel] = TGraphErrors()
-
-        for i, m in enumerate(genPoints):
-            if isAH and m < 1000: continue
-            #if m==1600 or m==2000: continue
-            signName = "%s_M%d" % (stype, m) #"%s_M%d" % (channel[:3], m)
-            ngenSign[m] = 0.
-            nevtSign[m] = 0.
-            for j, ss in enumerate(sample[signName]['files']):
-                if isAH and not 'had' in ss: continue
-                if 'nn' in channel and not 'Zinv' in ss: continue
-                if ('en' in channel or 'mn' in channel) and not 'Wlep' in ss: continue
-                if ('ee' in channel or 'mm' in channel) and not 'Zlep' in ss: continue
-                if Zlep and 'Zinv' in ss: continue
-                if not Zlep and 'Zlep' in ss: continue
-
-                sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
-                if not sfile.Get("Events")==None:
-                    ngenSign[m] += sfile.Get("Events").GetEntries()
-                    # From trees
-                    treeSign[m] = sfile.Get("tree")
-                    nevtSign[m] += treeSign[m].GetEntries(selection[channel] + selection['SR'])
-                    # From hist
-                    #nevtSign[m] += sfile.Get(channel+"SR/X_mass").GetEntries()
-                else:
-                    ngenSign[m] = -1
-                    print "Failed reading file", NTUPLEDIR + ss + ".root"
-                sfile.Close()
-                #print channel, ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
-            if nevtSign[m] == 0 or ngenSign[m] < 0: continue
-            # Gen Br
-            #if ('en' in channel or 'mn' in channel or 'ee' in channel or 'mm' in channel): ngenSign[m] /= 1.5
-            n = eff[channel].GetN()
-            eff[channel].SetPoint(n, m, nevtSign[m]/ngenSign[m])
-            eff[channel].SetPointError(n, 0, math.sqrt(nevtSign[m])/ngenSign[m])
-
-        eff[channel].SetMarkerColor(color[channel])
-        eff[channel].SetMarkerStyle(20)
-        eff[channel].SetLineColor(color[channel])
-        eff[channel].SetLineWidth(2)
-        if channel.count('b')==1: eff[channel].SetLineStyle(3)
-
-    n = max([eff[x].GetN() for x in channels])
-    maxEff = 0.
-
-    # Total efficiency
-    eff["sum"] = TGraphErrors(n)
-    eff["sum"].SetMarkerStyle(24)
-    eff["sum"].SetMarkerColor(1)
-    eff["sum"].SetLineWidth(2)
-    for i in range(n):
-        tot, mass = 0., 0.
-        for channel in channels:
-            if eff[channel].GetN() > i:
-                tot += eff[channel].GetY()[i]
-                mass = eff[channel].GetX()[i]
-                if tot > maxEff: maxEff = tot
-        eff["sum"].SetPoint(i, mass, tot)
-
-
-    leg = TLegend(0.15, 0.60, 0.95, 0.8)
-    leg.SetBorderSize(0)
-    leg.SetFillStyle(0) #1001
-    leg.SetFillColor(0)
-    leg.SetNColumns(len(channels)/4)
-    for i, channel in enumerate(channels):
-        if eff[channel].GetN() > 0: leg.AddEntry(eff[channel], getChannel(channel), "pl")
-    leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])/2.*0.045)
-
-    legS = TLegend(0.55, 0.85-0.045, 0.95, 0.85)
-    legS.SetBorderSize(0)
-    legS.SetFillStyle(0) #1001
-    legS.SetFillColor(0)
-    legS.AddEntry(eff['sum'], "Total efficiency", "pl")
-
-    c1 = TCanvas("c1", "Signal Efficiency", 1200, 800)
-    c1.cd(1)
-    eff['sum'].Draw("APL")
-    for i, channel in enumerate(channels): eff[channel].Draw("SAME, PL")
-    leg.Draw()
-    legS.Draw()
-    setHistStyle(eff["sum"], 1.1)
-    eff["sum"].SetTitle(";m_{"+stype[1]+"'} (GeV);Acceptance #times efficiency")
-    eff["sum"].SetMinimum(0.)
-    eff["sum"].SetMaximum(max(1., maxEff*1.5)) #0.65
-    eff["sum"].GetXaxis().SetTitleSize(0.045)
-    eff["sum"].GetYaxis().SetTitleSize(0.045)
-    eff["sum"].GetYaxis().SetTitleOffset(1.1)
-    eff["sum"].GetXaxis().SetTitleOffset(1.05)
-    eff["sum"].GetXaxis().SetRangeUser(750, 5000)
-    if stype=='XWH' or (stype=='XZH' and Zlep): line = drawLine(750, 2./3., 4500, 2./3.)
-    drawCMS(-1, "Simulation") #Preliminary
-    drawAnalysis("VH")
-
-    suffix = ""
-    if isAH: suffix = "ah"
-    elif stype=='XZH' and Zlep: suffix = "ll"
-    elif stype=='XZH' and not Zlep: suffix = "nn"
-    elif stype=='XWH': suffix = "ln"
-
-    c1.Print("plotsSignal/Efficiency/"+stype+suffix+".pdf")
-    c1.Print("plotsSignal/Efficiency/"+stype+suffix+".png")
-
-    # print
-    print "category",
-    for m in range(0, eff["sum"].GetN()):
-        print " & %d" % int(eff["sum"].GetX()[m]),
-    print "\\\\", "\n\\hline"
-    for i, channel in enumerate(channels+["sum"]):
-        if channel=='sum': print "\\hline"
-        print getChannel(channel).replace("high ", "H").replace("low ", "L").replace("purity", "P").replace("b-tag", ""),
-        for m in range(0, eff[channel].GetN()):
-            print "& %.1f" % (100.*eff[channel].GetY()[m]),
-        print "\\\\"
-
-
-
-def efficiencyAll():
-    signals = {'XWHln' : ['enb', 'enbb', 'mnb', 'mnbb'], 'XZHll' : ['eeb', 'eebb', 'mmb', 'mmbb'], 'XZHnn' : ['nnb', 'nnbb'], 'AZhll' : ['eeb', 'eebb', 'mmb', 'mmbb'], 'AZhnn' : ['nnb', 'nnbb'], 'BBAZhll' : ['eeb', 'eebb', 'mmb', 'mmbb'], 'BBAZhnn' : ['nnb', 'nnbb'], 'monoH' : ['nnb', 'nnbb']}
-    labels = {'XWHln' : "q#bar{q} #rightarrow W' #rightarrow Wh #rightarrow l#nub#bar{b}", 'XZHll' : "q#bar{q} #rightarrow Z' #rightarrow Zh #rightarrow llb#bar{b}", 'XZHnn' : "q#bar{q} #rightarrow Z' #rightarrow Zh #rightarrow #nu#nub#bar{b}", 'AZhll' : "gg #rightarrow A #rightarrow Zh #rightarrow llb#bar{b}", 'AZhnn' : "gg #rightarrow A #rightarrow Zh #rightarrow #nu#nub#bar{b}", 'BBAZhll' : "b#bar{b}A #rightarrow Zh #rightarrow llb#bar{b}", 'BBAZhnn' : "b#bar{b}A #rightarrow Zh #rightarrow #nu#nub#bar{b}", 'monoH' : "q#bar{q} #rightarrow Z' #rightarrow Ah #rightarrow #chi#chib#bar{b}"} # (m_{A}=300 GeV)
-    #colors = {'XWHln' : 882, 'XZHll' : 418, 'XZHnn' : 856, 'AZhll' : 633, 'AZhnn' : 625, 'BBAZhll' : 633, 'BBAZhnn' : 625, 'monoH' : 602}
-    colors = {'XWHln' : 1007, 'XZHll' : 1004, 'XZHnn' : 1003, 'AZhll' : 1006, 'AZhnn' : 1005, 'BBAZhll' : 1002, 'BBAZhnn' : 1003, 'monoH' : 1}
-    styles = {'XWHln' : 1, 'XZHll' : 1, 'XZHnn' : 1, 'AZhll' : 2, 'AZhnn' : 2, 'BBAZhll' : 3, 'BBAZhnn' : 3, 'monoH' : 8}
-    marker = {'XWHln' : 22, 'XZHll' : 21, 'XZHnn' : 20, 'AZhll' : 21, 'AZhnn' : 20, 'BBAZhll' : 25, 'BBAZhnn' : 24, 'monoH' : 24}
-#    {'nnb' : 634, 'nnbb' : 634, 'enb' : 410, 'enbb' : 410, 'mnb' : 856, 'mnbb' : 856, 'eeb' : 418, 'eebb' : 418, 'mmb' : 602, 'mmbb' : 602, 'wrhpb': 634, 'wrhpbb': 634, 'wrlpb': 826, 'wrlpbb': 826, 'zrhpb': 856, 'zrhpbb': 856, 'zrlpb': 602, 'zrlpbb': 602, 'vrbbb' : 800, 'vrbbbb' : 801}
-    genPoints = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500]
-    eff = {}
-    
-    for sign, channels in signals.iteritems():
-        treeSign = {}
-        ngenSign = {}
-        nevtSign = {}
-        eff[sign] = TGraphErrors()
-        eff[sign].SetTitle(sign)
-        eff[sign].SetMarkerColor(colors[sign])
-        eff[sign].SetMarkerSize(1.25)
-        eff[sign].SetLineColor(colors[sign])
-        eff[sign].SetLineWidth(2)
-        eff[sign].SetLineStyle(styles[sign])
-        eff[sign].SetMarkerStyle(marker[sign])
-        #if channel.count('b')==1: eff[channel].SetLineStyle(3)
-        for i, m in enumerate(genPoints):
-            neff = 0.
-            for channel in channels:
-                signName = "%s_M%d" % (sign, m)
-                if 'AZh' in sign and m > 2000: continue
-                if sign=='monoH' and m==1600: m = 1700
-                if sign=='monoH' and m==1800: continue
-                if sign=='monoH' and m>4000: continue
-                if sign=='monoH': signName = "monoH_MZ%d_MA300" % (m)
-                
-                ngenSign[m] = 0.
-                nevtSign[m] = 0.
-                for j, ss in enumerate(sample[signName]['files']):
-#                    if ('nn' in channel) and not ('inv' in channel): continue
-#                    if ('en' in channel or 'mn' in channel) and not 'Wlep' in ss: continue
-#                    if ('ee' in channel or 'mm' in channel) and not ('Zlep' in ss or 'LL' in ss): continue
-                    #if Zlep and 'Zinv' in ss: continue
-                    #if not Zlep and 'Zlep' in ss: continue
-                    sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
-                    if not sfile.Get("Events")==None:
-                        ngenSign[m] += sfile.Get("Events").GetEntries()
-                        # From trees
-                        treeSign[m] = sfile.Get("tree")
-                        nevtSign[m] += treeSign[m].GetEntries(selection[channel] + selection['SR'])
-                        # From hist
-                        #nevtSign[m] += sfile.Get(channel+"SR/X_mass").GetEntries()
-                    else:
-                        ngenSign[m] = -1
-                        print "Failed reading file", NTUPLEDIR + ss + ".root"
-                    sfile.Close()
-                    #print channel, ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
-                if nevtSign[m] == 0 or ngenSign[m] < 0: continue
-                # Gen Br
-                #if ('en' in channel or 'mn' in channel or 'ee' in channel or 'mm' in channel): ngenSign[m] /= 1.5
-                neff += nevtSign[m]/ngenSign[m]
-            if neff<=0.: continue
-            if 'ln' in sign or 'll' in sign: neff *= 1.5
-            n = eff[sign].GetN()
-            eff[sign].SetPoint(n, m, neff)
-            eff[sign].SetPointError(n, 0, 0)
-
-
-    n = 0. #max([eff[x].GetN() for x in channels])
-    maxEff = 0.
-
-    leg = TLegend(0.15, 0.35, 0.95, 0.35)
-    leg.SetBorderSize(0)
-    leg.SetFillStyle(0) #1001
-    leg.SetFillColor(0)
-    for sign in ['XZHnn', 'AZhll', 'XWHln', 'AZhnn', 'XZHll', 'BBAZhll', 'monoH', 'BBAZhnn']:
-        if eff[sign].GetN() > 0:
-            leg.AddEntry(eff[sign], labels[sign], "pl")
-            n += 1
-    leg.SetNColumns(int(n/3))
-    leg.SetY1(leg.GetY2()-n*0.045/leg.GetNColumns())
-
+#def efficiency(stype, Zlep=True):
+#    genPoints = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500]
+#    eff = {}
+#    
+#    channels = [x for x in channelList if len(x)<5]
+#
+#    for channel in channels:
+#        isAH = ('hp' in channel or 'lp' in channel)
+#        treeSign = {}
+#        ngenSign = {}
+#        nevtSign = {}
+#        eff[channel] = TGraphErrors()
+#
+#        for i, m in enumerate(genPoints):
+#            if isAH and m < 1000: continue
+#            #if m==1600 or m==2000: continue
+#            signName = "%s_M%d" % (stype, m) #"%s_M%d" % (channel[:3], m)
+#            ngenSign[m] = 0.
+#            nevtSign[m] = 0.
+#            for j, ss in enumerate(sample[signName]['files']):
+#                if isAH and not 'had' in ss: continue
+#                if 'nn' in channel and not 'Zinv' in ss: continue
+#                if ('en' in channel or 'mn' in channel) and not 'Wlep' in ss: continue
+#                if ('ee' in channel or 'mm' in channel) and not 'Zlep' in ss: continue
+#                if Zlep and 'Zinv' in ss: continue
+#                if not Zlep and 'Zlep' in ss: continue
+#
+#                sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
+#                if not sfile.Get("Events")==None:
+#                    ngenSign[m] += sfile.Get("Events").GetEntries()
+#                    # From trees
+#                    treeSign[m] = sfile.Get("tree")
+#                    nevtSign[m] += treeSign[m].GetEntries(selection[channel] + selection['SR'])
+#                    # From hist
+#                    #nevtSign[m] += sfile.Get(channel+"SR/X_mass").GetEntries()
+#                else:
+#                    ngenSign[m] = -1
+#                    print "Failed reading file", NTUPLEDIR + ss + ".root"
+#                sfile.Close()
+#                #print channel, ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
+#            if nevtSign[m] == 0 or ngenSign[m] < 0: continue
+#            # Gen Br
+#            #if ('en' in channel or 'mn' in channel or 'ee' in channel or 'mm' in channel): ngenSign[m] /= 1.5
+#            n = eff[channel].GetN()
+#            eff[channel].SetPoint(n, m, nevtSign[m]/ngenSign[m])
+#            eff[channel].SetPointError(n, 0, math.sqrt(nevtSign[m])/ngenSign[m])
+#
+#        eff[channel].SetMarkerColor(color[channel])
+#        eff[channel].SetMarkerStyle(20)
+#        eff[channel].SetLineColor(color[channel])
+#        eff[channel].SetLineWidth(2)
+#        if channel.count('b')==1: eff[channel].SetLineStyle(3)
+#
+#    n = max([eff[x].GetN() for x in channels])
+#    maxEff = 0.
+#
+#    # Total efficiency
+#    eff["sum"] = TGraphErrors(n)
+#    eff["sum"].SetMarkerStyle(24)
+#    eff["sum"].SetMarkerColor(1)
+#    eff["sum"].SetLineWidth(2)
+#    for i in range(n):
+#        tot, mass = 0., 0.
+#        for channel in channels:
+#            if eff[channel].GetN() > i:
+#                tot += eff[channel].GetY()[i]
+#                mass = eff[channel].GetX()[i]
+#                if tot > maxEff: maxEff = tot
+#        eff["sum"].SetPoint(i, mass, tot)
+#
+#
+#    leg = TLegend(0.15, 0.60, 0.95, 0.8)
+#    leg.SetBorderSize(0)
+#    leg.SetFillStyle(0) #1001
+#    leg.SetFillColor(0)
+#    leg.SetNColumns(len(channels)/4)
+#    for i, channel in enumerate(channels):
+#        if eff[channel].GetN() > 0: leg.AddEntry(eff[channel], getChannel(channel), "pl")
+#    leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])/2.*0.045)
+#
 #    legS = TLegend(0.55, 0.85-0.045, 0.95, 0.85)
 #    legS.SetBorderSize(0)
 #    legS.SetFillStyle(0) #1001
 #    legS.SetFillColor(0)
 #    legS.AddEntry(eff['sum'], "Total efficiency", "pl")
-
-    c1 = TCanvas("c1", "Signal Efficiency", 1200, 800)
-    c1.cd(1)
-    c1.GetPad(0).SetTicks(1, 1)
-    first = 'XZHnn'
-    eff[first].Draw("APL")
-    for sign, channels in signals.iteritems():
-        eff[sign].Draw("APL" if i==0 else "SAME, PL")
-    leg.Draw()
+#
+#    c1 = TCanvas("c1", "Signal Efficiency", 1200, 800)
+#    c1.cd(1)
+#    eff['sum'].Draw("APL")
+#    for i, channel in enumerate(channels): eff[channel].Draw("SAME, PL")
+#    leg.Draw()
 #    legS.Draw()
-    setHistStyle(eff[first], 1.1)
-    eff[first].SetTitle(";m_{X} (GeV);Acceptance #times efficiency")
-    eff[first].SetMinimum(0.)
-    eff[first].SetMaximum(max(1., maxEff*1.5)) #0.65
-    eff[first].GetXaxis().SetTitleSize(0.045)
-    eff[first].GetYaxis().SetTitleSize(0.045)
-    eff[first].GetXaxis().SetLabelSize(0.045)
-    eff[first].GetYaxis().SetLabelSize(0.045)
-    eff[first].GetYaxis().SetTitleOffset(1.1)
-    eff[first].GetXaxis().SetTitleOffset(1.05)
-    eff[first].GetXaxis().SetRangeUser(750, 4500)
-    eff[first].GetYaxis().SetRangeUser(0., 0.5)
+#    setHistStyle(eff["sum"], 1.1)
+#    eff["sum"].SetTitle(";m_{"+stype[1]+"'} (GeV);Acceptance #times efficiency")
+#    eff["sum"].SetMinimum(0.)
+#    eff["sum"].SetMaximum(max(1., maxEff*1.5)) #0.65
+#    eff["sum"].GetXaxis().SetTitleSize(0.045)
+#    eff["sum"].GetYaxis().SetTitleSize(0.045)
+#    eff["sum"].GetYaxis().SetTitleOffset(1.1)
+#    eff["sum"].GetXaxis().SetTitleOffset(1.05)
+#    eff["sum"].GetXaxis().SetRangeUser(750, 5000)
 #    if stype=='XWH' or (stype=='XZH' and Zlep): line = drawLine(750, 2./3., 4500, 2./3.)
-    #drawCMS(-1, "Simulation", True)
-    #drawAnalysis("XVHsl")
-
-    latex = TLatex()
-    latex.SetNDC()
-    latex.SetTextSize(0.05)
-    latex.SetTextColor(1)
-    latex.SetTextFont(42)
-    latex.SetTextAlign(13)
-    latex.DrawLatex(0.83, 0.99, "(13 TeV)")
-    latex.SetTextFont(62)
-    latex.SetTextSize(0.06)
-    latex.DrawLatex(0.15, 0.90, "CMS")
-    latex.SetTextSize(0.05)
-    latex.SetTextFont(52)
-#    latex.DrawLatex(0.15, 0.84, "Simulation")
-    
+#    drawCMS(-1, "Simulation") #Preliminary
+#    drawAnalysis("VH")
+#
 #    suffix = ""
 #    if isAH: suffix = "ah"
 #    elif stype=='XZH' and Zlep: suffix = "ll"
 #    elif stype=='XZH' and not Zlep: suffix = "nn"
 #    elif stype=='XWH': suffix = "ln"
-
-    c1.Print("plotsSignal/Efficiency/Efficiency.pdf")
-    c1.Print("plotsSignal/Efficiency/Efficiency.png")
+#
+#    c1.Print("plotsSignal/Efficiency/"+stype+suffix+".pdf")
+#    c1.Print("plotsSignal/Efficiency/"+stype+suffix+".png")
+#
+#    # print
+#    print "category",
+#    for m in range(0, eff["sum"].GetN()):
+#        print " & %d" % int(eff["sum"].GetX()[m]),
+#    print "\\\\", "\n\\hline"
+#    for i, channel in enumerate(channels+["sum"]):
+#        if channel=='sum': print "\\hline"
+#        print getChannel(channel).replace("high ", "H").replace("low ", "L").replace("purity", "P").replace("b-tag", ""),
+#        for m in range(0, eff[channel].GetN()):
+#            print "& %.1f" % (100.*eff[channel].GetY()[m]),
+#        print "\\\\"
+#
+#
+#
+#def efficiencyAll():
+#    signals = {'XWHln' : ['enb', 'enbb', 'mnb', 'mnbb'], 'XZHll' : ['eeb', 'eebb', 'mmb', 'mmbb'], 'XZHnn' : ['nnb', 'nnbb'], 'AZhll' : ['eeb', 'eebb', 'mmb', 'mmbb'], 'AZhnn' : ['nnb', 'nnbb'], 'BBAZhll' : ['eeb', 'eebb', 'mmb', 'mmbb'], 'BBAZhnn' : ['nnb', 'nnbb'], 'monoH' : ['nnb', 'nnbb']}
+#    labels = {'XWHln' : "q#bar{q} #rightarrow W' #rightarrow Wh #rightarrow l#nub#bar{b}", 'XZHll' : "q#bar{q} #rightarrow Z' #rightarrow Zh #rightarrow llb#bar{b}", 'XZHnn' : "q#bar{q} #rightarrow Z' #rightarrow Zh #rightarrow #nu#nub#bar{b}", 'AZhll' : "gg #rightarrow A #rightarrow Zh #rightarrow llb#bar{b}", 'AZhnn' : "gg #rightarrow A #rightarrow Zh #rightarrow #nu#nub#bar{b}", 'BBAZhll' : "b#bar{b}A #rightarrow Zh #rightarrow llb#bar{b}", 'BBAZhnn' : "b#bar{b}A #rightarrow Zh #rightarrow #nu#nub#bar{b}", 'monoH' : "q#bar{q} #rightarrow Z' #rightarrow Ah #rightarrow #chi#chib#bar{b}"} # (m_{A}=300 GeV)
+#    #colors = {'XWHln' : 882, 'XZHll' : 418, 'XZHnn' : 856, 'AZhll' : 633, 'AZhnn' : 625, 'BBAZhll' : 633, 'BBAZhnn' : 625, 'monoH' : 602}
+#    colors = {'XWHln' : 1007, 'XZHll' : 1004, 'XZHnn' : 1003, 'AZhll' : 1006, 'AZhnn' : 1005, 'BBAZhll' : 1002, 'BBAZhnn' : 1003, 'monoH' : 1}
+#    styles = {'XWHln' : 1, 'XZHll' : 1, 'XZHnn' : 1, 'AZhll' : 2, 'AZhnn' : 2, 'BBAZhll' : 3, 'BBAZhnn' : 3, 'monoH' : 8}
+#    marker = {'XWHln' : 22, 'XZHll' : 21, 'XZHnn' : 20, 'AZhll' : 21, 'AZhnn' : 20, 'BBAZhll' : 25, 'BBAZhnn' : 24, 'monoH' : 24}
+##    {'nnb' : 634, 'nnbb' : 634, 'enb' : 410, 'enbb' : 410, 'mnb' : 856, 'mnbb' : 856, 'eeb' : 418, 'eebb' : 418, 'mmb' : 602, 'mmbb' : 602, 'wrhpb': 634, 'wrhpbb': 634, 'wrlpb': 826, 'wrlpbb': 826, 'zrhpb': 856, 'zrhpbb': 856, 'zrlpb': 602, 'zrlpbb': 602, 'vrbbb' : 800, 'vrbbbb' : 801}
+#    genPoints = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500]
+#    eff = {}
+#    
+#    for sign, channels in signals.iteritems():
+#        treeSign = {}
+#        ngenSign = {}
+#        nevtSign = {}
+#        eff[sign] = TGraphErrors()
+#        eff[sign].SetTitle(sign)
+#        eff[sign].SetMarkerColor(colors[sign])
+#        eff[sign].SetMarkerSize(1.25)
+#        eff[sign].SetLineColor(colors[sign])
+#        eff[sign].SetLineWidth(2)
+#        eff[sign].SetLineStyle(styles[sign])
+#        eff[sign].SetMarkerStyle(marker[sign])
+#        #if channel.count('b')==1: eff[channel].SetLineStyle(3)
+#        for i, m in enumerate(genPoints):
+#            neff = 0.
+#            for channel in channels:
+#                signName = "%s_M%d" % (sign, m)
+#                if 'AZh' in sign and m > 2000: continue
+#                if sign=='monoH' and m==1600: m = 1700
+#                if sign=='monoH' and m==1800: continue
+#                if sign=='monoH' and m>4000: continue
+#                if sign=='monoH': signName = "monoH_MZ%d_MA300" % (m)
+#                
+#                ngenSign[m] = 0.
+#                nevtSign[m] = 0.
+#                for j, ss in enumerate(sample[signName]['files']):
+##                    if ('nn' in channel) and not ('inv' in channel): continue
+##                    if ('en' in channel or 'mn' in channel) and not 'Wlep' in ss: continue
+##                    if ('ee' in channel or 'mm' in channel) and not ('Zlep' in ss or 'LL' in ss): continue
+#                    #if Zlep and 'Zinv' in ss: continue
+#                    #if not Zlep and 'Zlep' in ss: continue
+#                    sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
+#                    if not sfile.Get("Events")==None:
+#                        ngenSign[m] += sfile.Get("Events").GetEntries()
+#                        # From trees
+#                        treeSign[m] = sfile.Get("tree")
+#                        nevtSign[m] += treeSign[m].GetEntries(selection[channel] + selection['SR'])
+#                        # From hist
+#                        #nevtSign[m] += sfile.Get(channel+"SR/X_mass").GetEntries()
+#                    else:
+#                        ngenSign[m] = -1
+#                        print "Failed reading file", NTUPLEDIR + ss + ".root"
+#                    sfile.Close()
+#                    #print channel, ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
+#                if nevtSign[m] == 0 or ngenSign[m] < 0: continue
+#                # Gen Br
+#                #if ('en' in channel or 'mn' in channel or 'ee' in channel or 'mm' in channel): ngenSign[m] /= 1.5
+#                neff += nevtSign[m]/ngenSign[m]
+#            if neff<=0.: continue
+#            if 'ln' in sign or 'll' in sign: neff *= 1.5
+#            n = eff[sign].GetN()
+#            eff[sign].SetPoint(n, m, neff)
+#            eff[sign].SetPointError(n, 0, 0)
+#
+#
+#    n = 0. #max([eff[x].GetN() for x in channels])
+#    maxEff = 0.
+#
+#    leg = TLegend(0.15, 0.35, 0.95, 0.35)
+#    leg.SetBorderSize(0)
+#    leg.SetFillStyle(0) #1001
+#    leg.SetFillColor(0)
+#    for sign in ['XZHnn', 'AZhll', 'XWHln', 'AZhnn', 'XZHll', 'BBAZhll', 'monoH', 'BBAZhnn']:
+#        if eff[sign].GetN() > 0:
+#            leg.AddEntry(eff[sign], labels[sign], "pl")
+#            n += 1
+#    leg.SetNColumns(int(n/3))
+#    leg.SetY1(leg.GetY2()-n*0.045/leg.GetNColumns())
+#
+##    legS = TLegend(0.55, 0.85-0.045, 0.95, 0.85)
+##    legS.SetBorderSize(0)
+##    legS.SetFillStyle(0) #1001
+##    legS.SetFillColor(0)
+##    legS.AddEntry(eff['sum'], "Total efficiency", "pl")
+#
+#    c1 = TCanvas("c1", "Signal Efficiency", 1200, 800)
+#    c1.cd(1)
+#    c1.GetPad(0).SetTicks(1, 1)
+#    first = 'XZHnn'
+#    eff[first].Draw("APL")
+#    for sign, channels in signals.iteritems():
+#        eff[sign].Draw("APL" if i==0 else "SAME, PL")
+#    leg.Draw()
+##    legS.Draw()
+#    setHistStyle(eff[first], 1.1)
+#    eff[first].SetTitle(";m_{X} (GeV);Acceptance #times efficiency")
+#    eff[first].SetMinimum(0.)
+#    eff[first].SetMaximum(max(1., maxEff*1.5)) #0.65
+#    eff[first].GetXaxis().SetTitleSize(0.045)
+#    eff[first].GetYaxis().SetTitleSize(0.045)
+#    eff[first].GetXaxis().SetLabelSize(0.045)
+#    eff[first].GetYaxis().SetLabelSize(0.045)
+#    eff[first].GetYaxis().SetTitleOffset(1.1)
+#    eff[first].GetXaxis().SetTitleOffset(1.05)
+#    eff[first].GetXaxis().SetRangeUser(750, 4500)
+#    eff[first].GetYaxis().SetRangeUser(0., 0.5)
+##    if stype=='XWH' or (stype=='XZH' and Zlep): line = drawLine(750, 2./3., 4500, 2./3.)
+#    #drawCMS(-1, "Simulation", True)
+#    #drawAnalysis("XVHsl")
+#
+#    latex = TLatex()
+#    latex.SetNDC()
+#    latex.SetTextSize(0.05)
+#    latex.SetTextColor(1)
+#    latex.SetTextFont(42)
+#    latex.SetTextAlign(13)
+#    latex.DrawLatex(0.83, 0.99, "(13 TeV)")
+#    latex.SetTextFont(62)
+#    latex.SetTextSize(0.06)
+#    latex.DrawLatex(0.15, 0.90, "CMS")
+#    latex.SetTextSize(0.05)
+#    latex.SetTextFont(52)
+##    latex.DrawLatex(0.15, 0.84, "Simulation")
+#    
+##    suffix = ""
+##    if isAH: suffix = "ah"
+##    elif stype=='XZH' and Zlep: suffix = "ll"
+##    elif stype=='XZH' and not Zlep: suffix = "nn"
+##    elif stype=='XWH': suffix = "ln"
+#
+#    c1.Print("plotsSignal/Efficiency/Efficiency.pdf")
+#    c1.Print("plotsSignal/Efficiency/Efficiency.png")
 
 def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=None, cat="", alt=None, anorm=-1, signal=None, snorm=-1):
     isData = norm>0
@@ -1127,36 +1091,13 @@ def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=No
         frame_res.GetXaxis().SetRangeUser(variable.getMin(), lastBin)
         line_res = drawLine(frame_res.GetXaxis().GetXmin(), 0, lastBin, 0)
 
-    if 'paper' in name:
-        c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".pdf")
-        c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".png")
-        return
-    if isSignal:
-        c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".pdf")
-        c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".png")
-        return
-    c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".pdf")
+    #c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".pdf")
     c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".png")
     #if VERBOSE: raw_input("Press Enter to continue...")
     # ======   END PLOT   ======
 
 
 if __name__ == "__main__":
-    #if options.efficiency:
-    #    efficiencyAll()
-
-    #elif options.all:
-    #    gROOT.SetBatch(True)
-    #    for s in signalList:
-    #        for c in channelList:
-    #            if PARALLELIZE:
-    #                p = multiprocessing.Process(target=signal, args=(c, s,))
-    #                jobs.append(p)
-    #                p.start()
-    #            else:
-    #                signal(c, s)
-    #else:
-    #    signal(options.channel, options.signal)
     if options.category!='':
         signal(options.category)
     else:
