@@ -29,16 +29,15 @@ if __name__ == "__main__":
 #jobflavour = 'tomorrow' #max 1d
 #jobflavour = 'testmatch' #max 3d
 
-  #categories = ['bb', 'bq', 'qq']
-  categories = ['bb', 'bq']
-
 else:
   args = None
 
-def submitJobs(title, category):
-    #path = os.getcwd()
+mass_points = range(1200,8001,100)
+nJobs = len(mass_points)
+
+def submitJobs():
     path = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
-    workdir = "submission_files/tmp_fitting_"+title
+    workdir = "submission_files/tmp_combine_{year}_{btagging}{suffix}".format(year=args.year, btagging=args.btagging, suffix="_MC" if args.isMC else "")
     if not os.path.exists(workdir):
         os.makedirs(workdir)
         print "Directory "+workdir+" created."
@@ -46,68 +45,31 @@ def submitJobs(title, category):
         print "Directory "+workdir+" already exists."
     os.chdir(workdir)
 
-    #write executable file for submission
-    with open('job.sh', 'w') as fout:
-        fout.write("#!/bin/sh\n")
-        fout.write("echo\n")
-        fout.write("echo\n")
-        fout.write("echo 'START---------------'\n")
-        fout.write("echo 'WORKDIR ' ${PWD}\n")
-
-        fout.write("cd "+str(path)+"\n")
-        fout.write("export SCRAM_ARCH=slc6_amd64_gcc700\n" )
-        fout.write("if [ -r CMSSW_10_3_3/src ] ; then\n")
-        fout.write("    echo 'release CMSSW_10_3_3 already exists'\n")
-        fout.write("else\n")
-        fout.write("    scram p CMSSW CMSSW_10_3_3\n")
-        fout.write("fi\n")
-        fout.write("cd CMSSW_10_3_3/src\n")
-        fout.write("eval `scram runtime -sh`\n")
-        fout.write("cd -\n" )
-        fout.write("echo 'cmssw release = ' $CMSSW_BASE\n")
-        fout.write("source /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/setupEnv.sh\n")
-
-        fout.write("export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh\n")
-        fout.write("use_x509userproxy=true\n")
-
-        fout.write("./Bkg_Fitter.py {}{}{}{}\n".format('-M ' if args.isMC else '', '-y '+args.year, ' -c '+category, ' -b '+args.btagging))
-        fout.write("echo 'STOP---------------'\n")
-        fout.write("echo\n")
-        fout.write("echo\n")
-
     #submit job
-    os.system("chmod 755 job.sh")
-    os.system("mv job.sh "+title+".sh")
-    makeSubmitFileCondor(title+".sh", title, args.queue)
+    os.system("cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine.sh ./combine_{}_{}.sh".format(args.year, args.btagging))
+    os.system("chmod 755 combine_{}_{}.sh".format(args.year, args.btagging))
+    makeSubmitFileCondor(args.queue, nJobs)
     os.system("condor_submit submit.sub")
-    print "job submitted"
+    print "jobs submitted"
     os.chdir("../..")
 
-def makeSubmitFileCondor(exe, jobname, jobflavour):
+def makeSubmitFileCondor(jobflavour, nJobs):
     print "make options file for condor job submission"
     submitfile = open("submit.sub", "w")
-    submitfile.write("executable            = "+exe+"\n")
-    submitfile.write("arguments             = $(ClusterID) $(ProcId)\n")
-    submitfile.write("output                = "+jobname+".$(ClusterId).$(ProcId).out\n")
-    submitfile.write("error                 = "+jobname+".$(ClusterId).$(ProcId).err\n")
-    submitfile.write("log                   = "+jobname+".$(ClusterId).log\n")
+    submitfile.write("executable            = combine_{}_{}.sh\n".format(args.year, args.btagging))
+    submitfile.write("arguments             = "+str(int(args.isMC))+" "+str(args.year)+" "+args.btagging+" $(ProcId)\n")
+    submitfile.write("output                = "+str(args.year)+"_"+args.btagging+".$(ClusterId).$(ProcId).out\n")
+    submitfile.write("error                 = "+str(args.year)+"_"+args.btagging+".$(ClusterId).$(ProcId).err\n")
+    submitfile.write("log                   = "+str(args.year)+"_"+args.btagging+".$(ClusterId).log\n")
     submitfile.write('+JobFlavour           = "'+jobflavour+'"\n')
-    submitfile.write("queue")
+    submitfile.write('transfer_output_files = ""\n')
+    submitfile.write("queue {}".format(nJobs))
     submitfile.close()
 
 def main():
 
-        if args.category != '':
-            title = "MC_QCD_TTbar" if args.isMC else "data"
-            title+= "_"+args.year+"_"+args.category+"_"+args.btagging
-            submitJobs(title, args.category)
-        else:
-            for category in categories:
-                title = "MC_QCD_TTbar" if args.isMC else "data"
-                title+= "_"+args.year+"_"+category+"_"+args.btagging
-                submitJobs(title, category)
+        submitJobs()
 
-        print
         print
         print "your jobs:"
         os.system("condor_q")

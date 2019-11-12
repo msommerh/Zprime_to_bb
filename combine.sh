@@ -15,72 +15,54 @@ use_x509userproxy=true
 
 #option=""
 
-higgsCombine() {
-    inputfile=$1
-    outputfile=$2
-    lower_mass=$3
-    upper_mass=$4
-    mass=$(echo $inputfile | sed s:/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/:: | sed s/2016// | sed s/2017// | sed s/2018// | sed s/run2// |tr -dc '0-9') #delete every character except the numbers. First removes the year
-    echo "started higgsCombine()"
-    echo "mass = ${mass}"
-    if [[ $mass -gt $lower_mass ]] && [[ $mass -le $upper_mass ]]; then
-        echo "Input file: ${inputfile}; Output file: ${outputfile}"
-        > $outputfile
-        #if echo "$option" | grep -q "blind"; then 
-        #  echo '1' >> $outputfile
-        #fi
-        combine -M AsymptoticLimits -d $inputfile -m $mass | grep -e Observed -e Expected | awk '{print $NF}' >> $outputfile #i.e. take the output of combine, select the lines containing "Observed" and "Expected" via grep, select the last field via awk and append it to the outputfile
-    fi
-}
+masses=(1200 1300 1400 1500 1600 1700 1800 1900 2000 2100 2200 2300 2400 2500 2600 2700 2800 2900 3000 3100 3200 3300 3400 3500 3600 3700 3800 3900 4000 4100 4200 4300 4400 4500 4600 4700 4800 4900 5000 5100 5200 5300 5400 5500 5600 5700 5800 5900 6000 6100 6200 6300 6400 6500 6600 6700 6800 6900 7000 7100 7200 7300 7400 7500 7600 7700 7800 7900 8000)
 
 ########## input arguments ########## 
-btagging=$1
+isMC=$1
 year=$2
-isMC=$3
+btagging=$3
+mass_nr=$4
 #####################################
 
-echo "btagging = ${btagging}"
-echo "year = ${year}"
-echo "isMC = ${isMC}"
+mass=${masses[${mass_nr}]}
 
-if [[ $isMC -eq 1]]; then
+echo "isMC = ${isMC}"
+echo "year = ${year}"
+echo "btagging = ${btagging}"
+echo "mass_nr = ${mass_nr}"
+echo "mass = ${mass}"
+
+if [[ $isMC -eq 1 ]]; then
     echo "running purely on MC..."
     suffix="_MC.txt"
 else
+    echo "running on real data..."
     suffix=".txt"
 fi
 
-#for low_mass in 1000 2000 3000 4000 5000 6000 7000; do
-    #let high_mass=$low_mass+1000
-for low_mass in 1999 2099; do
-    let high_mass=$low_mass+101
+inputfile=/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/combined_${year}_M${mass}${suffix}
+outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/"
+tempfile=$(echo $inputfile | sed s:/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/combined_:${workdir}/:g)
+echo "inputfile = ${inputfile}"
+echo "outputfile = ${outputfile}"
+echo "tempfile = ${tempfile}"
 
-    echo "low_mass=${low_mass}, high_mass=${high_mass}"
+> $tempfile
 
-    for card in /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/$btagging/combined/combined_$year*$suffix; do
-        #output=$(echo $card | sed s:datacards/:combine/limits/: | sed s:combined/combined_::g)
-        output=$(echo $card | sed s:/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/combined_::g)
-        echo "card = ${card}"
-        echo "output = ${output}"
-        higgsCombine $card $output $low_mass $high_mass &
-        cp $output /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/sub_test/${btagging}/
-    done
-    wait
-done
+combine -M AsymptoticLimits -d $inputfile -m $mass | grep -e Observed -e Expected | awk '{print $NF}' >> $tempfile
 
-## Clean
-wait
+cp $tempfile $outputfile
+echo "output copied to afs"
 
 rm higgsCombine*.root
 rm roostats-*
 rm mlfit*.root
 
-echo -e "\e[00;32mAll clear\e[00m"
+echo "all clear"
 
 echo
 echo
 echo 'END ----------------'
 echo
 echo
-
 

@@ -12,7 +12,8 @@ from ROOT import TLegend, TLatex, TText, TColor
 
 #from DMPD.Heppy.tools.samples import *
 from utils import *
-from theory import HVT
+from hvtXs import HVT
+
 #from thdmXs import THDM
 
 # Combine output
@@ -102,7 +103,7 @@ def limit():
     particleP = "Z'"
     particle = channel
     multF = ZPTOBB
-    THEORY = ["Z'"]
+    THEORY = ['A1', 'B3']
     
     suffix = "_"+BTAGGING
     if ISMC: suffix += "_MC"
@@ -144,13 +145,15 @@ def limit():
 
     for t in THEORY:
         Theory[t] = TGraphAsymmErrors()
-        #addXWH, addXZH = particle=='W' or particle=='V', particle=='Z' or particle=='V'
-        for m in sorted(HVT[t].keys()):
+        addXZH = True
+        for m in sorted(HVT[t]['W']['XS'].keys()):
             if m < mass[0] or m > mass[-1]: continue
+            if m>4500: continue ## for now because I don't have the higher mass xs FIXME
             XsZ, XsZ_Up, XsZ_Down = 0., 0., 0.
-            XsZ = 1000.*HVT[t]
-            #XsZ_Up = XsZ*(1.+math.hypot(HVT[t]['Z']['QCD'][m][0]-1., HVT[t]['Z']['PDF'][m][0]-1.))
-            #XsZ_Down = XsZ*(1.-math.hypot(1.-HVT[t]['Z']['QCD'][m][0], 1.-HVT[t]['Z']['PDF'][m][0]))
+            if addXZH:
+                XsZ = 1000.*HVT[t]['Z']['XS'][m]*0.12 #temporary BR value set to 0.12 FIXME
+                XsZ_Up = XsZ*(1.+math.hypot(HVT[t]['Z']['QCD'][m][0]-1., HVT[t]['Z']['PDF'][m][0]-1.))
+                XsZ_Down = XsZ*(1.-math.hypot(1.-HVT[t]['Z']['QCD'][m][0], 1.-HVT[t]['Z']['PDF'][m][0]))
 
             n = Theory[t].GetN()
             Theory[t].SetPoint(n, m, XsZ)
@@ -253,7 +256,7 @@ def limit():
     leg.AddEntry(Exp0s, "Expected", "l")
     leg.AddEntry(Exp1s, "#pm 1 std. deviation", "f")
     leg.AddEntry(Exp2s, "#pm 2 std. deviation", "f")
-    for t in THEORY: leg.AddEntry(Theory[t], t, "fl")
+    for t in THEORY: leg.AddEntry(Theory[t], "HVT model "+t, "fl")
     leg.Draw()
     latex = TLatex()
     latex.SetNDC()

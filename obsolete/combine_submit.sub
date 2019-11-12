@@ -1,0 +1,9 @@
+executable            = combine_new.sh
+arguments             = loose run2 1
+output                = submission_files/combine/combine_run2_loose.$(ClusterId).$(ProcId).out
+error                 = submission_files/combine/combine_run2_loose.$(ClusterId).$(ProcId).err
+log                   = submission_files/combine/combine_run2_loose.$(ClusterId).log
++JobFlavour           = "tomorrow"
+RequestCpus           = 10
+transfer_output_files = ""
+queue

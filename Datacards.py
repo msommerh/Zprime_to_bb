@@ -34,6 +34,7 @@ BTAGGING    = options.btagging
 CARDDIR     = "datacards/"+BTAGGING+"/"
 YEAR        = options.year
 ISMC        = options.isMC
+ABSOLUTEPATH= "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
 
 if YEAR not in ['2016', '2017', '2018', 'run2']:
     print "unknown year:",YEAR
@@ -61,9 +62,9 @@ def generate_datacard(year, category, masspoint, btagging, outname):
     card += "jmax 1\n"
     card += "kmax *\n"
     card += "-----------------------------------------------------------------------------------\n"
-    card += "shapes            sig  *    workspace/{btagging}/MC_signal_{year}_{category}.root     Zprime_{year}:ZpBB_M{masspoint}\n".format(year=year, category=category, masspoint=masspoint, btagging=btagging)
-    card += "shapes            bkg  *    workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:Bkg_{category}\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging)
-    card += "shapes            data_obs  *    workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:data_obs\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging)
+    card += "shapes            sig  *    {path}/workspace/{btagging}/MC_signal_{year}_{category}.root     Zprime_{year}:ZpBB_M{masspoint}\n".format(year=year, category=category, masspoint=masspoint, btagging=btagging, path=ABSOLUTEPATH)
+    card += "shapes            bkg  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:Bkg_{category}\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
+    card += "shapes            data_obs  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:data_obs\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
     card += "-----------------------------------------------------------------------------------\n"
     card += "bin               {}\n".format(category)
     card += "observation       -1\n"
