@@ -1,8 +1,9 @@
 # Z' to bb analysis
 
-##Process samples from DAS
+## Process samples from DAS
 
 submit the samples:   [year]: 2016, 2017, 2018
+
 MC signal:
 ```
 ./submit.py -q longlunch -y [year] -MC -MT signal
@@ -21,7 +22,7 @@ check if samples have finished correctly:
 ./check_submission.sh
 ```
 
-resubmit erroneous samples by putting the sample name in the corresponding file in resubmission/[sample_name] and run:
+resubmit erroneous samples by putting the sample name in the corresponding file in *resubmission/[sample_name]* and run:
 ```
 ./submit.py [same options as original submission (or slightly adjusted)] -rs resubmission/[sample_name]
 ```
@@ -33,7 +34,7 @@ if the submission only crashes on a single file, identify the file nr from the s
 output in: */eos/user/m/msommerh/Zprime_to_bb_analysis/*
 
 
-##Postprocess samples
+## Postprocess samples
 
 add weights, even to the data and MC signal:    [year]: 2016, 2017, 2018;   [MC_type]: signal, QCD, TTbar
 ```
@@ -49,7 +50,7 @@ skim the samples:
 output in */afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim*
 
 
-plot MC/data comparison
+## plot MC/data comparison
 
 [year] = 2016, 2017, 2018, run2;   [btagging]: tight, medium, loose
 
@@ -62,7 +63,7 @@ plot MC/data comparison
 output in: *plots/[preselection, 1b, 2b]/*
 
 
-##apply fit on QCD_TTbar/data and signal
+## apply fit on QCD_TTbar/data and signal
 
  [year]: 2016, 2017, 2018, run2;   [btagging]: tight, medium, loose
 
@@ -78,15 +79,17 @@ fit on MC background:
 
 fit on data: (currently not advised until blinding implemented or explicitly allowed)
 ```
-~~./submit_Bkg_Fitter.py -q tomorrow -y [year] -b [btagging]~~
+~~`./submit_Bkg_Fitter.py -q tomorrow -y [year] -b [btagging]`~~
 ```
 
 output in:
+
 plots: *plots/[btagging]/[data_type]_[year]/*
+
 workspace: *workspace/[btagging]/*
 
 
-##create datacards
+## create datacards
 
 (works independently of the actual fits)
 [year]: 2016, 2017, 2018, run2;   [btagging]: tight, medium, loose
@@ -99,7 +102,7 @@ data:
 ```
 ./Datacards.py -y [year] -b [btagging]
 ```
-output in: datacards/[btagging]/
+output in: *datacards/[btagging]/*
 
 combine cards of different btagging categories: (needs to be run with the CC7 setup)
 ```
@@ -108,7 +111,7 @@ combine cards of different btagging categories: (needs to be run with the CC7 se
 output in: *datacards/[btagging]/combined/*
 
 
-##limits plots
+## limits plots
 
 [year]: 2016, 2017, 2018, run2;   [btagging]: tight, medium, loose
 
@@ -119,9 +122,9 @@ MC:
 ./submit_combine.py -MC -q workday -y [year] -b [btagging]
 ```
 data: (currently not advised until blinding implemented or explicitly allowed)
-```
-~~./submit_combine.py -q workday -y [year] -b [btagging]~~
-```
+
+~~`./submit_combine.py -q workday -y [year] -b [btagging]`~~
+
 output in: *combine/limits/[btagging]/*
 
 plot the limits:
@@ -131,8 +134,8 @@ MC:
 ./limit.py -M -y [year] -b [btagging]
 ```
 data: (currently not advised until blinding implemented or explicitly allowed)
-```
-~~./limit.py -y [year] -b [btagging]~~
-```
+
+~~`./limit.py -y [year] -b [btagging]`~~
+
 output in: *combine/plotsLimit/*
 
