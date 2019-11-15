@@ -13,16 +13,16 @@
 ./limit.py -M -y 2016 -b medium
 ./limit.py -M -y 2016 -b loose
 
-#./limit.py -M -y run2 -b tight -c bb
-#./limit.py -M -y run2 -b medium -c bb
-#./limit.py -M -y 2018 -b tight -c bb
-#./limit.py -M -y 2018 -b medium -c bb
-#./limit.py -M -y 2017 -b tight -c bb
-#./limit.py -M -y 2017 -b medium -c bb
-#./limit.py -M -y run2 -b tight -c bq
-#./limit.py -M -y run2 -b medium -c bq
-#./limit.py -M -y 2018 -b tight -c bq
-#./limit.py -M -y 2018 -b medium -c bq
-#./limit.py -M -y 2017 -b tight -c bq
-#./limit.py -M -y 2017 -b medium -c bq
+./limit.py -M -y run2 -b tight -c bb
+./limit.py -M -y run2 -b medium -c bb
+./limit.py -M -y 2018 -b tight -c bb
+./limit.py -M -y 2018 -b medium -c bb
+./limit.py -M -y 2017 -b tight -c bb
+./limit.py -M -y 2017 -b medium -c bb
+./limit.py -M -y run2 -b tight -c bq
+./limit.py -M -y run2 -b medium -c bq
+./limit.py -M -y 2018 -b tight -c bq
+./limit.py -M -y 2018 -b medium -c bq
+./limit.py -M -y 2017 -b tight -c bq
+./limit.py -M -y 2017 -b medium -c bq
 
