@@ -1,0 +1,20 @@
+Combination of bb=bb_2016_M1900_MC.txt  bq=bq_2016_M1900_MC.txt
+imax 2 number of bins
+jmax 1 number of processes minus 1
+kmax 0 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes bkg       bb        /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/medium/MC_QCD_TTbar_2016_bb.root Zprime_2016:Bkg_bb
+shapes data_obs  bb        /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/medium/MC_QCD_TTbar_2016_bb.root Zprime_2016:data_obs
+shapes sig       bb        /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/medium/MC_signal_2016_bb.root Zprime_2016:ZpBB_M1900_bb
+shapes bkg       bq        /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/medium/MC_QCD_TTbar_2016_bq.root Zprime_2016:Bkg_bq
+shapes data_obs  bq        /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/medium/MC_QCD_TTbar_2016_bq.root Zprime_2016:data_obs
+shapes sig       bq        /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/medium/MC_signal_2016_bq.root Zprime_2016:ZpBB_M1900_bq
+----------------------------------------------------------------------------------------------------------------------------------
+bin          bb     bq   
+observation  -1     -1   
+----------------------------------------------------------------------------------------------------------------------------------
+bin          bb     bb     bq     bq   
+process      sig    bkg    sig    bkg  
+process      0      1      0      1    
+rate         1      1      1      1    
+----------------------------------------------------------------------------------------------------------------------------------
