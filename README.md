@@ -23,8 +23,7 @@ data:
 ```
 ./check_submission.sh
 ```
-
-### resubmit erroneous samples by putting the sample name in the corresponding file in *resubmission/[sample_name]* and run:
+resubmit erroneous samples by putting the sample name in the corresponding file in *resubmission/[sample_name]* and run:
 ```
 ./submit.py [same options as original submission (or slightly adjusted)] -rs resubmission/[sample_name]
 ```
@@ -96,6 +95,7 @@ workspace: *workspace/[btagging]/*
 ## create datacards
 
 (works independently of the actual fits)
+
 [year]: 2016, 2017, 2018, run2;   [btagging]: tight, medium, loose
 
 MC:
