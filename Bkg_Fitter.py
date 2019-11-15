@@ -144,7 +144,7 @@ def dijet(category):
     order = 0
     RSS = {}
     
-    X_mass = RooRealVar(        "jj_mass",              "m_{jj}",       1400.,  9000.,  "GeV")
+    X_mass = RooRealVar(        "jj_mass",              "m_{jj}",       1800.,  9000.,  "GeV") #set from 1400 to 1800 for a test FIXME
     #j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
     #j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
     j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     4500.,  "GeV")

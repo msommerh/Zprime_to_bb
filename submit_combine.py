@@ -19,6 +19,8 @@ if __name__ == "__main__":
   parser.add_argument('-MC', '--isMC',   dest='isMC',  action='store_true', default=False,
                                          help="Select this if the sample is MC, otherwise it is flagged as data.")
   parser.add_argument("-b", "--btagging", action="store", type=str, dest="btagging", default="tight", choices=['tight', 'medium', 'loose'])
+  parser.add_argument("-c", "--category", action="store", type=str, dest="category", default="", choices=['', 'bb', 'bq'],
+                                         help="Choose b-tagging category (bb or bq) if combine should run merely on a single category.")
   args = parser.parse_args()
   #checkFiles.args = args
 
@@ -37,7 +39,7 @@ nJobs = len(mass_points)
 
 def submitJobs():
     path = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
-    workdir = "submission_files/tmp_combine_{year}_{btagging}{suffix}".format(year=args.year, btagging=args.btagging, suffix="_MC" if args.isMC else "")
+    workdir = "submission_files/tmp_combine{category}_{year}_{btagging}{suffix}".format(category="_"+args.category if args.category!="" else "", year=args.year, btagging=args.btagging, suffix="_MC" if args.isMC else "")
     if not os.path.exists(workdir):
         os.makedirs(workdir)
         print "Directory "+workdir+" created."
@@ -46,8 +48,8 @@ def submitJobs():
     os.chdir(workdir)
 
     #submit job
-    os.system("cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine.sh ./combine_{}_{}.sh".format(args.year, args.btagging))
-    os.system("chmod 755 combine_{}_{}.sh".format(args.year, args.btagging))
+    os.system("cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine{}.sh ./combine_{}_{}{}.sh".format("_single" if args.category!="" else "", args.year, args.btagging, "_"+args.category if args.category != "" else ""))
+    os.system("chmod 755 combine_{}_{}{}.sh".format(args.year, args.btagging, "_"+args.category if args.category != "" else ""))
     makeSubmitFileCondor(args.queue, nJobs)
     os.system("condor_submit submit.sub")
     print "jobs submitted"
@@ -55,9 +57,11 @@ def submitJobs():
 
 def makeSubmitFileCondor(jobflavour, nJobs):
     print "make options file for condor job submission"
+    suffix=""
+    if args.category!="": suffix+=" "+args.category
     submitfile = open("submit.sub", "w")
-    submitfile.write("executable            = combine_{}_{}.sh\n".format(args.year, args.btagging))
-    submitfile.write("arguments             = "+str(int(args.isMC))+" "+str(args.year)+" "+args.btagging+" $(ProcId)\n")
+    submitfile.write("executable            = combine_{}_{}{}.sh\n".format(args.year, args.btagging, "_"+args.category if args.category != "" else ""))
+    submitfile.write("arguments             = "+str(int(args.isMC))+" "+str(args.year)+" "+args.btagging+" $(ProcId)"+suffix+"\n")
     submitfile.write("output                = "+str(args.year)+"_"+args.btagging+".$(ClusterId).$(ProcId).out\n")
     submitfile.write("error                 = "+str(args.year)+"_"+args.btagging+".$(ClusterId).$(ProcId).err\n")
     submitfile.write("log                   = "+str(args.year)+"_"+args.btagging+".$(ClusterId).log\n")

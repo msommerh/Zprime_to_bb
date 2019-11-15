@@ -47,7 +47,7 @@ colour = [
 channel = 'bb'
 stype = 'Zprime' 
 genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
-massPoints = [x for x in range(600, 8000+1, 100)]
+massPoints = [x for x in range(1200, 8000+1, 100)]
 
 # Silent RooFit
 RooMsgService.instance().setGlobalKillBelow(RooFit.FATAL)
@@ -112,7 +112,7 @@ def signal(category):
     #              Variables and selections                 #
     #                                                       #
     #*******************************************************#
-    X_mass  = RooRealVar (      "jj_mass",              "m_{jj}",       1400.,     10000.,  "GeV")
+    X_mass  = RooRealVar (      "jj_mass",              "m_{jj}",       1800.,     10000.,  "GeV") ## changed from 1.4TeV to 1.8TeV for now FIXME
     #j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
     #j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
     j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     4500.,  "GeV")
@@ -255,33 +255,33 @@ def signal(category):
         # for the time being the signal is fitted using 1 Gaussian in a range defined below (hardcoded)
 
         # define the signal PDF
-        vmean[m] = RooRealVar(signalName + "_vmean", "Crystal Ball mean", m, m*0.85, m*1.2)
-        smean[m] = RooFormulaVar(signalName + "_mean", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)", RooArgList(vmean[m], xmean_e, smean_e, xmean_m, smean_m, xmean_jes, smean_jes, xmean_fit, smean_fit))
+        vmean[m] = RooRealVar(signalName + "_" + category + "_vmean", "Crystal Ball mean", m, m*0.85, m*1.2)
+        smean[m] = RooFormulaVar(signalName + "_" + category + "_mean", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)", RooArgList(vmean[m], xmean_e, smean_e, xmean_m, smean_m, xmean_jes, smean_jes, xmean_fit, smean_fit))
 
-        vsigma[m] = RooRealVar(signalName + "_vsigma", "Crystal Ball sigma", m*0.07, m*0.05, m*0.9)
+        vsigma[m] = RooRealVar(signalName + "_" + category + "_vsigma", "Crystal Ball sigma", m*0.07, m*0.05, m*0.9)
         sigmaList = RooArgList(vsigma[m], xsigma_e, ssigma_e, xsigma_m, ssigma_m, xsigma_jes, ssigma_jes, xsigma_jer, ssigma_jer)
         sigmaList.add(RooArgList(xsigma_fit, ssigma_fit))
-        ssigma[m] = RooFormulaVar(signalName + "_sigma", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)*(1+@9*@10)", sigmaList)
+        ssigma[m] = RooFormulaVar(signalName + "_" + category + "_sigma", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)*(1+@9*@10)", sigmaList)
         
-        valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha", 1.,  0., 15.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
-        salpha1[m] = RooFormulaVar(signalName + "_alpha1", "@0*(1+@1*@2)", RooArgList(valpha1[m], xalpha1_fit, salpha1_fit))
+        valpha1[m] = RooRealVar(signalName + "_" + category + "_valpha1", "Crystal Ball alpha", 1.,  0., 15.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
+        salpha1[m] = RooFormulaVar(signalName + "_" + category + "_alpha1", "@0*(1+@1*@2)", RooArgList(valpha1[m], xalpha1_fit, salpha1_fit))
 
-        vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope", 10., 0.1, 120.) # slope of the power tail
-        sslope1[m] = RooFormulaVar(signalName + "_slope1", "@0*(1+@1*@2)", RooArgList(vslope1[m], xslope1_fit, sslope1_fit))
+        vslope1[m] = RooRealVar(signalName + "_" + category + "_vslope1", "Crystal Ball slope", 10., 0.1, 120.) # slope of the power tail
+        sslope1[m] = RooFormulaVar(signalName + "_" + category + "_slope1", "@0*(1+@1*@2)", RooArgList(vslope1[m], xslope1_fit, sslope1_fit))
 
-#        smean[m] = RooRealVar(signalName + "_mean" , "mean of the Crystal Ball", m, m*0.8, m*1.2)
-#        ssigma[m] = RooRealVar(signalName + "_sigma", "Crystal Ball sigma", m*0.04, m*0.001, m*0.2)
-#        salpha1[m] = RooRealVar(signalName + "_alpha1", "Crystal Ball alpha", 1,  0., 5.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
-#        sslope1[m] = RooRealVar(signalName + "_slope1", "Crystal Ball slope", 20, 10., 60.) # slope of the power tail
-        salpha2[m] = RooRealVar(signalName + "_alpha2", "Crystal Ball alpha", 2,  0.1, 15.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
-        sslope2[m] = RooRealVar(signalName + "_slope2", "Crystal Ball slope", 10, 1.e-1, 200.) # slope of the power tail
-        signal[m] = RooCBShape(signalName, "m_{%s'} = %d GeV" % ('X', m), X_mass, smean[m], ssigma[m], salpha1[m], sslope1[m]) # Signal name does not have the channel
+#        smean[m] = RooRealVar(signalName + "_mean" + "_" + category , "mean of the Crystal Ball", m, m*0.8, m*1.2)
+#        ssigma[m] = RooRealVar(signalName + "_sigma" + "_" + category, "Crystal Ball sigma", m*0.04, m*0.001, m*0.2)
+#        salpha1[m] = RooRealVar(signalName + "_alpha1" + "_" + category, "Crystal Ball alpha", 1,  0., 5.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
+#        sslope1[m] = RooRealVar(signalName + "_slope1" + "_" + category, "Crystal Ball slope", 20, 10., 60.) # slope of the power tail
+        salpha2[m] = RooRealVar(signalName + "_" + category + "_alpha2", "Crystal Ball alpha", 2,  0.1, 15.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
+        sslope2[m] = RooRealVar(signalName + "_" + category + "_slope2", "Crystal Ball slope", 10, 1.e-1, 200.) # slope of the power tail
+        signal[m] = RooCBShape(signalName + "_" + category, "m_{%s'} = %d GeV" % ('X', m), X_mass, smean[m], ssigma[m], salpha1[m], sslope1[m]) # Signal name does not have the channel
 
         # extend the PDF with the yield to perform an extended likelihood fit
-        signalYield[m] = RooRealVar(signalName+"_yield", "signalYield", 1000, 0., 1.e15)
-        signalNorm[m] = RooRealVar(signalName+"_norm", "signalNorm", 1., 0., 1.e15)
-        signalXS[m] = RooRealVar(signalName+"_xs", "signalXS", 1., 0., 1.e15)
-        signalExt[m] = RooExtendPdf(signalName+"_ext", "extended p.d.f", signal[m], signalYield[m])
+        signalYield[m] = RooRealVar(signalName+"_yield" + "_" + category, "signalYield", 1000, 0., 1.e15)
+        signalNorm[m] = RooRealVar(signalName+"_norm" + "_" + category, "signalNorm", 1., 0., 1.e15)
+        signalXS[m] = RooRealVar(signalName+"_xs" + "_" + category, "signalXS", 1., 0., 1.e15)
+        signalExt[m] = RooExtendPdf(signalName+"_ext" + "_" + category, "extended p.d.f", signal[m], signalYield[m])
 
         #vslope1[m].setMax(40.) #deavtivated to let the peacock fly FIXME
 

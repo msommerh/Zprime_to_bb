@@ -62,7 +62,7 @@ def generate_datacard(year, category, masspoint, btagging, outname):
     card += "jmax 1\n"
     card += "kmax *\n"
     card += "-----------------------------------------------------------------------------------\n"
-    card += "shapes            sig  *    {path}/workspace/{btagging}/MC_signal_{year}_{category}.root     Zprime_{year}:ZpBB_M{masspoint}\n".format(year=year, category=category, masspoint=masspoint, btagging=btagging, path=ABSOLUTEPATH)
+    card += "shapes            sig  *    {path}/workspace/{btagging}/MC_signal_{year}_{category}.root     Zprime_{year}:ZpBB_M{masspoint}_{category}\n".format(year=year, category=category, masspoint=masspoint, btagging=btagging, path=ABSOLUTEPATH)
     card += "shapes            bkg  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:Bkg_{category}\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
     card += "shapes            data_obs  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:data_obs\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
     card += "-----------------------------------------------------------------------------------\n"

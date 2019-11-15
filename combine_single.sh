@@ -22,6 +22,7 @@ isMC=$1
 year=$2
 btagging=$3
 mass_nr=$4
+category=$5
 #####################################
 
 mass=${masses[${mass_nr}]}
@@ -40,9 +41,9 @@ else
     suffix=".txt"
 fi
 
-inputfile=/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/combined_${year}_M${mass}${suffix}
-outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/"
-tempfile=$(echo $inputfile | sed s:/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/combined_:${workdir}/:g)
+inputfile=/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/${category}_${year}_M${mass}${suffix}
+outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/single_category/"
+tempfile=$(echo $inputfile | sed s:/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/:${workdir}/:g)
 echo "inputfile = ${inputfile}"
 echo "outputfile = ${outputfile}"
 echo "tempfile = ${tempfile}"
@@ -56,8 +57,9 @@ combine -M AsymptoticLimits -d $inputfile -m $mass > tmp_stdout.txt
 echo
 echo
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo
 echo "combine output:"
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo
 cat tmp_stdout.txt
 echo
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"

@@ -12,7 +12,7 @@ from ROOT import TLegend, TLatex, TText, TLine
 
 from samples import sample
 from variables import variable
-from aliases import alias
+from aliases import alias, deepFlavour
 from utils import *
 
 ########## SETTINGS ##########
@@ -23,9 +23,10 @@ parser = optparse.OptionParser(usage)
 parser.add_option("-v", "--variable", action="store", type="string", dest="variable", default="")
 parser.add_option("-c", "--cut", action="store", type="string", dest="cut", default="")
 parser.add_option("-y", "--year", action="store", type="string", dest="year", default="run2")
+parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
 parser.add_option("-n", "--norm", action="store_true", default=False, dest="norm")
-parser.add_option("-t", "--top", action="store_true", default=False, dest="top")
-parser.add_option("-a", "--all", action="store_true", default=False, dest="all")
+#parser.add_option("-t", "--top", action="store_true", default=False, dest="top")
+#parser.add_option("-a", "--all", action="store_true", default=False, dest="all")
 parser.add_option("-B", "--blind", action="store_true", default=False, dest="blind")
 parser.add_option("-f", "--final", action="store_true", default=False, dest="final")
 (options, args) = parser.parse_args()
@@ -38,7 +39,7 @@ gROOT.SetBatch(True)
 gStyle.SetOptStat(0)
 #TSystemDirectory.SetDirectory(0)
 
-#NTUPLEDIR   = "/eos/user/z/zucchett/ZBB/"
+BTAGGING    = options.btagging
 NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"
 SIGNAL      = 1 # Signal magnification factor
 RATIO       = 4 # 0: No ratio plot; !=0: ratio between the top and bottom pads
@@ -56,6 +57,10 @@ sign = ['ZpBB_M2000', 'ZpBB_M4000', 'ZpBB_M6000', 'ZpBB_M8000']
 #sign = ['ZpBB_M1000', 'ZpBB_M1200', 'ZpBB_M1400', 'ZpBB_M1600', 'ZpBB_M1800', 'ZpBB_M2000', 'ZpBB_M2500', 'ZpBB_M3000', 'ZpBB_M3500', 'ZpBB_M4000', 'ZpBB_M4500', 'ZpBB_M5000', 'ZpBB_M5500', 'ZpBB_M6000', 'ZpBB_M7000', 'ZpBB_M8000']
 ########## ######## ##########
 
+if BTAGGING not in ['tight', 'medium', 'loose']:
+    print "unknown btagging requirement:", BTAGGING
+    sys.exit()
+
 jobs = []
 
 def plot(var, cut, year, norm=False, nm1=False):
@@ -70,7 +75,7 @@ def plot(var, cut, year, norm=False, nm1=False):
     elif len(sign)>0 and  'monoH' in sign[0]: stype = "Z'-2HDM m_{A}=300 GeV"
     if treeRead:
         for k in sorted(alias.keys(), key=len, reverse=True):
-            if k in cut: cut = cut.replace(k, alias[k])
+            if k in cut: cut = cut.replace(k, alias[k].format(b_threshold=deepFlavour[BTAGGING][year]))
         #if 'TR' in channel: cut = cut.replace("isTveto", "!isTveto")
     
     # Determine Primary Dataset
@@ -274,8 +279,10 @@ def plot(var, cut, year, norm=False, nm1=False):
         if channel=="": channel="nocut"
         varname = var.replace('.', '_').replace('()', '')
         if not os.path.exists("plots/"+channel): os.makedirs("plots/"+channel)
-        c1.Print("plots/"+channel+"/"+varname+"_"+year+".png")
-        #c1.Print("plots/"+channel+"/"+varname+"_"+year+".pdf")
+        suffix = ''
+        if "b" in channel: suffix+="_"+BTAGGING
+        c1.Print("plots/"+channel+"/"+varname+"_"+year+suffix+".png")
+        #c1.Print("plots/"+channel+"/"+varname+"_"+year+suffix+".pdf")
     
     # Print table
     printTable(hist, sign)
@@ -323,8 +330,8 @@ def plotAll():
             plot(h, c)
 
 
-if options.all: plotAll()
+#if options.all: plotAll()
 #elif options.norm: plotNorm(options.variable, options.cut)
-elif options.top: plotTop()
-else: plot(options.variable, options.cut, options.year)
+#elif options.top: plotTop()
+plot(options.variable, options.cut, options.year)
 

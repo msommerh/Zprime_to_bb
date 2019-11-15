@@ -34,7 +34,7 @@ usage = "usage: %prog [options]"
 parser = optparse.OptionParser(usage)
 parser.add_option("-y", "--year", action="store", type="string", dest="year",default="2017")
 parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
-#parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
+parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
 #parser.add_option("-m", "--method", action="store", type="string", dest="method", default="")
 #parser.add_option("-a", "--all", action="store_true", default=False, dest="all")
 parser.add_option("-B", "--blind", action="store_true", default=False, dest="blind")
@@ -53,6 +53,7 @@ MAXIMUM     = {'XVHsl' : 4500., 'XWHsl' : 4500., 'XZHsl' : 3500., 'bb':100}
 BTAGGING    = options.btagging
 YEAR        = options.year
 ISMC        = options.isMC
+CATEGORY    = options.category
 
 if YEAR not in ['2016', '2017', '2018', 'run2']:
     print "unknown year:", YEAR
@@ -62,11 +63,15 @@ if BTAGGING not in ['tight', 'medium', 'loose']:
     print "unknown btagging requirement:", BTAGGING
     sys.exit()
 
+if CATEGORY not in ['', 'bb', 'bq']:
+    print "unknown btagging category"
+    sys.exit()
+
 LUMI        = luminosities[YEAR]
 
 #signals = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000]
 #signals = range(800, 4500+1, 100)
-signals = range(1400, 8000+1, 100)
+SIGNALS = range(1400, 8000+1, 100)
 
 theoryLabel = {'B3' : "HVT model B", 'A1' : "HVT model A", 'T1' : "2HDM Type-I", 'T2' : "2HDM Type-II"}
 theoryLineColor = {'B3' : 629, 'A1' : 616-3, 'T1' : 880-4, 'T2' : 602}
@@ -77,22 +82,22 @@ theoryFillStyle = {'B3' : 3002, 'A1' : 3013, 'T1' : 3002, 'T2' : 3013}
 def fillValues(filename):
     val = {}
     mass = []
-    for i, s in enumerate(signals):
+    for i, s in enumerate(SIGNALS):
         try:
             file = open(filename % s, 'r')
             if file==None:
-                #print "Signal", filename % s, "does not exist"
+                print "Signal", filename % s, "does not exist"
                 continue
             val[s] = file.read().splitlines()
             if len(val[s]) <= 1:
-                signals.remove(s)
+                #signals.remove(s)
                 print "Signal", filename % s, "has no values"
                 continue
             for i, f in enumerate(val[s]): val[s][i] = float(val[s][i])
             if 'fullCls' in filename: val[1:5]=sorted(val[1:5])
             if not s in mass: mass.append(s)
         except:
-            #print "File", filename % s, "does not exist"
+            print "File", filename % s, "does not exist"
             pass
     return mass, val
 
@@ -110,6 +115,9 @@ def limit():
     #if method=="cls": suffix="_CLs"
 
     filename = "./combine/limits/" + BTAGGING + "/"+ YEAR + "_M%d.txt"
+    if CATEGORY!="": 
+        filename = filename.replace(BTAGGING + "/", BTAGGING + "/single_category/"+CATEGORY+"_")
+        suffix += "_"+CATEGORY
     if ISMC: filename = filename.replace(".txt", "_MC.txt")
     mass, val = fillValues(filename)
 
@@ -376,18 +384,18 @@ def limit():
             if not (Theory[t].Eval(m) > Obs0s.Eval(m)) == (Theory[t].Eval(m+1) > Obs0s.Eval(m+1)): print m,
         print ""
 
-    print "p1s[",
-    for i in range(Exp0s.GetN()):
-        print Exp0s.GetY()[i]+Exp1s.GetErrorYhigh(i), ",",
-    print "],"
-    print "m1s[",
-    for i in range(Exp0s.GetN()):
-        print Exp0s.GetY()[i]-Exp1s.GetErrorYlow(i), ",",
-    print "],"
-    print "[",
-    for i in range(Exp0s.GetN()):
-        print Exp0s.GetY()[i], ",",
-    print "]"
+    #print "p1s[",
+    #for i in range(Exp0s.GetN()):
+    #    print Exp0s.GetY()[i]+Exp1s.GetErrorYhigh(i), ",",
+    #print "],"
+    #print "m1s[",
+    #for i in range(Exp0s.GetN()):
+    #    print Exp0s.GetY()[i]-Exp1s.GetErrorYlow(i), ",",
+    #print "],"
+    #print "[",
+    #for i in range(Exp0s.GetN()):
+    #    print Exp0s.GetY()[i], ",",
+    #print "]"
 
     #if not 'ah' in channel and not 'sl' in channel: return
     
