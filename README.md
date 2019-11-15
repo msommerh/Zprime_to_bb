@@ -2,7 +2,9 @@
 
 ## Process samples from DAS
 
-submit the samples:   [year]: 2016, 2017, 2018
+### submit the samples:   
+
+[year]: 2016, 2017, 2018
 
 MC signal:
 ```
@@ -17,12 +19,12 @@ data:
 ./submit.py -q tomorrow -y [year] -n 1 -c 16
 ```
 
-check if samples have finished correctly:
+### check if samples have finished correctly:
 ```
 ./check_submission.sh
 ```
 
-resubmit erroneous samples by putting the sample name in the corresponding file in *resubmission/[sample_name]* and run:
+### resubmit erroneous samples by putting the sample name in the corresponding file in *resubmission/[sample_name]* and run:
 ```
 ./submit.py [same options as original submission (or slightly adjusted)] -rs resubmission/[sample_name]
 ```
@@ -36,14 +38,16 @@ output in: */eos/user/m/msommerh/Zprime_to_bb_analysis/*
 
 ## Postprocess samples
 
-add weights, even to the data and MC signal:    [year]: 2016, 2017, 2018;   [MC_type]: signal, QCD, TTbar
+### add weights, even to the data and MC signal:    
+
+[year]: 2016, 2017, 2018;   [MC_type]: signal, QCD, TTbar
 ```
 ./postprocessors/addWeights.py -y [year] -MC -MT [MC_type]
 ./postprocessors/addWeights.py -y [year] 
 ```
 output in /eos/user/m/msommerh/Zprime_to_bb_analysis/weighted
 
-skim the samples:
+### skim the samples:
 ```
 ./postprocessors/skim.py
 ```
@@ -78,9 +82,9 @@ fit on MC background:
 ```
 
 fit on data: (currently not advised until blinding implemented or explicitly allowed)
-```
+
 ~~`./submit_Bkg_Fitter.py -q tomorrow -y [year] -b [btagging]`~~
-```
+
 
 output in:
 
@@ -104,7 +108,8 @@ data:
 ```
 output in: *datacards/[btagging]/*
 
-combine cards of different btagging categories: (needs to be run with the CC7 setup)
+### combine cards of different btagging categories: 
+(needs to be run with the CC7 setup)
 ```
 ./combineCards.sh [btagging]
 ```
@@ -115,7 +120,7 @@ output in: *datacards/[btagging]/combined/*
 
 [year]: 2016, 2017, 2018, run2;   [btagging]: tight, medium, loose
 
-run combine:
+### run combine:
 
 MC:
 ```
@@ -127,7 +132,7 @@ data: (currently not advised until blinding implemented or explicitly allowed)
 
 output in: *combine/limits/[btagging]/*
 
-plot the limits:
+### plot the limits:
 
 MC:
 ```
