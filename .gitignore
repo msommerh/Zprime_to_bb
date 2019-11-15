@@ -8,9 +8,7 @@ filelists/
 submission_files/
 test_outfiles/
 CMSSW_10_3_3/
-*.png
 *.pdf
 *.txt
-datacards/
-combine/
 ._*
+obsolete/
