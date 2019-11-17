@@ -21,7 +21,7 @@ print "packages imported"
 
 usage = "usage: %prog [options]"
 parser = optparse.OptionParser(usage)
-parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
+parser.add_option("-M", "--isMC", action="store_true", default=True, dest="isMC")
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
@@ -34,7 +34,8 @@ BTAGGING    = options.btagging
 CARDDIR     = "datacards/"+BTAGGING+"/"
 YEAR        = options.year
 ISMC        = options.isMC
-ABSOLUTEPATH= "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
+#ABSOLUTEPATH= "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
+ABSOLUTEPATH= "./"
 
 if YEAR not in ['2016', '2017', '2018', 'run2']:
     print "unknown year:",YEAR
@@ -58,19 +59,21 @@ def datacards(category):
 
 
 def generate_datacard(year, category, masspoint, btagging, outname):
+    signalName = "ZpBB_{}_M{}".format(category, masspoint)
+    backgroundName = "Bkg_{}".format(category)
     card  = "imax 1\n"
     card += "jmax 1\n"
     card += "kmax *\n"
     card += "-----------------------------------------------------------------------------------\n"
-    card += "shapes            sig  *    {path}/workspace/{btagging}/MC_signal_{year}_{category}.root     Zprime_{year}:ZpBB_M{masspoint}_{category}\n".format(year=year, category=category, masspoint=masspoint, btagging=btagging, path=ABSOLUTEPATH)
-    card += "shapes            bkg  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:Bkg_{category}\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
+    card += "shapes            {sname}  *    {path}/workspace/{btagging}/MC_signal_{year}_{category}.root     Zprime_{year}:ZpBB_{category}_M{masspoint}\n".format(sname=signalName, year=year, category=category, masspoint=masspoint, btagging=btagging, path=ABSOLUTEPATH)
+    card += "shapes            {bname}  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:Bkg_{category}\n".format(bname=backgroundName, data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
     card += "shapes            data_obs  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:data_obs\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
     card += "-----------------------------------------------------------------------------------\n"
     card += "bin               {}\n".format(category)
     card += "observation       -1\n"
     card += "-----------------------------------------------------------------------------------\n"
     card += "bin               {:20}{:20}\n".format(category, category)
-    card += "process           {:20}{:20}\n".format("sig", "bkg") 
+    card += "process           {:20}{:20}\n".format(signalName, backgroundName) 
     card += "process           {:20}{:20}\n".format("0", "1")
     card += "rate              {:20}{:20}\n".format("1", "1") 
     card += "-----------------------------------------------------------------------------------\n"

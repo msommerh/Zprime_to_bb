@@ -20,7 +20,7 @@ if __name__ == "__main__":
                                          help="Select this if the sample is MC, otherwise it is flagged as data.")
   parser.add_argument("-c", "--category", action="store", type=str, dest="category", default="", choices=['bb','bq','qq',''],
                                          help="b-tagging category for the fitting to run on: bb, bq, qq. Leave empty to run all three")
-  parser.add_argument("-b", "--btagging", action="store", type=str, dest="btagging", default="tight", choices=['tight', 'medium', 'loose'])
+  parser.add_argument("-b", "--btagging", action="store", type=str, dest="btagging", default="loose", choices=['tight', 'medium', 'loose'])
   args = parser.parse_args()
   #checkFiles.args = args
 
