@@ -108,6 +108,8 @@ def getXsec(sample):
 
 def processFile(sample, origin, target, verbose=False):
 
+    isSignal = True if "signal" in sample or "Zprime" in sample else False
+
     if not os.path.exists(origin):
         print 'Origin directory', origin, 'does not exist, aborting...'
         sys.exit()
@@ -153,6 +155,7 @@ def processFile(sample, origin, target, verbose=False):
     XS = getXsec(sample.replace(year+'_',''))
 
     Leq = LUMI*XS/totalEntries if totalEntries > 0 else 0.
+    if isSignal: Leq = LUMI*XS/100000
     print sample, ": Leq =", (Leq if isMC else "Data")
 
 
@@ -196,6 +199,7 @@ def processFile(sample, origin, target, verbose=False):
                     # Weights
                     if isMC:
                         eventWeightLumi[0] = obj.GenWeight * Leq
+                        if isSignal: eventWeightLumi[0] = Leq
 
                     # Fill the branches
                     eventWeightLumiBranch.Fill()
