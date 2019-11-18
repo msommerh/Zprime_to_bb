@@ -21,7 +21,7 @@ print "packages imported"
 
 usage = "usage: %prog [options]"
 parser = optparse.OptionParser(usage)
-parser.add_option("-M", "--isMC", action="store_true", default=True, dest="isMC")
+parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
@@ -34,8 +34,8 @@ BTAGGING    = options.btagging
 CARDDIR     = "datacards/"+BTAGGING+"/"
 YEAR        = options.year
 ISMC        = options.isMC
-#ABSOLUTEPATH= "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
-ABSOLUTEPATH= "./"
+ABSOLUTEPATH= "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
+#ABSOLUTEPATH= "./"
 
 if YEAR not in ['2016', '2017', '2018', 'run2']:
     print "unknown year:",YEAR

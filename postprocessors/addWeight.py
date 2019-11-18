@@ -108,7 +108,8 @@ def getXsec(sample):
 
 def processFile(sample, origin, target, verbose=False):
 
-    isSignal = True if "signal" in sample or "Zprime" in sample else False
+    #isSignal = True if "signal" in sample or "Zprime" in sample else False
+    isSignal = True if mcType=="signal" else False
 
     if not os.path.exists(origin):
         print 'Origin directory', origin, 'does not exist, aborting...'
@@ -153,6 +154,7 @@ def processFile(sample, origin, target, verbose=False):
 
     # Cross section
     XS = getXsec(sample.replace(year+'_',''))
+    print "XS = ", XS
 
     Leq = LUMI*XS/totalEntries if totalEntries > 0 else 0.
     if isSignal: Leq = LUMI*XS/100000
@@ -264,6 +266,8 @@ jobs = []
 for d in sample_names:
     origin = '/eos/user/m/msommerh/Zprime_to_bb_analysis/'+d
     target = '/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/'+d
+    #origin = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/MC_signal/'+d
+    #target = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/MC_signal_weighted/'+d
     #origin = 'test_outfiles'
     #target = 'test_outfiles/weighted'
 

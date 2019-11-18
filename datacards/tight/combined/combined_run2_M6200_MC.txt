@@ -1,20 +1,20 @@
 Combination of bb=bb_run2_M6200_MC.txt  bq=bq_run2_M6200_MC.txt
 imax 2 number of bins
-jmax 1 number of processes minus 1
+jmax 3 number of processes minus 1
 kmax 0 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
-shapes bkg       bb        /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_run2_bb.root Zprime_run2:Bkg_bb
-shapes data_obs  bb        /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_run2_bb.root Zprime_run2:data_obs
-shapes sig       bb        /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_signal_run2_bb.root Zprime_run2:ZpBB_M6200_bb
-shapes bkg       bq        /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_run2_bq.root Zprime_run2:Bkg_bq
-shapes data_obs  bq        /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_run2_bq.root Zprime_run2:data_obs
-shapes sig       bq        /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_signal_run2_bq.root Zprime_run2:ZpBB_M6200_bq
+shapes Bkg_bb         bb             /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_run2_bb.root Zprime_run2:Bkg_bb
+shapes ZpBB_bb_M6200  bb             /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_signal_run2_bb.root Zprime_run2:ZpBB_bb_M6200
+shapes data_obs       bb             /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_run2_bb.root Zprime_run2:data_obs
+shapes Bkg_bq         bq             /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_run2_bq.root Zprime_run2:Bkg_bq
+shapes ZpBB_bq_M6200  bq             /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_signal_run2_bq.root Zprime_run2:ZpBB_bq_M6200
+shapes data_obs       bq             /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_run2_bq.root Zprime_run2:data_obs
 ----------------------------------------------------------------------------------------------------------------------------------
 bin          bb     bq   
 observation  -1     -1   
 ----------------------------------------------------------------------------------------------------------------------------------
-bin          bb     bb     bq     bq   
-process      sig    bkg    sig    bkg  
-process      0      1      0      1    
-rate         1      1      1      1    
+bin          bb             bb             bq             bq           
+process      ZpBB_bb_M6200  Bkg_bb         ZpBB_bq_M6200  Bkg_bq       
+process      -1             1              0              2            
+rate         1              1              1              1            
 ----------------------------------------------------------------------------------------------------------------------------------

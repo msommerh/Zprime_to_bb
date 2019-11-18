@@ -2,15 +2,15 @@ imax 1
 jmax 1
 kmax *
 -----------------------------------------------------------------------------------
-shapes            sig  *    /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/medium/MC_signal_2017_bq.root     Zprime_2017:ZpBB_M7900_bq
-shapes            bkg  *    /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/medium/MC_QCD_TTbar_2017_bq.root    Zprime_2017:Bkg_bq
+shapes            ZpBB_bq_M7900  *    /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/medium/MC_signal_2017_bq.root     Zprime_2017:ZpBB_bq_M7900
+shapes            Bkg_bq  *    /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/medium/MC_QCD_TTbar_2017_bq.root    Zprime_2017:Bkg_bq
 shapes            data_obs  *    /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/medium/MC_QCD_TTbar_2017_bq.root    Zprime_2017:data_obs
 -----------------------------------------------------------------------------------
 bin               bq
 observation       -1
 -----------------------------------------------------------------------------------
 bin               bq                  bq                  
-process           sig                 bkg                 
+process           ZpBB_bq_M7900       Bkg_bq              
 process           0                   1                   
 rate              1                   1                   
 -----------------------------------------------------------------------------------

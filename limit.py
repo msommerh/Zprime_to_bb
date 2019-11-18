@@ -71,7 +71,7 @@ LUMI        = luminosities[YEAR]
 
 #signals = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000]
 #signals = range(800, 4500+1, 100)
-SIGNALS = range(1400, 8000+1, 100)
+SIGNALS = range(1800, 8000+1, 100)
 
 theoryLabel = {'B3' : "HVT model B", 'A1' : "HVT model A", 'T1' : "2HDM Type-I", 'T2' : "2HDM Type-II"}
 theoryLineColor = {'B3' : 629, 'A1' : 616-3, 'T1' : 880-4, 'T2' : 602}

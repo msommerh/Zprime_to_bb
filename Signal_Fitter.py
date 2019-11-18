@@ -251,7 +251,7 @@ def signal(category):
         signalName = "ZpBB_{}_M{}".format(category, m)
         sampleName = "ZpBB_M{}".format(m)
  
-        signalColor = sample[signalName]['linecolor'] if signalName in sample else 1
+        signalColor = sample[sampleName]['linecolor'] if signalName in sample else 1
         # fit the shape of the signal and put everything together in the datacard and workspace
         # for the time being the signal is fitted using 1 Gaussian in a range defined below (hardcoded)
 
@@ -313,7 +313,7 @@ def signal(category):
                         print "unknown year given in:", ss
                         sys.exit()
             else:
-                pd = [x for x in sample[signalName]['files'] if YEAR in x]
+                pd = [x for x in sample[sampleName]['files'] if YEAR in x]
                 if len(pd)>1:
                     print "multiple files given for a single masspoint/year:",pd
                     sys.exit()

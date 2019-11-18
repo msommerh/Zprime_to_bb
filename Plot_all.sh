@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ./Plot.py -v jj_mass -c "preselection" -y run2
-#./Plot.py -B -v jj_mass -c "1b" -y run2 -b tight
-#./Plot.py -B -v jj_mass -c "1b" -y run2 -b medium
-#./Plot.py -B -v jj_mass -c "1b" -y run2 -b loose
+./Plot.py -B -v jj_mass -c "1b" -y run2 -b tight
+./Plot.py -B -v jj_mass -c "1b" -y run2 -b medium
+./Plot.py -B -v jj_mass -c "1b" -y run2 -b loose
 ./Plot.py -B -v jj_mass -c "2b" -y run2 -b tight
 ./Plot.py -B -v jj_mass -c "2b" -y run2 -b medium
 ./Plot.py -B -v jj_mass -c "2b" -y run2 -b loose

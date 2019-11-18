@@ -2,15 +2,15 @@ imax 1
 jmax 1
 kmax *
 -----------------------------------------------------------------------------------
-shapes            sig  *    /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_signal_2016_bb.root     Zprime_2016:ZpBB_M2500_bb
-shapes            bkg  *    /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_2016_bb.root    Zprime_2016:Bkg_bb
+shapes            ZpBB_bb_M2500  *    /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_signal_2016_bb.root     Zprime_2016:ZpBB_bb_M2500
+shapes            Bkg_bb  *    /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_2016_bb.root    Zprime_2016:Bkg_bb
 shapes            data_obs  *    /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_2016_bb.root    Zprime_2016:data_obs
 -----------------------------------------------------------------------------------
 bin               bb
 observation       -1
 -----------------------------------------------------------------------------------
 bin               bb                  bb                  
-process           sig                 bkg                 
+process           ZpBB_bb_M2500       Bkg_bb              
 process           0                   1                   
 rate              1                   1                   
 -----------------------------------------------------------------------------------
