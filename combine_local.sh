@@ -33,7 +33,7 @@ year=$2
 isMC=$3
 #####################################
 
-if [[ $isMC -eq 1]]; then
+if [[ $isMC -eq 1 ]]; then
     echo "running purely on MC..."
     suffix="_MC.txt"
 else
