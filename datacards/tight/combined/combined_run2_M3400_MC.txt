@@ -3,12 +3,12 @@ imax 2 number of bins
 jmax 3 number of processes minus 1
 kmax 0 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
-shapes Bkg_bb         bb             /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_run2_bb.root Zprime_run2:Bkg_bb
-shapes ZpBB_bb_M3400  bb             /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_signal_run2_bb.root Zprime_run2:ZpBB_bb_M3400
-shapes data_obs       bb             /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_run2_bb.root Zprime_run2:data_obs
-shapes Bkg_bq         bq             /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_run2_bq.root Zprime_run2:Bkg_bq
-shapes ZpBB_bq_M3400  bq             /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_signal_run2_bq.root Zprime_run2:ZpBB_bq_M3400
-shapes data_obs       bq             /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_run2_bq.root Zprime_run2:data_obs
+shapes Bkg_bb         bb             ./workspace/tight/MC_QCD_TTbar_run2_bb.root Zprime_run2:Bkg_bb
+shapes ZpBB_bb_M3400  bb             ./workspace/tight/MC_signal_run2_bb.root Zprime_run2:ZpBB_bb_M3400
+shapes data_obs       bb             ./workspace/tight/MC_QCD_TTbar_run2_bb.root Zprime_run2:data_obs
+shapes Bkg_bq         bq             ./workspace/tight/MC_QCD_TTbar_run2_bq.root Zprime_run2:Bkg_bq
+shapes ZpBB_bq_M3400  bq             ./workspace/tight/MC_signal_run2_bq.root Zprime_run2:ZpBB_bq_M3400
+shapes data_obs       bq             ./workspace/tight/MC_QCD_TTbar_run2_bq.root Zprime_run2:data_obs
 ----------------------------------------------------------------------------------------------------------------------------------
 bin          bb     bq   
 observation  -1     -1   

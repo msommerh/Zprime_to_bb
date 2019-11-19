@@ -34,8 +34,8 @@ BTAGGING    = options.btagging
 CARDDIR     = "datacards/"+BTAGGING+"/"
 YEAR        = options.year
 ISMC        = options.isMC
-ABSOLUTEPATH= "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
-#ABSOLUTEPATH= "./"
+#ABSOLUTEPATH= "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
+ABSOLUTEPATH= "."
 
 if YEAR not in ['2016', '2017', '2018', 'run2']:
     print "unknown year:",YEAR

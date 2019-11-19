@@ -2,9 +2,9 @@ imax 1
 jmax 1
 kmax *
 -----------------------------------------------------------------------------------
-shapes            ZpBB_bq_M4200  *    /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_signal_2016_bq.root     Zprime_2016:ZpBB_bq_M4200
-shapes            Bkg_bq  *    /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_2016_bq.root    Zprime_2016:Bkg_bq
-shapes            data_obs  *    /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/tight/MC_QCD_TTbar_2016_bq.root    Zprime_2016:data_obs
+shapes            ZpBB_bq_M4200  *    ./workspace/tight/MC_signal_2016_bq.root     Zprime_2016:ZpBB_bq_M4200
+shapes            Bkg_bq  *    ./workspace/tight/MC_QCD_TTbar_2016_bq.root    Zprime_2016:Bkg_bq
+shapes            data_obs  *    ./workspace/tight/MC_QCD_TTbar_2016_bq.root    Zprime_2016:data_obs
 -----------------------------------------------------------------------------------
 bin               bq
 observation       -1

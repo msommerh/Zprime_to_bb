@@ -41,7 +41,26 @@ else
     suffix=".txt"
 fi
 
-inputfile=/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/${category}_${year}_M${mass}${suffix}
+
+## setting up a repository structure on the local working node:
+
+mkdir datacards
+mkdir datacards/${btagging}
+mkdir workspace
+mkdir workspace/${btagging}
+
+cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/${category}_${year}_M${mass}${suffix} datacards/${btagging}/
+cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/MC_signal_${year}* workspace/${btagging}/
+cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/${prefix}_${year}* workspace/${btagging}/
+
+echo "ls datacards/${btagging}/"
+ls datacards/${btagging}/
+echo "ls workspace/${btagging}/"
+ls workspace/${btagging}/
+
+
+#inputfile=/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/${category}_${year}_M${mass}${suffix}
+inputfile=datacards/${btagging}/${category}_${year}_M${mass}${suffix}
 outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/single_category/"
 tempfile=$(echo $inputfile | sed s:/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/:${workdir}/:g)
 echo "inputfile = ${inputfile}"
