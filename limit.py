@@ -114,7 +114,8 @@ def limit():
     if ISMC: suffix += "_MC"
     #if method=="cls": suffix="_CLs"
 
-    filename = "./combine/limits/" + BTAGGING + "/"+ YEAR + "_M%d.txt"
+    #filename = "./combine/limits/" + BTAGGING + "/"+ YEAR + "_M%d.txt"
+    filename = "./combine/limits/" + BTAGGING + "/combined_run2/"+ YEAR + "_M%d.txt" ## remove "combined_run2/" sometime
     if CATEGORY!="": 
         filename = filename.replace(BTAGGING + "/", BTAGGING + "/single_category/"+CATEGORY+"_")
         suffix += "_"+CATEGORY

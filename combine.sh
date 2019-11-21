@@ -63,7 +63,7 @@ ls workspace/${btagging}/
 #inputfile=/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/combined_${year}_M${mass}${suffix}
 inputfile="datacards/${btagging}/combined/combined_${year}_M${mass}${suffix}"
 outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/"
-tempfile=$(echo $inputfile | sed s:/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/combined_:${workdir}/:g)
+tempfile=$(echo $inputfile | sed s:datacards/${btagging}/combined/combined_:${workdir}/:g)
 echo "inputfile = ${inputfile}"
 echo "outputfile = ${outputfile}"
 echo "tempfile = ${tempfile}"

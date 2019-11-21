@@ -2,8 +2,6 @@
 *~
 filelists/
 *.swp
-\/
-//
 submission_files/
 test_outfiles/
 CMSSW_10_3_3/
