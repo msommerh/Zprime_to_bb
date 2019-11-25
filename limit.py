@@ -73,7 +73,7 @@ LUMI        = luminosities[YEAR]
 #signals = range(800, 4500+1, 100)
 SIGNALS = range(1800, 8000+1, 100)
 
-theoryLabel = {'B3' : "HVT model B", 'A1' : "HVT model A", 'T1' : "2HDM Type-I", 'T2' : "2HDM Type-II"}
+theoryLabel = {'B3' : "HVT model B (g_{V}=3)", 'A1' : "HVT model A (g_{V}=1)", 'T1' : "2HDM Type-I", 'T2' : "2HDM Type-II"}
 theoryLineColor = {'B3' : 629, 'A1' : 616-3, 'T1' : 880-4, 'T2' : 602}
 theoryFillColor = {'B3' : 625, 'A1' : 616-7, 'T1' : 880-9, 'T2' : 856}
 theoryFillStyle = {'B3' : 3002, 'A1' : 3013, 'T1' : 3002, 'T2' : 3013}
@@ -245,18 +245,20 @@ def limit():
     Exp2s.GetYaxis().SetNoExponent(True)
     Exp2s.GetYaxis().SetRangeUser(0.1, 5.e3)
     #else: Exp2s.GetYaxis().SetRangeUser(0.1, 1.e2)
-    Exp2s.GetXaxis().SetRangeUser(mass[0], min(mass[-1], MAXIMUM[channel] if channel in MAXIMUM else 1.e6))
+    #Exp2s.GetXaxis().SetRangeUser(mass[0], min(mass[-1], MAXIMUM[channel] if channel in MAXIMUM else 1.e6))
+    Exp2s.GetXaxis().SetRangeUser(SIGNALS[0], SIGNALS[-1])
     #drawAnalysis(channel)
     drawAnalysis("")
     #drawRegion(channel, True)
     drawRegion("", True)
-    drawCMS(LUMI, "") #Preliminary
+    drawCMS(LUMI, "Simulation Preliminary") #Preliminary
 
     # legend
     top = 0.9
     nitems = 4 + len(THEORY)
 
     leg = TLegend(0.55, top-nitems*0.3/5., 0.98, top)
+    #leg = TLegend(0.45, top-nitems*0.3/5., 0.98, top)
     leg.SetBorderSize(0)
     leg.SetFillStyle(0) #1001
     leg.SetFillColor(0)
@@ -265,7 +267,7 @@ def limit():
     leg.AddEntry(Exp0s, "Expected", "l")
     leg.AddEntry(Exp1s, "#pm 1 std. deviation", "f")
     leg.AddEntry(Exp2s, "#pm 2 std. deviation", "f")
-    for t in THEORY: leg.AddEntry(Theory[t], "HVT model "+t, "fl")
+    for t in THEORY: leg.AddEntry(Theory[t], theoryLabel[t], "fl")
     leg.Draw()
     latex = TLatex()
     latex.SetNDC()
@@ -374,7 +376,7 @@ def limit():
     if not gROOT.IsBatch(): raw_input("Press Enter to continue...")
 
     c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".png")
-    #c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".pdf")
+    c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".pdf")
     if 'ah' in channel or 'sl' in channel:
         c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".C")
         c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".root")
@@ -691,7 +693,7 @@ def limitCompare(method):
     c1.GetPad(0).SetLogy()
     for c in channels:
         graphs[c].Draw("AL" if 'ah' in c else "SAME, L")
-    #graphs[channels[0]].GetXaxis().SetRangeUser(800., 4500.)
+    graphs[channels[0]].GetXaxis().SetRangeUser(SIGNALS[0], SIGNALS[-1])
     graphs[channels[0]].GetYaxis().SetRangeUser(0.25, 2.5e4)
     graphs[channels[0]].GetXaxis().SetTitle("m_{"+particleP+"} (GeV)")
     graphs[channels[0]].GetYaxis().SetTitle("#sigma("+particleP+") #bf{#it{#Beta}}("+particleP+" #rightarrow "+particle+"H) #bf{#it{#Beta}}(H #rightarrow bb) (fb)")

@@ -302,7 +302,10 @@ class ZprimetobbProducer(Module):
         self.out.jptRel_1[0] = ptRel1
         self.out.jnelectrons_1[0] = event.Jet_nElectrons[jetIds[0]]
         self.out.jnmuons_1[0] = event.Jet_nMuons[jetIds[0]]
-        self.out.jflavour_1[0] = event.Jet_hadronFlavour[jetIds[0]]
+        if self.isMC: 
+            self.out.jflavour_1[0] = event.Jet_hadronFlavour[jetIds[0]]
+        else:
+            self.out.jflavour_1[0] = -1
         self.out.jmask_1[0] = event.Jet_cleanmask[jetIds[0]]
         self.out.jid_1[0] = event.Jet_jetId[jetIds[0]]        
 
@@ -322,7 +325,10 @@ class ZprimetobbProducer(Module):
         self.out.jptRel_2[0] = ptRel2
         self.out.jnelectrons_2[0] = event.Jet_nElectrons[jetIds[1]]
         self.out.jnmuons_2[0] = event.Jet_nMuons[jetIds[1]]
-        self.out.jflavour_2[0] = event.Jet_hadronFlavour[jetIds[1]]
+        if self.isMC:
+            self.out.jflavour_2[0] = event.Jet_hadronFlavour[jetIds[1]]
+        else:
+            self.out.jflavour_2[0] = -1
         self.out.jmask_2[0] = event.Jet_cleanmask[jetIds[1]]
         self.out.jid_2[0] = event.Jet_jetId[jetIds[1]]        
 

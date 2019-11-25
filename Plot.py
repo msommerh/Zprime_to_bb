@@ -47,13 +47,14 @@ NORM        = options.norm
 PARALLELIZE = False
 BLIND       = False
 LUMI        = {"run2" : 137190, "2016" : 35920, "2017" : 41530, "2018" : 59740}
+XRANGE      = (1800., 9000.)
 
 ########## SAMPLES ##########
 data = ["data_obs"]
 #back = ["QCD", "TTbar"]
 back = ["TTbar", "QCD"]
 #back = ["VV", "ST", "TTbarSL", "WJetsToLNu_HT", "DYJetsToNuNu_HT", "DYJetsToLL_HT"]
-sign = ['ZpBB_M2000', 'ZpBB_M4000', 'ZpBB_M6000', 'ZpBB_M8000']
+sign = ['ZpBB_M2000', 'ZpBB_M4000', 'ZpBB_M6000']#, 'ZpBB_M8000']
 #sign = ['ZpBB_M1000', 'ZpBB_M1200', 'ZpBB_M1400', 'ZpBB_M1600', 'ZpBB_M1800', 'ZpBB_M2000', 'ZpBB_M2500', 'ZpBB_M3000', 'ZpBB_M3500', 'ZpBB_M4000', 'ZpBB_M4500', 'ZpBB_M5000', 'ZpBB_M5500', 'ZpBB_M6000', 'ZpBB_M7000', 'ZpBB_M8000']
 ########## ######## ##########
 
@@ -99,7 +100,7 @@ def plot(var, cut, year, norm=False, nm1=False):
                 if not 'data' in s or ('data' in s and ss in pd):
                     if year=="run2" or year in ss:
                         tree[s].Add(NTUPLEDIR + ss + ".root")
-            if variable[var]['nbins']>0: hist[s] = TH1F(s, ";"+variable[var]['title']+";Events;"+('log' if variable[var]['log'] else ''), variable[var]['nbins'], variable[var]['min'], variable[var]['max'])
+            if variable[var]['nbins']>0: hist[s] = TH1F(s, ";"+variable[var]['title']+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+" GeV );"+('log' if variable[var]['log'] else ''), variable[var]['nbins'], variable[var]['min'], variable[var]['max'])
             else: hist[s] = TH1F(s, ";"+variable[var]['title'], len(variable[var]['bins'])-1, array('f', variable[var]['bins']))
             hist[s].Sumw2()
             cutstring = "(eventWeightLumi)" + ("*("+cut+")" if len(cut)>0 else "")
@@ -175,7 +176,7 @@ def plot(var, cut, year, norm=False, nm1=False):
                 for j in range(first, last): hist[s].SetBinContent(j, -1.e-4)
     
     # Create stack
-    bkg = THStack("Bkg", ";"+hist['BkgSum'].GetXaxis().GetTitle()+";Events")
+    bkg = THStack("Bkg", ";"+hist['BkgSum'].GetXaxis().GetTitle()+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+" GeV )")
     for i, s in enumerate(back): bkg.Add(hist[s])
     
     
@@ -222,14 +223,17 @@ def plot(var, cut, year, norm=False, nm1=False):
                 hist[s].Scale(smagn)
                 hist[s].Draw("SAME, HIST") # signals Normalized, hist[s].Integral()*sample[s]['weight']
         textS = drawText(0.80, 0.9-leg.GetNRows()*0.05 - 0.02, stype+" (x%d)" % smagn, True)
-    bkg.GetYaxis().SetTitleOffset(bkg.GetYaxis().GetTitleOffset()*1.075)
+    #bkg.GetYaxis().SetTitleOffset(bkg.GetYaxis().GetTitleOffset()*1.075)
+    bkg.GetYaxis().SetTitleOffset(0.9)
+    #bkg.GetYaxis().SetTitleOffset(2.)
     bkg.SetMaximum((5. if log else 1.25)*max(bkg.GetMaximum(), hist['data_obs'].GetBinContent(hist['data_obs'].GetMaximumBin())+hist['data_obs'].GetBinError(hist['data_obs'].GetMaximumBin())))
     #if bkg.GetMaximum() < max(hist[sign[0]].GetMaximum(), hist[sign[-1]].GetMaximum()): bkg.SetMaximum(max(hist[sign[0]].GetMaximum(), hist[sign[-1]].GetMaximum())*1.25)
     bkg.SetMinimum(max(min(hist['BkgSum'].GetBinContent(hist['BkgSum'].GetMinimumBin()), hist['data_obs'].GetMinimum()), 5.e-1)  if log else 0.)
     if log:
         bkg.GetYaxis().SetNoExponent(bkg.GetMaximum() < 1.e4)
-        bkg.GetYaxis().SetMoreLogLabels(True)
-    
+        #bkg.GetYaxis().SetMoreLogLabels(True)
+    bkg.GetXaxis().SetRangeUser(XRANGE[0], XRANGE[1])  ## newly inserted 
+ 
     #if log: bkg.SetMinimum(1)
     leg.Draw()
     drawCMS(LUMI[year], "Preliminary")
@@ -248,6 +252,7 @@ def plot(var, cut, year, norm=False, nm1=False):
         err = hist['BkgSum'].Clone("BkgErr;")
         err.SetTitle("")
         err.GetYaxis().SetTitle("Data / Bkg")
+        err.GetXaxis().SetRangeUser(XRANGE[0], XRANGE[1])  ## newly inserted     
         for i in range(1, err.GetNbinsX()+1):
             err.SetBinContent(i, 1)
             if hist['BkgSum'].GetBinContent(i) > 0:
@@ -272,9 +277,9 @@ def plot(var, cut, year, norm=False, nm1=False):
             if len(err.GetXaxis().GetBinLabel(1))==0: # Bin labels: not a ordinary plot
                 drawRatio(hist['data_obs'], hist['BkgSum'])
                 drawStat(hist['data_obs'], hist['BkgSum'])
-    
+
     c1.Update()
-    
+
     if gROOT.IsBatch():
         if channel=="": channel="nocut"
         varname = var.replace('.', '_').replace('()', '')
@@ -282,7 +287,7 @@ def plot(var, cut, year, norm=False, nm1=False):
         suffix = ''
         if "b" in channel: suffix+="_"+BTAGGING
         c1.Print("plots/"+channel+"/"+varname+"_"+year+suffix+".png")
-        #c1.Print("plots/"+channel+"/"+varname+"_"+year+suffix+".pdf")
+        c1.Print("plots/"+channel+"/"+varname+"_"+year+suffix+".pdf")
     
     # Print table
     printTable(hist, sign)

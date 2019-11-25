@@ -410,7 +410,7 @@ def dijet(category):
 
     drawAnalysis(category)
     drawRegion(category, True)
-    drawCMS(LUMI, "")
+    drawCMS(LUMI, "Simulation Preliminary")
 
     leg = TLegend(0.575, 0.6, 0.95, 0.9)
     leg.SetBorderSize(0)
@@ -701,7 +701,7 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
 
     drawAnalysis(category)
     drawRegion(category, True)
-    drawCMS(LUMI, "Preliminary")
+    drawCMS(LUMI, "Simulation Preliminary")
 
     c.cd(2)
     frame_res = variable.frame()

@@ -367,7 +367,8 @@ def signal(category):
                 if VERBOSE: print "********** Fit result [", m, "] **", category, "*"*40, "\n", frSignal[m].Print(), "\n", "*"*80
                 if VERBOSE: frSignal[m].correlationMatrix().Print()
                 drawPlot(signalMass+"_"+category, stype+category, X_mass, signal[m], setSignal[m], frSignal[m])
-            
+                #drawPlot(signalMass+"_"+category, "M = "+str(m), X_mass, signal[m], setSignal[m], frSignal[m])           
+ 
             else:
                 print "  WARNING: signal", stype, "and mass point", m, "in category", category, "has 0 entries or does not exist"
                         
@@ -419,11 +420,11 @@ def signal(category):
             signal[m].plotOn(frame_signal, RooFit.LineColor((j%9)+1), RooFit.Normalization(signalNorm[m].getVal(), RooAbsReal.NumEvent), RooFit.Range("X_reasonable_range"))
     frame_signal.GetXaxis().SetRangeUser(0, 10000)
     frame_signal.Draw()
-    drawCMS(-1, "Simulation")
+    drawCMS(-1, "Simulation Preliminary")
     drawAnalysis(category)
     drawRegion(category)
 
-    #c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.pdf")
+    c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.pdf")
     c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.png")
     if VERBOSE: raw_input("Press Enter to continue...")
     # ====== CONTROL PLOT ======
@@ -679,7 +680,7 @@ def signal(category):
 #        eslope2.Draw("3, SAME")
 
 
-    #c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.pdf")
+    c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.pdf")
     c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.png")
 
 
@@ -693,10 +694,10 @@ def signal(category):
     inorm.Draw("P, SAME")
     gnorm.GetXaxis().SetRangeUser(genPoints[0]-100, genPoints[-1]+100)
     gnorm.GetYaxis().SetRangeUser(0., gnorm.GetMaximum()*1.25)
-    drawCMS(-1, "Simulation")
+    drawCMS(-1, "Simulation Preliminary")
     drawAnalysis(category)
     drawRegion(category)
-    #c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.pdf")
+    c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.pdf")
     c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.png")
 
 
@@ -994,15 +995,17 @@ def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=No
     isData = norm>0
     isMass = "Mass" in name
     isSignal = '_M' in name
+    mass = name[8:12]
     isCategory = reg is not None
-    isBottomPanel = not isSignal
+    #isBottomPanel = not isSignal
+    isBottomPanel = True
     postfix = "Mass" if isMass else ('SR' if 'SR' in name else ('SB' if 'SB' in name else ""))
     cut = "reg==reg::"+cat if reg is not None else ""
     normRange = "h_extended_reasonable_range" if isMass else "X_reasonable_range"
     dataRange = "LSBrange,HSBrange" if isMass and isData else normRange
 
     cmsLabel = "Preliminary" if isData else "Simulation Preliminary"
-    if not type(fitRes) is list: cmsLabel = "Preliminary"
+    #if not type(fitRes) is list: cmsLabel = "Preliminary"
     if 'paper' in name: cmsLabel = ""
     pullRange = 5
 
@@ -1072,7 +1075,8 @@ def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=No
     drawCMS(LUMI, cmsLabel)
     drawAnalysis(channel)
     drawRegion(channel + ("" if isData and not isCategory else ('SR' if 'SR' in name else ('SB' if 'SB' in name else ""))), True)
-    if isSignal: drawMass(name)
+    #if isSignal: drawMass(name)
+    if isSignal: drawMass("M_{Z'} = "+mass+" GeV")
 
     if isBottomPanel:
         c.cd(2)
@@ -1098,7 +1102,7 @@ def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=No
         frame_res.GetXaxis().SetRangeUser(variable.getMin(), lastBin)
         line_res = drawLine(frame_res.GetXaxis().GetXmin(), 0, lastBin, 0)
 
-    #c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".pdf")
+    c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".pdf")
     c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".png")
     #if VERBOSE: raw_input("Press Enter to continue...")
     # ======   END PLOT   ======
