@@ -112,7 +112,7 @@ def signal(category):
     #              Variables and selections                 #
     #                                                       #
     #*******************************************************#
-    X_mass  = RooRealVar (      "jj_mass",              "m_{jj}",       1800.,     13000.,  "GeV") ## changed from 1.4TeV to 1.8TeV for now FIXME
+    X_mass  = RooRealVar (      "jj_mass_widejet",              "m_{jj}",       1800.,     13000.,  "GeV") ## changed from 1.4TeV to 1.8TeV for now FIXME
     #j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
     #j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
     j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     13000.,  "GeV")

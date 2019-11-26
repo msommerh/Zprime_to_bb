@@ -4,10 +4,10 @@ import os
 from array import array
 from ROOT import TFile, TChain, TTree, TH1
 
-inDir = "/eos/user/z/zucchett/ZBB/"
+#inDir = "/eos/user/z/zucchett/ZBB/"
 inDir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted"
 #inDir = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/MC_signal_weighted"
-#outDir = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim"
+outDir = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim"
 
 blacklist = ["backup"]
 cutstring = "jpt_1>550 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550)"

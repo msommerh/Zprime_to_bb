@@ -13,9 +13,9 @@ deepFlavour = {
 #}
 #set jj_mass from 1400 to 1800 for a test FIXME
 alias = {
-    "preselection" : "jj_mass>1800 && jpt_1>600 && jj_deltaEta<1.3 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550)",
-    "2b" : "jj_mass>1800 && jpt_1>600 && jj_deltaEta<1.3 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && jdeepFlavour_1>{b_threshold} && jdeepFlavour_2>{b_threshold}",
-    "1b" : "jj_mass>1800 && jpt_1>600 && jj_deltaEta<1.3 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && ((jdeepFlavour_1>{b_threshold} && jdeepFlavour_2<{b_threshold}) || (jdeepFlavour_1<{b_threshold} && jdeepFlavour_2>{b_threshold}))",
+    "preselection" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.3 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550)",
+    "2b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.3 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && jdeepFlavour_1>{b_threshold} && jdeepFlavour_2>{b_threshold}",
+    "1b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.3 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && ((jdeepFlavour_1>{b_threshold} && jdeepFlavour_2<{b_threshold}) || (jdeepFlavour_1<{b_threshold} && jdeepFlavour_2>{b_threshold}))",
 }
 
 

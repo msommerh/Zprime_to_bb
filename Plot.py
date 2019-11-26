@@ -51,7 +51,6 @@ XRANGE      = (1800., 9000.)
 
 ########## SAMPLES ##########
 data = ["data_obs"]
-#back = ["QCD", "TTbar"]
 back = ["TTbar", "QCD"]
 #back = ["VV", "ST", "TTbarSL", "WJetsToLNu_HT", "DYJetsToNuNu_HT", "DYJetsToLL_HT"]
 sign = ['ZpBB_M2000', 'ZpBB_M4000', 'ZpBB_M6000']#, 'ZpBB_M8000']
