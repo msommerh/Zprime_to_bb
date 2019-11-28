@@ -15,7 +15,7 @@ from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooP
 
 from rooUtils import *
 from samples import sample
-from aliases import alias, deepFlavour
+from aliases import alias, aliasSM, deepFlavour, working_points
 #from selections import selection
 #from utils import *
 
@@ -82,7 +82,7 @@ else:
     print "unknown year:",YEAR
     sys.exit()
 
-if BTAGGING not in ['tight', 'medium', 'loose']:
+if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
     print "unknown btagging requirement:", BTAGGING
     sys.exit()
 
@@ -151,8 +151,10 @@ def dijet(category):
     #j2_pt = RooRealVar(         "jpt_2",                "jet2 pt",      0.,     4500.,  "GeV")
     #jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",             -2.,   1.       )
     #jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",             -2.,   1.       )
-    jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",       "",             0.,   1.        )
-    jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             0.,   1.        )
+    #jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",       "",             0.,   1.        )
+    #jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             0.,   1.        )
+    jbtag_WP_1 = RooRealVar("jbtag_WP_1",       "",             -1.,   4.        )
+    jbtag_WP_2 = RooRealVar("jbtag_WP_2",       "",             -1.,   4.        )
     #MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
     jj_deltaEta = RooRealVar(    "jj_deltaEta",                "",      0.,     5.)
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
@@ -166,15 +168,23 @@ def dijet(category):
     weight = RooRealVar(        "eventWeightLumi",      "",             -1.e9,  1.e9    )
 
     variables = RooArgSet(X_mass)
-    variables.add(RooArgSet(jdeepFlavour_1, jdeepFlavour_2, weight))
+    #variables.add(RooArgSet(jdeepFlavour_1, jdeepFlavour_2, weight))
+    variables.add(RooArgSet(jbtag_WP_1, jbtag_WP_2, weight))
     variables.add(RooArgSet(j1_pt, jj_deltaEta))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))
 
     if VARBINS: binsXmass = RooBinning(len(abins)-1, abins)
     else: binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
-    
-    baseCut = alias[category].format(b_threshold=deepFlavour[BTAGGING][YEAR])
+   
+    if BTAGGING=='semimedium': 
+        #baseCut = aliasSM[category].format(b_threshold_medium=deepFlavour['medium'][YEAR], b_threshold_loose=deepFlavour['loose'][YEAR])
+        baseCut = aliasSM[category]
+    else:
+        #baseCut = alias[category].format(b_threshold=deepFlavour[BTAGGING][YEAR])
+        baseCut = alias[category].format(WP=working_points[BTAGGING])
+
+
 
     print stype, "|", baseCut
  
@@ -349,9 +359,9 @@ def dijet(category):
         print "Functions with", order+1, "or more parameters are needed to fit the background"
         exit()
     
-    modelBkg.SetName("Bkg_"+category)
-    modelAlt.SetName("Alt_"+category)
-    normzBkg.SetName("Bkg_"+category+"_norm")
+    modelBkg.SetName("Bkg_"+YEAR+"_"+category)
+    modelAlt.SetName("Alt_"+YEAR+"_"+category)
+    normzBkg.SetName("Bkg_"+YEAR+"_"+category+"_norm")
     
     print "-"*25
     

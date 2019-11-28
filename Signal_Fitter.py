@@ -16,7 +16,7 @@ from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooP
 #from alpha import drawPlot
 from rooUtils import *
 from samples import sample
-from aliases import alias, deepFlavour
+from aliases import alias, aliasSM, deepFlavour, working_points
 
 
 import optparse
@@ -78,7 +78,7 @@ else:
     print "unknown year:",YEAR
     sys.exit()
 
-if BTAGGING not in ['tight', 'medium', 'loose']:
+if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
     print "unknown btagging requirement:", BTAGGING
     sys.exit()
 
@@ -120,8 +120,10 @@ def signal(category):
     #j2_pt = RooRealVar(         "jpt_2",                "jet2 pt",      0.,     4500.,  "GeV")
     #jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",             -2.,   1.       )
     #jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",             -2.,   1.       )
-    jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",       "",             -1.,   2.        )
-    jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             -1.,   2.        )
+    #jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",       "",             -1.,   2.        )
+    #jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             -1.,   2.        )
+    jbtag_WP_1 = RooRealVar("jbtag_WP_1",       "",             -1.,   4.        )
+    jbtag_WP_2 = RooRealVar("jbtag_WP_2",       "",             -1.,   4.        )
     #MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
     HLT_PFJet500            = RooRealVar("HLT_PFJet500"            , "" , -1., 1.    ) 
@@ -144,7 +146,8 @@ def signal(category):
     # Define the RooArgSet which will include all the variables defined before
     # there is a maximum of 9 variables in the declaration, so the others need to be added with 'add'
     variables = RooArgSet(X_mass)
-    variables.add(RooArgSet(j1_pt, jj_deltaEta, jdeepFlavour_1, jdeepFlavour_2, weight))
+    #variables.add(RooArgSet(j1_pt, jj_deltaEta, jdeepFlavour_1, jdeepFlavour_2, weight))
+    variables.add(RooArgSet(j1_pt, jj_deltaEta, jbtag_WP_1, jbtag_WP_2, weight))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     #X_mass.setRange("X_extended_range", X_mass.getMin(), X_mass.getMax())
     X_mass.setRange("X_reasonable_range", X_mass.getMin(), X_mass.getMax())
@@ -156,7 +159,12 @@ def signal(category):
     massArg = RooArgSet(X_mass)
 
     # Cuts
-    SRcut = alias[category].format(b_threshold=deepFlavour[BTAGGING][YEAR])
+    if BTAGGING=='semimedium':
+        #SRcut = aliasSM[category].format(b_threshold_medium=deepFlavour['medium'][YEAR], b_threshold_loose=deepFlavour['loose'][YEAR])
+        SRcut = aliasSM[category]
+    else:
+        #SRcut = alias[category].format(b_threshold=deepFlavour[BTAGGING][YEAR])
+        SRcut = alias[category].format(WP=working_points[BTAGGING])
 
     print "  Cut:\t", SRcut
 
@@ -248,7 +256,7 @@ def signal(category):
     for m in massPoints:
 
         signalMass = "%s_M%d" % (stype, m)
-        signalName = "ZpBB_{}_M{}".format(category, m)
+        signalName = "ZpBB_{}_{}_M{}".format(YEAR, category, m)
         sampleName = "ZpBB_M{}".format(m)
  
         signalColor = sample[sampleName]['linecolor'] if signalName in sample else 1

@@ -12,7 +12,7 @@ from ROOT import TLegend, TLatex, TText, TLine
 
 from samples import sample
 from variables import variable
-from aliases import alias, deepFlavour
+from aliases import alias, aliasSM, deepFlavour, working_points
 from utils import *
 
 ########## SETTINGS ##########
@@ -47,7 +47,7 @@ NORM        = options.norm
 PARALLELIZE = False
 BLIND       = False
 LUMI        = {"run2" : 137190, "2016" : 35920, "2017" : 41530, "2018" : 59740}
-XRANGE      = (1800., 9000.)
+XRANGE      = (1400., 9000.)
 
 ########## SAMPLES ##########
 data = ["data_obs"]
@@ -57,7 +57,7 @@ sign = ['ZpBB_M2000', 'ZpBB_M4000', 'ZpBB_M6000']#, 'ZpBB_M8000']
 #sign = ['ZpBB_M1000', 'ZpBB_M1200', 'ZpBB_M1400', 'ZpBB_M1600', 'ZpBB_M1800', 'ZpBB_M2000', 'ZpBB_M2500', 'ZpBB_M3000', 'ZpBB_M3500', 'ZpBB_M4000', 'ZpBB_M4500', 'ZpBB_M5000', 'ZpBB_M5500', 'ZpBB_M6000', 'ZpBB_M7000', 'ZpBB_M8000']
 ########## ######## ##########
 
-if BTAGGING not in ['tight', 'medium', 'loose']:
+if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
     print "unknown btagging requirement:", BTAGGING
     sys.exit()
 
@@ -75,8 +75,12 @@ def plot(var, cut, year, norm=False, nm1=False):
     elif len(sign)>0 and  'monoH' in sign[0]: stype = "Z'-2HDM m_{A}=300 GeV"
     if treeRead:
         for k in sorted(alias.keys(), key=len, reverse=True):
-            if k in cut: cut = cut.replace(k, alias[k].format(b_threshold=deepFlavour[BTAGGING][year]))
-        #if 'TR' in channel: cut = cut.replace("isTveto", "!isTveto")
+            if BTAGGING=='semimedium':
+                #if k in cut: cut = cut.replace(k, aliasSM[k].format(b_threshold_medium=deepFlavour['medium'][year], b_threshold_loose=deepFlavour['loose'][year]))              
+                if k in cut: cut = cut.replace(k, aliasSM[k])
+            else:
+                #if k in cut: cut = cut.replace(k, alias[k].format(b_threshold=deepFlavour[BTAGGING][year]))
+                if k in cut: cut = cut.replace(k, alias[k].format(WP=working_points[BTAGGING]))
     
     # Determine Primary Dataset
     pd = sample['data_obs']['files']

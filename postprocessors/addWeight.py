@@ -262,6 +262,8 @@ else:
     for letter in letters:
         sample_names.append("data_{}_{}".format(year, letter))
 
+sample_names = ['MC_QCD_2016_HT1000to1500'] #REMOVE FIXME FIXME FIXME
+
 jobs = []
 for d in sample_names:
     origin = '/eos/user/m/msommerh/Zprime_to_bb_analysis/'+d

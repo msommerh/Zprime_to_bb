@@ -40,6 +40,7 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('jflavour_1'     , int)
         self.addBranch('jmask_1'        , bool)
         self.addBranch('jid_1'          , int)
+        self.addBranch('jbtag_WP_1'     , int)
         
         self.addBranch('jpt_2'          , float)
         self.addBranch('jeta_2'         , float)
@@ -60,7 +61,8 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('jflavour_2'     , int)
         self.addBranch('jmask_2'        , bool)
         self.addBranch('jid_2'          , int)
-        
+        self.addBranch('jbtag_WP_2'     , int)
+       
         self.addBranch('jsorted'        , int)
         self.addBranch('jj_mass'        , float)
         self.addBranch('jj_mass_lepcorr', float)
@@ -345,6 +347,22 @@ class ZprimetobbProducer(Module):
         self.out.nbtagLoose[0]         = jetBTagLoose
         self.out.nbtagMedium[0]        = jetBTagMedium
         self.out.nbtagTight[0]         = jetBTagTight
+
+        ## writing the b-tag category directly into the n-tuple. 0:untagged, 1:loose, 2:medium, 3:tight
+        self.out.jbtag_WP_1[0]         = 0
+        if event.Jet_btagDeepFlavB[jetIds[0]] > self.btagTight:
+            self.out.jbtag_WP_1[0]     = 3
+        elif event.Jet_btagDeepFlavB[jetIds[0]] > self.btagMedium:
+            self.out.jbtag_WP_1[0]     = 2
+        elif event.Jet_btagDeepFlavB[jetIds[0]] > self.btagLoose:
+            self.out.jbtag_WP_1[0]     = 1
+        self.out.jbtag_WP_2[0]         = 0
+        if event.Jet_btagDeepFlavB[jetIds[1]] > self.btagTight:
+            self.out.jbtag_WP_2[0]     = 3
+        elif event.Jet_btagDeepFlavB[jetIds[1]] > self.btagMedium:
+            self.out.jbtag_WP_2[0]     = 2
+        elif event.Jet_btagDeepFlavB[jetIds[1]] > self.btagLoose:
+            self.out.jbtag_WP_2[0]     = 1
         
         ## fill trigger branches (different years have different triggers 500<->550, 900<->1050)
         try:

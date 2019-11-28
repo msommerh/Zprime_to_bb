@@ -14,13 +14,14 @@ if __name__ == "__main__":
   parser = ArgumentParser()
   parser.add_argument('-q', '--queue',   dest='queue', choices=['espresso', 'microcentury', 'longlunch', 'workday', 'tomorrow', 'testmatch', 'nextweek'], type=str, default='tomorrow', action='store',
                                          help="select queue for submission" )
-  parser.add_argument('-y', '--year',    dest='year', type=str, default='2016', action='store', choices=['2016','2017','2018','run2'],
+  parser.add_argument('-y', '--year',    dest='year', type=str, default='2016', action='store', choices=['2016','2017','2018','run2', 'run2c'],
                                          help="set year, type run2 for combined submission." )
   parser.add_argument('-MC', '--isMC',   dest='isMC',  action='store_true', default=False,
                                          help="Select this if the sample is MC, otherwise it is flagged as data.")
-  parser.add_argument("-b", "--btagging", action="store", type=str, dest="btagging", default="tight", choices=['tight', 'medium', 'loose'])
+  parser.add_argument("-b", "--btagging", action="store", type=str, dest="btagging", default="tight", choices=['tight', 'medium', 'loose', 'semimedium'])
   parser.add_argument("-c", "--category", action="store", type=str, dest="category", default="", choices=['', 'bb', 'bq'],
                                          help="Choose b-tagging category (bb or bq) if combine should run merely on a single category.")
+
   args = parser.parse_args()
   #checkFiles.args = args
 
@@ -34,12 +35,24 @@ if __name__ == "__main__":
 else:
   args = None
 
+YEAR=args.year
+if YEAR=='run2c':
+    print "Pring running combine on separate fits for each year of run2..."
+    YEAR='run2'
+    separate_years=True
+else:
+    separate_years=False
+
 mass_points = range(1200,8001,100)
 nJobs = len(mass_points)
 
+if separate_years and not YEAR=='run2':
+    print "Separate year fit can only be selected if year is run2."
+    sys.exit()
+
 def submitJobs():
     path = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
-    workdir = "submission_files/tmp_combine{category}_{year}_{btagging}{suffix}".format(category="_"+args.category if args.category!="" else "", year=args.year, btagging=args.btagging, suffix="_MC" if args.isMC else "")
+    workdir = "submission_files/tmp_combine{category}_{year}_{btagging}{suffix}".format(category="_"+args.category if args.category!="" else "", year=YEAR+'c' if separate_years else YEAR, btagging=args.btagging, suffix="_MC" if args.isMC else "")
     if not os.path.exists(workdir):
         os.makedirs(workdir)
         print "Directory "+workdir+" created."
@@ -48,8 +61,8 @@ def submitJobs():
     os.chdir(workdir)
 
     #submit job
-    os.system("cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine{}.sh ./combine_{}_{}{}.sh".format("_single" if args.category!="" else "", args.year, args.btagging, "_"+args.category if args.category != "" else ""))
-    os.system("chmod 755 combine_{}_{}{}.sh".format(args.year, args.btagging, "_"+args.category if args.category != "" else ""))
+    os.system("cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine{}.sh ./combine_{}_{}{}.sh".format("_single" if args.category!="" else "", YEAR, args.btagging, "_"+args.category if args.category != "" else ""))
+    os.system("chmod 755 combine_{}_{}{}.sh".format(YEAR, args.btagging, "_"+args.category if args.category != "" else ""))
     makeSubmitFileCondor(args.queue, nJobs)
     os.system("condor_submit submit.sub")
     print "jobs submitted"
@@ -58,13 +71,15 @@ def submitJobs():
 def makeSubmitFileCondor(jobflavour, nJobs):
     print "make options file for condor job submission"
     suffix=""
+    input_year=str(YEAR)
+    if separate_years: input_year+='c'
     if args.category!="": suffix+=" "+args.category
     submitfile = open("submit.sub", "w")
-    submitfile.write("executable            = combine_{}_{}{}.sh\n".format(args.year, args.btagging, "_"+args.category if args.category != "" else ""))
-    submitfile.write("arguments             = "+str(int(args.isMC))+" "+str(args.year)+" "+args.btagging+" $(ProcId)"+suffix+"\n")
-    submitfile.write("output                = "+str(args.year)+"_"+args.btagging+".$(ClusterId).$(ProcId).out\n")
-    submitfile.write("error                 = "+str(args.year)+"_"+args.btagging+".$(ClusterId).$(ProcId).err\n")
-    submitfile.write("log                   = "+str(args.year)+"_"+args.btagging+".$(ClusterId).log\n")
+    submitfile.write("executable            = combine_{}_{}{}.sh\n".format(YEAR, args.btagging, "_"+args.category if args.category != "" else ""))
+    submitfile.write("arguments             = "+str(int(args.isMC))+" "+input_year+" "+args.btagging+" $(ProcId)"+suffix+"\n")
+    submitfile.write("output                = "+str(YEAR)+"_"+args.btagging+".$(ClusterId).$(ProcId).out\n")
+    submitfile.write("error                 = "+str(YEAR)+"_"+args.btagging+".$(ClusterId).$(ProcId).err\n")
+    submitfile.write("log                   = "+str(YEAR)+"_"+args.btagging+".$(ClusterId).log\n")
     submitfile.write('+JobFlavour           = "'+jobflavour+'"\n')
     submitfile.write('transfer_output_files = ""\n')
     submitfile.write("queue {}".format(nJobs))

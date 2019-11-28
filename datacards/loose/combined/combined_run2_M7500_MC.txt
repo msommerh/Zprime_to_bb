@@ -3,18 +3,18 @@ imax 2 number of bins
 jmax 3 number of processes minus 1
 kmax 0 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
-shapes Bkg_bb         bb             ./workspace/loose/MC_QCD_TTbar_run2_bb.root Zprime_run2:Bkg_bb
-shapes ZpBB_bb_M7500  bb             ./workspace/loose/MC_signal_run2_bb.root Zprime_run2:ZpBB_bb_M7500
-shapes data_obs       bb             ./workspace/loose/MC_QCD_TTbar_run2_bb.root Zprime_run2:data_obs
-shapes Bkg_bq         bq             ./workspace/loose/MC_QCD_TTbar_run2_bq.root Zprime_run2:Bkg_bq
-shapes ZpBB_bq_M7500  bq             ./workspace/loose/MC_signal_run2_bq.root Zprime_run2:ZpBB_bq_M7500
-shapes data_obs       bq             ./workspace/loose/MC_QCD_TTbar_run2_bq.root Zprime_run2:data_obs
+shapes Bkg_run2_bb         bb                  ./workspace/loose/MC_QCD_TTbar_run2_bb.root Zprime_run2:Bkg_run2_bb
+shapes ZpBB_run2_bb_M7500  bb                  ./workspace/loose/MC_signal_run2_bb.root Zprime_run2:ZpBB_run2_bb_M7500
+shapes data_obs            bb                  ./workspace/loose/MC_QCD_TTbar_run2_bb.root Zprime_run2:data_obs
+shapes Bkg_run2_bq         bq                  ./workspace/loose/MC_QCD_TTbar_run2_bq.root Zprime_run2:Bkg_run2_bq
+shapes ZpBB_run2_bq_M7500  bq                  ./workspace/loose/MC_signal_run2_bq.root Zprime_run2:ZpBB_run2_bq_M7500
+shapes data_obs            bq                  ./workspace/loose/MC_QCD_TTbar_run2_bq.root Zprime_run2:data_obs
 ----------------------------------------------------------------------------------------------------------------------------------
 bin          bb     bq   
 observation  -1     -1   
 ----------------------------------------------------------------------------------------------------------------------------------
-bin          bb             bb             bq             bq           
-process      ZpBB_bb_M7500  Bkg_bb         ZpBB_bq_M7500  Bkg_bq       
-process      -1             1              0              2            
-rate         1              1              1              1            
+bin          bb                  bb                  bq                  bq                
+process      ZpBB_run2_bb_M7500  Bkg_run2_bb         ZpBB_run2_bq_M7500  Bkg_run2_bq       
+process      -1                  1                   0                   2                 
+rate         1                   1                   1                   1                 
 ----------------------------------------------------------------------------------------------------------------------------------

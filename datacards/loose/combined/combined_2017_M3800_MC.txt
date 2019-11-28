@@ -3,18 +3,18 @@ imax 2 number of bins
 jmax 3 number of processes minus 1
 kmax 0 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
-shapes Bkg_bb         bb             ./workspace/loose/MC_QCD_TTbar_2017_bb.root Zprime_2017:Bkg_bb
-shapes ZpBB_bb_M3800  bb             ./workspace/loose/MC_signal_2017_bb.root Zprime_2017:ZpBB_bb_M3800
-shapes data_obs       bb             ./workspace/loose/MC_QCD_TTbar_2017_bb.root Zprime_2017:data_obs
-shapes Bkg_bq         bq             ./workspace/loose/MC_QCD_TTbar_2017_bq.root Zprime_2017:Bkg_bq
-shapes ZpBB_bq_M3800  bq             ./workspace/loose/MC_signal_2017_bq.root Zprime_2017:ZpBB_bq_M3800
-shapes data_obs       bq             ./workspace/loose/MC_QCD_TTbar_2017_bq.root Zprime_2017:data_obs
+shapes Bkg_2017_bb         bb                  ./workspace/loose/MC_QCD_TTbar_2017_bb.root Zprime_2017:Bkg_2017_bb
+shapes ZpBB_2017_bb_M3800  bb                  ./workspace/loose/MC_signal_2017_bb.root Zprime_2017:ZpBB_2017_bb_M3800
+shapes data_obs            bb                  ./workspace/loose/MC_QCD_TTbar_2017_bb.root Zprime_2017:data_obs
+shapes Bkg_2017_bq         bq                  ./workspace/loose/MC_QCD_TTbar_2017_bq.root Zprime_2017:Bkg_2017_bq
+shapes ZpBB_2017_bq_M3800  bq                  ./workspace/loose/MC_signal_2017_bq.root Zprime_2017:ZpBB_2017_bq_M3800
+shapes data_obs            bq                  ./workspace/loose/MC_QCD_TTbar_2017_bq.root Zprime_2017:data_obs
 ----------------------------------------------------------------------------------------------------------------------------------
 bin          bb     bq   
 observation  -1     -1   
 ----------------------------------------------------------------------------------------------------------------------------------
-bin          bb             bb             bq             bq           
-process      ZpBB_bb_M3800  Bkg_bb         ZpBB_bq_M3800  Bkg_bq       
-process      -1             1              0              2            
-rate         1              1              1              1            
+bin          bb                  bb                  bq                  bq                
+process      ZpBB_2017_bb_M3800  Bkg_2017_bb         ZpBB_2017_bq_M3800  Bkg_2017_bq       
+process      -1                  1                   0                   2                 
+rate         1                   1                   1                   1                 
 ----------------------------------------------------------------------------------------------------------------------------------

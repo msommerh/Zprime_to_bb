@@ -1,3 +1,2 @@
-MC_signal_2016_M3500
 MC_signal_2016_M4500
 MC_signal_2016_M8000

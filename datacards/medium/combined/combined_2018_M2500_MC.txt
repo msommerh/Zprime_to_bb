@@ -3,18 +3,18 @@ imax 2 number of bins
 jmax 3 number of processes minus 1
 kmax 0 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
-shapes Bkg_bb         bb             ./workspace/medium/MC_QCD_TTbar_2018_bb.root Zprime_2018:Bkg_bb
-shapes ZpBB_bb_M2500  bb             ./workspace/medium/MC_signal_2018_bb.root Zprime_2018:ZpBB_bb_M2500
-shapes data_obs       bb             ./workspace/medium/MC_QCD_TTbar_2018_bb.root Zprime_2018:data_obs
-shapes Bkg_bq         bq             ./workspace/medium/MC_QCD_TTbar_2018_bq.root Zprime_2018:Bkg_bq
-shapes ZpBB_bq_M2500  bq             ./workspace/medium/MC_signal_2018_bq.root Zprime_2018:ZpBB_bq_M2500
-shapes data_obs       bq             ./workspace/medium/MC_QCD_TTbar_2018_bq.root Zprime_2018:data_obs
+shapes Bkg_2018_bb         bb                  ./workspace/medium/MC_QCD_TTbar_2018_bb.root Zprime_2018:Bkg_2018_bb
+shapes ZpBB_2018_bb_M2500  bb                  ./workspace/medium/MC_signal_2018_bb.root Zprime_2018:ZpBB_2018_bb_M2500
+shapes data_obs            bb                  ./workspace/medium/MC_QCD_TTbar_2018_bb.root Zprime_2018:data_obs
+shapes Bkg_2018_bq         bq                  ./workspace/medium/MC_QCD_TTbar_2018_bq.root Zprime_2018:Bkg_2018_bq
+shapes ZpBB_2018_bq_M2500  bq                  ./workspace/medium/MC_signal_2018_bq.root Zprime_2018:ZpBB_2018_bq_M2500
+shapes data_obs            bq                  ./workspace/medium/MC_QCD_TTbar_2018_bq.root Zprime_2018:data_obs
 ----------------------------------------------------------------------------------------------------------------------------------
 bin          bb     bq   
 observation  -1     -1   
 ----------------------------------------------------------------------------------------------------------------------------------
-bin          bb             bb             bq             bq           
-process      ZpBB_bb_M2500  Bkg_bb         ZpBB_bq_M2500  Bkg_bq       
-process      -1             1              0              2            
-rate         1              1              1              1            
+bin          bb                  bb                  bq                  bq                
+process      ZpBB_2018_bb_M2500  Bkg_2018_bb         ZpBB_2018_bq_M2500  Bkg_2018_bq       
+process      -1                  1                   0                   2                 
+rate         1                   1                   1                   1                 
 ----------------------------------------------------------------------------------------------------------------------------------

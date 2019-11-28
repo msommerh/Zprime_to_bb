@@ -3,18 +3,18 @@ imax 2 number of bins
 jmax 3 number of processes minus 1
 kmax 0 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
-shapes Bkg_bb         bb             ./workspace/medium/MC_QCD_TTbar_2016_bb.root Zprime_2016:Bkg_bb
-shapes ZpBB_bb_M2700  bb             ./workspace/medium/MC_signal_2016_bb.root Zprime_2016:ZpBB_bb_M2700
-shapes data_obs       bb             ./workspace/medium/MC_QCD_TTbar_2016_bb.root Zprime_2016:data_obs
-shapes Bkg_bq         bq             ./workspace/medium/MC_QCD_TTbar_2016_bq.root Zprime_2016:Bkg_bq
-shapes ZpBB_bq_M2700  bq             ./workspace/medium/MC_signal_2016_bq.root Zprime_2016:ZpBB_bq_M2700
-shapes data_obs       bq             ./workspace/medium/MC_QCD_TTbar_2016_bq.root Zprime_2016:data_obs
+shapes Bkg_2016_bb         bb                  ./workspace/medium/MC_QCD_TTbar_2016_bb.root Zprime_2016:Bkg_2016_bb
+shapes ZpBB_2016_bb_M2700  bb                  ./workspace/medium/MC_signal_2016_bb.root Zprime_2016:ZpBB_2016_bb_M2700
+shapes data_obs            bb                  ./workspace/medium/MC_QCD_TTbar_2016_bb.root Zprime_2016:data_obs
+shapes Bkg_2016_bq         bq                  ./workspace/medium/MC_QCD_TTbar_2016_bq.root Zprime_2016:Bkg_2016_bq
+shapes ZpBB_2016_bq_M2700  bq                  ./workspace/medium/MC_signal_2016_bq.root Zprime_2016:ZpBB_2016_bq_M2700
+shapes data_obs            bq                  ./workspace/medium/MC_QCD_TTbar_2016_bq.root Zprime_2016:data_obs
 ----------------------------------------------------------------------------------------------------------------------------------
 bin          bb     bq   
 observation  -1     -1   
 ----------------------------------------------------------------------------------------------------------------------------------
-bin          bb             bb             bq             bq           
-process      ZpBB_bb_M2700  Bkg_bb         ZpBB_bq_M2700  Bkg_bq       
-process      -1             1              0              2            
-rate         1              1              1              1            
+bin          bb                  bb                  bq                  bq                
+process      ZpBB_2016_bb_M2700  Bkg_2016_bb         ZpBB_2016_bq_M2700  Bkg_2016_bq       
+process      -1                  1                   0                   2                 
+rate         1                   1                   1                   1                 
 ----------------------------------------------------------------------------------------------------------------------------------

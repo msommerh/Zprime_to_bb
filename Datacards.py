@@ -41,7 +41,7 @@ if YEAR not in ['2016', '2017', '2018', 'run2']:
     print "unknown year:",YEAR
     sys.exit()
 
-if BTAGGING not in ['tight', 'medium', 'loose']:
+if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
     print "unknown btagging requirement:", BTAGGING
     sys.exit()
 
@@ -59,14 +59,14 @@ def datacards(category):
 
 
 def generate_datacard(year, category, masspoint, btagging, outname):
-    signalName = "ZpBB_{}_M{}".format(category, masspoint)
-    backgroundName = "Bkg_{}".format(category)
+    signalName = "ZpBB_{}_{}_M{}".format(year, category, masspoint)
+    backgroundName = "Bkg_{}_{}".format(year, category)
     card  = "imax 1\n"
     card += "jmax 1\n"
     card += "kmax *\n"
     card += "-----------------------------------------------------------------------------------\n"
-    card += "shapes            {sname}  *    {path}/workspace/{btagging}/MC_signal_{year}_{category}.root     Zprime_{year}:ZpBB_{category}_M{masspoint}\n".format(sname=signalName, year=year, category=category, masspoint=masspoint, btagging=btagging, path=ABSOLUTEPATH)
-    card += "shapes            {bname}  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:Bkg_{category}\n".format(bname=backgroundName, data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
+    card += "shapes            {sname}  *    {path}/workspace/{btagging}/MC_signal_{year}_{category}.root     Zprime_{year}:{sname}\n".format(sname=signalName, year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
+    card += "shapes            {bname}  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:{bname}\n".format(bname=backgroundName, data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
     card += "shapes            data_obs  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:data_obs\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
     card += "-----------------------------------------------------------------------------------\n"
     card += "bin               {}\n".format(category)

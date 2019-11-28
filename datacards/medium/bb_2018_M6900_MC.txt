@@ -2,15 +2,15 @@ imax 1
 jmax 1
 kmax *
 -----------------------------------------------------------------------------------
-shapes            ZpBB_bb_M6900  *    ./workspace/medium/MC_signal_2018_bb.root     Zprime_2018:ZpBB_bb_M6900
-shapes            Bkg_bb  *    ./workspace/medium/MC_QCD_TTbar_2018_bb.root    Zprime_2018:Bkg_bb
+shapes            ZpBB_2018_bb_M6900  *    ./workspace/medium/MC_signal_2018_bb.root     Zprime_2018:ZpBB_2018_bb_M6900
+shapes            Bkg_2018_bb  *    ./workspace/medium/MC_QCD_TTbar_2018_bb.root    Zprime_2018:Bkg_2018_bb
 shapes            data_obs  *    ./workspace/medium/MC_QCD_TTbar_2018_bb.root    Zprime_2018:data_obs
 -----------------------------------------------------------------------------------
 bin               bb
 observation       -1
 -----------------------------------------------------------------------------------
 bin               bb                  bb                  
-process           ZpBB_bb_M6900       Bkg_bb              
+process           ZpBB_2018_bb_M6900  Bkg_2018_bb         
 process           0                   1                   
 rate              1                   1                   
 -----------------------------------------------------------------------------------

@@ -2,15 +2,15 @@ imax 1
 jmax 1
 kmax *
 -----------------------------------------------------------------------------------
-shapes            ZpBB_bq_M7100  *    ./workspace/medium/MC_signal_run2_bq.root     Zprime_run2:ZpBB_bq_M7100
-shapes            Bkg_bq  *    ./workspace/medium/MC_QCD_TTbar_run2_bq.root    Zprime_run2:Bkg_bq
+shapes            ZpBB_run2_bq_M7100  *    ./workspace/medium/MC_signal_run2_bq.root     Zprime_run2:ZpBB_run2_bq_M7100
+shapes            Bkg_run2_bq  *    ./workspace/medium/MC_QCD_TTbar_run2_bq.root    Zprime_run2:Bkg_run2_bq
 shapes            data_obs  *    ./workspace/medium/MC_QCD_TTbar_run2_bq.root    Zprime_run2:data_obs
 -----------------------------------------------------------------------------------
 bin               bq
 observation       -1
 -----------------------------------------------------------------------------------
 bin               bq                  bq                  
-process           ZpBB_bq_M7100       Bkg_bq              
+process           ZpBB_run2_bq_M7100  Bkg_run2_bq         
 process           0                   1                   
 rate              1                   1                   
 -----------------------------------------------------------------------------------

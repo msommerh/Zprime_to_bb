@@ -55,17 +55,24 @@ YEAR        = options.year
 ISMC        = options.isMC
 CATEGORY    = options.category
 
-if YEAR not in ['2016', '2017', '2018', 'run2']:
+if YEAR not in ['2016', '2017', '2018', 'run2', 'run2c']:
     print "unknown year:", YEAR
     sys.exit()
 
-if BTAGGING not in ['tight', 'medium', 'loose']:
+if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
     print "unknown btagging requirement:", BTAGGING
     sys.exit()
 
 if CATEGORY not in ['', 'bb', 'bq']:
     print "unknown btagging category"
     sys.exit()
+
+if YEAR=='run2c':
+    YEAR='run2'
+    SY=True
+    print "Plotting the result from combine on separate years for run2..."
+else:
+    SY=False
 
 LUMI        = luminosities[YEAR]
 
@@ -112,10 +119,13 @@ def limit():
     
     suffix = "_"+BTAGGING
     if ISMC: suffix += "_MC"
+    if SY: suffix += "_comb"
     #if method=="cls": suffix="_CLs"
 
-    #filename = "./combine/limits/" + BTAGGING + "/"+ YEAR + "_M%d.txt"
-    filename = "./combine/limits/" + BTAGGING + "/combined_run2/"+ YEAR + "_M%d.txt" ## remove "combined_run2/" sometime
+    if SY:
+        filename = "./combine/limits/" + BTAGGING + "/combined_run2/"+ YEAR + "_M%d.txt"
+    else:
+        filename = "./combine/limits/" + BTAGGING + "/"+ YEAR + "_M%d.txt"
     if CATEGORY!="": 
         filename = filename.replace(BTAGGING + "/", BTAGGING + "/single_category/"+CATEGORY+"_")
         suffix += "_"+CATEGORY

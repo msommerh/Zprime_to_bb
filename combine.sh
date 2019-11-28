@@ -25,11 +25,20 @@ mass_nr=$4
 
 mass=${masses[${mass_nr}]}
 
+if [[ $year == run2c ]]; then
+    echo "Combining the 2016-2018 fits separately into a single limit..."
+    year="run2"
+    combined=1
+else
+    combined=0
+fi
+
 echo "isMC = ${isMC}"
 echo "year = ${year}"
 echo "btagging = ${btagging}"
 echo "mass_nr = ${mass_nr}"
 echo "mass = ${mass}"
+echo "combined = ${combined}"
 
 if [[ $isMC -eq 1 ]]; then
     echo "running purely on MC..."
@@ -50,9 +59,15 @@ mkdir datacards/${btagging}/combined
 mkdir workspace
 mkdir workspace/${btagging}
 
-cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/combined_${year}_M${mass}${suffix} datacards/${btagging}/combined/
-cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/MC_signal_${year}* workspace/${btagging}/
-cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/${prefix}_${year}* workspace/${btagging}/
+if [[ $combined -eq 1 ]]; then
+    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/fully_combined_run2_M${mass}${suffix} datacards/${btagging}/combined/
+    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/MC_signal_201* workspace/${btagging}/
+    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/${prefix}_201* workspace/${btagging}/
+else
+    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/combined_${year}_M${mass}${suffix} datacards/${btagging}/combined/
+    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/MC_signal_${year}* workspace/${btagging}/
+    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/${prefix}_${year}* workspace/${btagging}/
+fi
 
 echo "ls datacards/${btagging}/combined/"
 ls datacards/${btagging}/combined/
@@ -60,10 +75,16 @@ echo "ls workspace/${btagging}/"
 ls workspace/${btagging}/
 
 
-#inputfile=/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/combined_${year}_M${mass}${suffix}
-inputfile="datacards/${btagging}/combined/combined_${year}_M${mass}${suffix}"
-outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/"
-tempfile=$(echo $inputfile | sed s:datacards/${btagging}/combined/combined_:${workdir}/:g)
+if [[ $combined -eq 1 ]]; then
+    inputfile="datacards/${btagging}/combined/fully_combined_${year}_M${mass}${suffix}"
+    outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/combined_run2/"
+    tempfile=$(echo $inputfile | sed s:datacards/${btagging}/combined/fully_combined_:${workdir}/:g)
+else
+    inputfile="datacards/${btagging}/combined/combined_${year}_M${mass}${suffix}"
+    outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/"
+    tempfile=$(echo $inputfile | sed s:datacards/${btagging}/combined/combined_:${workdir}/:g)
+fi
+
 echo "inputfile = ${inputfile}"
 echo "outputfile = ${outputfile}"
 echo "tempfile = ${tempfile}"
