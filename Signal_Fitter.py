@@ -9,9 +9,9 @@ from ROOT import TMath, TFile, TChain, TTree, TCut, TH1F, TH2F, THStack, TGraph,
 from ROOT import TStyle, TCanvas, TPad, TLegend, TLatex, TText, TColor
 from ROOT import TH1, TF1, TGraph, TGraphErrors, TGraphAsymmErrors, TVirtualFitter
 
-#gSystem.Load("PDFs/HWWLVJRooPdfs_cxx.so")
+gSystem.Load("PDFs/HWWLVJRooPdfs_cxx.so")
 from ROOT import RooFit, RooRealVar, RooDataHist, RooDataSet, RooAbsData, RooAbsReal, RooAbsPdf, RooPlot, RooBinning, RooCategory, RooSimultaneous, RooArgList, RooArgSet, RooWorkspace, RooMsgService
-from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooPolynomial, RooChebychev, RooBreitWigner, RooCBShape, RooExtendPdf, RooAddPdf
+from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooPolynomial, RooChebychev, RooBreitWigner, RooCBShape, RooExtendPdf, RooAddPdf, RooDoubleCrystalBall
 
 #from alpha import drawPlot
 from rooUtils import *
@@ -46,7 +46,8 @@ colour = [
 
 channel = 'bb'
 stype = 'Zprime' 
-genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+#genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 massPoints = [x for x in range(1200, 8000+1, 100)]
 
 # Silent RooFit
@@ -181,6 +182,8 @@ def signal(category):
     vsigma = {}
     valpha1 = {}
     vslope1 = {}
+    valpha2 = {}
+    vslope2 = {}
     smean  = {}
     ssigma = {}
     salpha1 = {}
@@ -220,11 +223,17 @@ def signal(category):
     xsigma_m = RooRealVar("sig_p2_scale_m", "Variation of the resonance width with the muon energy scale", 0.040, -1., 1.)
     ssigma_m = RooRealVar("CMS"+YEAR+"_sig_p2_scale_m", "Change of the resonance width with the muon energy scale", 0., -10, 10)
     
-    xalpha1_fit = RooRealVar("sig_p3_fit", "Variation of the resonance alpha with the fit uncertainty", 0.03, -1., 1.)
-    salpha1_fit = RooRealVar("CMS"+YEAR+"_sig_p3_fit", "Change of the resonance alpha with the fit uncertainty", 0., -10, 10)
+    xalpha1_fit = RooRealVar("sig_p3_fit", "Variation of the resonance alpha1 with the fit uncertainty", 0.03, -1., 1.)
+    salpha1_fit = RooRealVar("CMS"+YEAR+"_sig_p3_fit", "Change of the resonance alpha1 with the fit uncertainty", 0., -10, 10)
     
-    xslope1_fit = RooRealVar("sig_p4_fit", "Variation of the resonance slope with the fit uncertainty", 0.10, -1., 1.)
-    sslope1_fit = RooRealVar("CMS"+YEAR+"_sig_p4_fit", "Change of the resonance slope with the fit uncertainty", 0., -10, 10)
+    xslope1_fit = RooRealVar("sig_p4_fit", "Variation of the resonance slope1 with the fit uncertainty", 0.10, -1., 1.)
+    sslope1_fit = RooRealVar("CMS"+YEAR+"_sig_p4_fit", "Change of the resonance slope1 with the fit uncertainty", 0., -10, 10)
+
+    xalpha2_fit = RooRealVar("sig_p5_fit", "Variation of the resonance alpha2 with the fit uncertainty", 0.03, -1., 1.)
+    salpha2_fit = RooRealVar("CMS"+YEAR+"_sig_p5_fit", "Change of the resonance alpha2 with the fit uncertainty", 0., -10, 10)
+    
+    xslope2_fit = RooRealVar("sig_p6_fit", "Variation of the resonance slope2 with the fit uncertainty", 0.10, -1., 1.)
+    sslope2_fit = RooRealVar("CMS"+YEAR+"_sig_p6_fit", "Change of the resonance slope2 with the fit uncertainty", 0., -10, 10)
 
     xmean_fit.setConstant(True)
     smean_fit.setConstant(True)
@@ -264,27 +273,31 @@ def signal(category):
         # for the time being the signal is fitted using 1 Gaussian in a range defined below (hardcoded)
 
         # define the signal PDF
-        vmean[m] = RooRealVar(signalName + "_vmean", "Crystal Ball mean", m, m*0.85, m*1.2)
+        vmean[m] = RooRealVar(signalName + "_vmean", "Crystal Ball mean", m, m*0.96, m*1.2)
         smean[m] = RooFormulaVar(signalName + "_mean", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)", RooArgList(vmean[m], xmean_e, smean_e, xmean_m, smean_m, xmean_jes, smean_jes, xmean_fit, smean_fit))
 
-        vsigma[m] = RooRealVar(signalName + "_vsigma", "Crystal Ball sigma", m*0.07, m*0.05, m*0.9)
+        #vsigma[m] = RooRealVar(signalName + "_vsigma", "Crystal Ball sigma", m*0.07, m*0.05, m*0.9)
+        vsigma[m] = RooRealVar(signalName + "_vsigma", "Crystal Ball sigma", m*0.07, m*0.0005, m*0.9)
         sigmaList = RooArgList(vsigma[m], xsigma_e, ssigma_e, xsigma_m, ssigma_m, xsigma_jes, ssigma_jes, xsigma_jer, ssigma_jer)
         sigmaList.add(RooArgList(xsigma_fit, ssigma_fit))
         ssigma[m] = RooFormulaVar(signalName + "_sigma", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)*(1+@9*@10)", sigmaList)
         
-        valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha", 0.2,  0., 15.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
+        #valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha 1", 0.2,  0., 15.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
+        valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha 1", 0.2,  0., 1.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
         salpha1[m] = RooFormulaVar(signalName + "_alpha1", "@0*(1+@1*@2)", RooArgList(valpha1[m], xalpha1_fit, salpha1_fit))
 
-        vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope", 10., 0.1, 120.) # slope of the power tail
+        #vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 10., 0.1, 120.) # slope of the power tail
+        vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 11., 10., 120.) # slope of the power tail
         sslope1[m] = RooFormulaVar(signalName + "_slope1", "@0*(1+@1*@2)", RooArgList(vslope1[m], xslope1_fit, sslope1_fit))
 
-#        smean[m] = RooRealVar(signalName + "_mean" , "mean of the Crystal Ball", m, m*0.8, m*1.2)
-#        ssigma[m] = RooRealVar(signalName + "_sigma", "Crystal Ball sigma", m*0.04, m*0.001, m*0.2)
-#        salpha1[m] = RooRealVar(signalName + "_alpha1", "Crystal Ball alpha", 1,  0., 5.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
-#        sslope1[m] = RooRealVar(signalName + "_slope1", "Crystal Ball slope", 20, 10., 60.) # slope of the power tail
-        salpha2[m] = RooRealVar(signalName + "_alpha2", "Crystal Ball alpha", 2,  0.1, 15.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
-        sslope2[m] = RooRealVar(signalName + "_slope2", "Crystal Ball slope", 10, 1.e-1, 200.) # slope of the power tail
-        signal[m] = RooCBShape(signalName, "m_{%s'} = %d GeV" % ('X', m), X_mass, smean[m], ssigma[m], salpha1[m], sslope1[m]) # Signal name does not have the channel
+        valpha2[m] = RooRealVar(signalName + "_valpha2", "Crystal Ball alpha 2", 0.2,  0., 1.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
+        salpha2[m] = RooFormulaVar(signalName + "_alpha2", "@0*(1+@1*@2)", RooArgList(valpha2[m], xalpha2_fit, salpha2_fit))
+
+        vslope2[m] = RooRealVar(signalName + "_vslope2", "Crystal Ball slope 2", 3., 0.1, 10.) # slope of the higher power tail
+        sslope2[m] = RooFormulaVar(signalName + "_slope2", "@0*(1+@1*@2)", RooArgList(vslope2[m], xslope2_fit, sslope2_fit)) # slope of the higher power tail
+
+        #signal[m] = RooCBShape(signalName, "m_{%s'} = %d GeV" % ('X', m), X_mass, smean[m], ssigma[m], salpha1[m], sslope1[m]) # Signal name does not have the channel
+        signal[m] = RooDoubleCrystalBall(signalName, "m_{%s'} = %d GeV" % ('X', m), X_mass, smean[m], ssigma[m], salpha1[m], sslope1[m], salpha2[m], sslope2[m])
 
         # extend the PDF with the yield to perform an extended likelihood fit
         signalYield[m] = RooRealVar(signalName+"_yield", "signalYield", 50, 0., 1.e15)
@@ -300,9 +313,8 @@ def signal(category):
         #valpha1[m].setVal(5)           ##not sure if this is needed or not FIXME
         #valpha1[m].setConstant(True)
         #vslope1[m].setConstant(True)
-        #salpha2[m].setConstant(True)
-        #sslope2[m].setConstant(True)
-
+        #vslope2[m].setConstant(True)
+        #valpha2[m].setConstant(True)
         
         # ---------- if there is no simulated signal, skip this mass point ----------
         if m in genPoints:
@@ -395,8 +407,8 @@ def signal(category):
         vsigma[m].setConstant(True)
         valpha1[m].setConstant(True)
         vslope1[m].setConstant(True)
-        salpha2[m].setConstant(True)
-        sslope2[m].setConstant(True)
+        valpha2[m].setConstant(True)
+        vslope2[m].setConstant(True)
         signalNorm[m].setConstant(True)
         signalXS[m].setConstant(True)
         
@@ -434,7 +446,7 @@ def signal(category):
 
     c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.pdf")
     c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.png")
-    if VERBOSE: raw_input("Press Enter to continue...")
+    #if VERBOSE: raw_input("Press Enter to continue...")
     # ====== CONTROL PLOT ======
 
     # Normalization
@@ -554,9 +566,9 @@ def signal(category):
         gslope1.SetPoint(n, m, vslope1[m].getVal())
         gslope1.SetPointError(n, 0, min(vslope1[m].getError(), vslope1[m].getVal()*0.10))
         galpha2.SetPoint(n, m, salpha2[m].getVal())
-        galpha2.SetPointError(n, 0, min(salpha2[m].getError(), salpha2[m].getVal()*0.10))
+        galpha2.SetPointError(n, 0, min(valpha2[m].getError(), valpha2[m].getVal()*0.10))
         gslope2.SetPoint(n, m, sslope2[m].getVal())
-        gslope2.SetPointError(n, 0, min(sslope2[m].getError(), sslope2[m].getVal()*0.10))
+        gslope2.SetPointError(n, 0, min(vslope2[m].getError(), vslope2[m].getVal()*0.10))
         #tmpVar = w.var(var+"_"+signalString)
         #print m, tmpVar.getVal(), tmpVar.getError()
         n = n + 1
@@ -569,7 +581,8 @@ def signal(category):
     gslope2.Fit(fslope2, "Q0", "SAME")
 #    gnorm.Fit(fnorm, "Q0", "", 700, 5000)
     #for m in [5000, 5500]: gnorm.SetPoint(gnorm.GetN(), m, gnorm.Eval(m, 0, "S"))
-    gnorm.Fit(fnorm, "Q", "SAME", 700, 6000)
+    #gnorm.Fit(fnorm, "Q", "SAME", 700, 6000)
+    gnorm.Fit(fnorm, "Q", "SAME", 1800, 8000) ## adjusted recently
 
     for m in massPoints:
         #signalName = "%s_M%d" % (stype, m)
@@ -599,11 +612,15 @@ def signal(category):
             jsigma = gsigma.Eval(m)
             jalpha1 = galpha1.Eval(m)
             jslope1 = gslope1.Eval(m)
+            jalpha2 = galpha2.Eval(m)
+            jslope2 = gslope2.Eval(m)
         else:
             jmean = fmean.GetParameter(0) + fmean.GetParameter(1)*m + fmean.GetParameter(2)*m*m
             jsigma = fsigma.GetParameter(0) + fsigma.GetParameter(1)*m + fsigma.GetParameter(2)*m*m
             jalpha1 = falpha1.GetParameter(0) + falpha1.GetParameter(1)*m + falpha1.GetParameter(2)*m*m
             jslope1 = fslope1.GetParameter(0) + fslope1.GetParameter(1)*m + fslope1.GetParameter(2)*m*m
+            jalpha2 = falpha2.GetParameter(0) + falpha2.GetParameter(1)*m + falpha2.GetParameter(2)*m*m
+            jslope2 = fslope2.GetParameter(0) + fslope2.GetParameter(1)*m + fslope2.GetParameter(2)*m*m
 
         inorm.SetPoint(inorm.GetN(), m, syield)
         signalNorm[m].setVal(max(0., syield))
@@ -619,10 +636,19 @@ def signal(category):
 
         islope1.SetPoint(islope1.GetN(), m, jslope1)
         if jslope1 > 0: vslope1[m].setVal(jslope1)
-    
+       
+        ialpha2.SetPoint(ialpha2.GetN(), m, jalpha2)
+        if not jalpha2==0: valpha2[m].setVal(jalpha2)
 
-    c1 = TCanvas("c1", "Crystal Ball", 1200, 800) #if not isAH else 1200
-    c1.Divide(2, 2) # if not isAH else 3
+        islope2.SetPoint(islope2.GetN(), m, jslope2)
+        if jslope2 > 0: vslope2[m].setVal(jslope2)
+
+ 
+
+    #c1 = TCanvas("c1", "Crystal Ball", 1200, 800) #if not isAH else 1200
+    #c1.Divide(2, 2) # if not isAH else 3
+    c1 = TCanvas("c1", "Crystal Ball", 1200, 1200) #if not isAH else 1200
+    c1.Divide(2, 3)
     c1.cd(1)
     gmean.SetMinimum(0.)
     gmean.Draw("APL")
@@ -664,7 +690,7 @@ def signal(category):
 #    eslope1.SetFillColor(1)
 #    if eslope1.GetN() > 0: TVirtualFitter.GetFitter().GetConfidenceIntervals(eslope1, 0.683)
 #    eslope1.Draw("3, SAME")
-    if False: #isAH:
+    if True: #isAH:
         c1.cd(5)
         galpha2.Draw("APL")
         ialpha2.Draw("P, SAME")
@@ -735,7 +761,7 @@ def signal(category):
         getattr(w, "import")(signalXS[m], RooFit.Rename(signalXS[m].GetName()))
     w.writeToFile(WORKDIR+"MC_signal_%s_%s.root" % (YEAR, category), True)  
     print "Workspace", WORKDIR+"MC_signal_%s_%s.root" % (YEAR, category), "saved successfully"
-
+    sys.exit()
 
 #def efficiency(stype, Zlep=True):
 #    genPoints = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500]
