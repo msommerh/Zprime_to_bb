@@ -17,6 +17,11 @@ higgsCombine() {
     lower_mass=$3
     upper_mass=$4
     mass=$(echo $inputfile | sed s/2016// | sed s/2017// | sed s/2018// | sed s/run2// |tr -dc '0-9') #delete every character except the numbers. First removes the year
+
+    if [[ $lower_mass -lt 1800 ]] ## FIXME
+    then lower_mass=1799
+    fi
+
     if [[ $mass -gt $lower_mass ]] && [[ $mass -le $upper_mass ]]; then
         echo "Input file: ${inputfile}; Output file: ${outputfile}"
         > $outputfile

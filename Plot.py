@@ -23,12 +23,11 @@ parser = optparse.OptionParser(usage)
 parser.add_option("-v", "--variable", action="store", type="string", dest="variable", default="")
 parser.add_option("-c", "--cut", action="store", type="string", dest="cut", default="")
 parser.add_option("-y", "--year", action="store", type="string", dest="year", default="run2")
-parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
+parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
 parser.add_option("-n", "--norm", action="store_true", default=False, dest="norm")
-#parser.add_option("-t", "--top", action="store_true", default=False, dest="top")
-#parser.add_option("-a", "--all", action="store_true", default=False, dest="all")
 parser.add_option("-B", "--blind", action="store_true", default=False, dest="blind")
 parser.add_option("-f", "--final", action="store_true", default=False, dest="final")
+parser.add_option("-e", "--efficiency", action="store_true", default=False, dest="efficiency")
 (options, args) = parser.parse_args()
 
 ########## SETTINGS ##########
@@ -47,7 +46,9 @@ NORM        = options.norm
 PARALLELIZE = False
 BLIND       = False
 LUMI        = {"run2" : 137190, "2016" : 35920, "2017" : 41530, "2018" : 59740}
-XRANGE      = (1400., 9000.)
+#XRANGE      = (1400., 9000.)
+
+color = {'none': 14, 'qq': 1, 'bq': 2, 'bb': 4}
 
 ########## SAMPLES ##########
 data = ["data_obs"]
@@ -125,7 +126,6 @@ def plot(var, cut, year, norm=False, nm1=False):
         hist[s].SetFillStyle(sample[s]['fillstyle'])
         hist[s].SetLineColor(sample[s]['linecolor'])
         hist[s].SetLineStyle(sample[s]['linestyle'])
-
     
     # X_mass rebin
 #    if var=='X_mass' or var=='X_tmass':
@@ -235,7 +235,7 @@ def plot(var, cut, year, norm=False, nm1=False):
     if log:
         bkg.GetYaxis().SetNoExponent(bkg.GetMaximum() < 1.e4)
         #bkg.GetYaxis().SetMoreLogLabels(True)
-    bkg.GetXaxis().SetRangeUser(XRANGE[0], XRANGE[1])  ## newly inserted 
+    bkg.GetXaxis().SetRangeUser(variable[var]['min'], variable[var]['max'])  ## newly inserted 
  
     #if log: bkg.SetMinimum(1)
     leg.Draw()
@@ -255,7 +255,7 @@ def plot(var, cut, year, norm=False, nm1=False):
         err = hist['BkgSum'].Clone("BkgErr;")
         err.SetTitle("")
         err.GetYaxis().SetTitle("Data / Bkg")
-        err.GetXaxis().SetRangeUser(XRANGE[0], XRANGE[1])  ## newly inserted     
+        err.GetXaxis().SetRangeUser(variable[var]['min'], variable[var]['max'])  ## newly inserted     
         for i in range(1, err.GetNbinsX()+1):
             err.SetBinContent(i, 1)
             if hist['BkgSum'].GetBinContent(i) > 0:
@@ -338,8 +338,129 @@ def plotAll():
             plot(h, c)
 
 
+def efficiency(year):
+    genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+    eff = {}
+    
+    channels = ['none', 'qq', 'bq', 'bb']
+
+    for channel in channels:
+        treeSign = {}
+        ngenSign = {}
+        nevtSign = {}
+        eff[channel] = TGraphErrors()
+
+        for i, m in enumerate(genPoints):
+            signName = "ZpBB_M"+str(m)
+            ngenSign[m] = 0.
+            nevtSign[m] = 0.
+            for j, ss in enumerate(sample[signName]['files']):
+                if year=="run2" or year in ss:
+                    sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
+                    if year=='run2':
+                        if '2016' in ss:
+                            ngenSign[m] += sample[signName]['genEvents']['2016']
+                        elif '2017' in ss:
+                            ngenSign[m] += sample[signName]['genEvents']['2017']
+                        elif '2018' in ss:
+                            ngenSign[m] += sample[signName]['genEvents']['2018']
+                        else:
+                            print "ATTENTION!!! Undefinded year in sample:", ss
+                    else:
+                        ngenSign[m] += sample[signName]['genEvents'][year]
+                    treeSign[m] = sfile.Get("tree")
+                    if BTAGGING=='semimedium':
+                        nevtSign[m] += treeSign[m].GetEntries(aliasSM[channel])
+                    else:
+                        nevtSign[m] += treeSign[m].GetEntries(alias[channel].format(WP=working_points[BTAGGING]))
+                    sfile.Close()
+                    #print channel, ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
+            if nevtSign[m] == 0 or ngenSign[m] < 0: continue
+            n = eff[channel].GetN()
+            eff[channel].SetPoint(n, m, nevtSign[m]/ngenSign[m])
+            eff[channel].SetPointError(n, 0, math.sqrt(nevtSign[m])/ngenSign[m])
+
+        eff[channel].SetMarkerColor(color[channel])
+        eff[channel].SetMarkerStyle(20)
+        eff[channel].SetLineColor(color[channel])
+        eff[channel].SetLineWidth(2)
+        if channel=='qq' or channel=='none': eff[channel].SetLineStyle(3)
+
+    n = max([eff[x].GetN() for x in channels])
+    maxEff = 0.
+
+    # Total efficiency
+    eff["sum"] = TGraphErrors(n)
+    eff["sum"].SetMarkerStyle(24)
+    eff["sum"].SetMarkerColor(1)
+    eff["sum"].SetLineWidth(2)
+    for i in range(n):
+        tot, mass = 0., 0.
+        for channel in channels:
+            if channel=='qq' or channel=='none': continue
+            if eff[channel].GetN() > i:
+                tot += eff[channel].GetY()[i]
+                mass = eff[channel].GetX()[i]
+                if tot > maxEff: maxEff = tot
+        eff["sum"].SetPoint(i, mass, tot)
+
+
+    leg = TLegend(0.15, 0.60, 0.95, 0.8)
+    leg.SetBorderSize(0)
+    leg.SetFillStyle(0) #1001
+    leg.SetFillColor(0)
+    leg.SetNColumns(len(channels)/4)
+    for i, channel in enumerate(channels):
+        if eff[channel].GetN() > 0: leg.AddEntry(eff[channel], getChannel(channel), "pl")
+    leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])/2.*0.045)
+
+    legS = TLegend(0.5, 0.85-0.045, 0.9, 0.85)
+    legS.SetBorderSize(0)
+    legS.SetFillStyle(0) #1001
+    legS.SetFillColor(0)
+    legS.AddEntry(eff['sum'], "Total efficiency (1 b tag + 2 b tag)", "pl")
+
+    c1 = TCanvas("c1", "Signal Efficiency", 1200, 800)
+    c1.cd(1)
+    eff['sum'].Draw("APL")
+    for i, channel in enumerate(channels): eff[channel].Draw("SAME, PL")
+    leg.Draw()
+    legS.Draw()
+    setHistStyle(eff["sum"], 1.1)
+    eff["sum"].SetTitle(";m_{Z'} (GeV);Acceptance #times efficiency")
+    eff["sum"].SetMinimum(0.)
+    eff["sum"].SetMaximum(max(1., maxEff*1.5)) #0.65
+
+    eff["sum"].GetXaxis().SetTitleSize(0.045)
+    eff["sum"].GetYaxis().SetTitleSize(0.045)
+    eff["sum"].GetYaxis().SetTitleOffset(1.1)
+    eff["sum"].GetXaxis().SetTitleOffset(1.05)
+    eff["sum"].GetXaxis().SetRangeUser(1500, 8000)
+    c1.SetTopMargin(0.05)
+    drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    drawAnalysis("")
+
+    c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+".pdf") 
+    c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+".png") 
+
+    # print
+    print "category",
+    for m in range(0, eff["sum"].GetN()):
+        print " & %d" % int(eff["sum"].GetX()[m]),
+    print "\\\\", "\n\\hline"
+    for i, channel in enumerate(channels+["sum"]):
+        if channel=='sum': print "\\hline"
+        print getChannel(channel).replace("high ", "H").replace("low ", "L").replace("purity", "P").replace("b-tag", ""),
+        for m in range(0, eff[channel].GetN()):
+            print "& %.1f" % (100.*eff[channel].GetY()[m]),
+        print "\\\\"
+
+
 #if options.all: plotAll()
 #elif options.norm: plotNorm(options.variable, options.cut)
 #elif options.top: plotTop()
-plot(options.variable, options.cut, options.year)
+if options.efficiency:
+    efficiency(options.year)
+else:
+    plot(options.variable, options.cut, options.year)
 

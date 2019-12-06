@@ -23,8 +23,8 @@ working_points = {'loose': 1, 'medium': 2, 'tight': 3}
 
 alias = { ## the same as above with the new btag_WP variable
     "preselection" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550)",
-    "2b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.3 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && jbtag_WP_1>={WP} && jbtag_WP_2>={WP}",
-    "1b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.3 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && ((jbtag_WP_1>={WP} && jbtag_WP_2<{WP}) || (jbtag_WP_1<{WP} && jbtag_WP_2>={WP}))",
+    "2b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && jbtag_WP_1>={WP} && jbtag_WP_2>={WP}",
+    "1b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && ((jbtag_WP_1>={WP} && jbtag_WP_2<{WP}) || (jbtag_WP_1<{WP} && jbtag_WP_2>={WP}))",
 }
 
 aliasSM = { ## a new btagging category that is semi medium, semi loose.
@@ -36,9 +36,24 @@ aliasSM = { ## a new btagging category that is semi medium, semi loose.
 alias["bb"] = alias["2b"]
 alias["bq"] = alias["1b"]
 alias["qq"] = alias["preselection"]
+alias['none'] = 'jj_deltaEta<1.1'
+
+alias["2b_vetoAK8"] = alias["2b"]+" && fatjetmass_1<65" 
+alias["1b_vetoAK8"] = alias["1b"]+" && fatjetmass_1<65" 
+alias["preselection_vetoAK8"] = alias["preselection"]+" && fatjetmass_1<65" 
+alias["bb_vetoAK8"] = alias["2b_vetoAK8"]
+alias["bq_vetoAK8"] = alias["1b_vetoAK8"]
+alias["qq_vetoAK8"] = alias["preselection_vetoAK8"]
 
 aliasSM["bb"] = aliasSM["2b"]
 aliasSM["bq"] = aliasSM["1b"]
 aliasSM["qq"] = aliasSM["preselection"]
+aliasSM['none'] = 'jj_deltaEta<1.1'
 
+aliasSM["2b_vetoAK8"] = aliasSM["2b"]+" && fatjetmass_1<65" 
+aliasSM["1b_vetoAK8"] = aliasSM["1b"]+" && fatjetmass_1<65" 
+aliasSM["preselection_vetoAK8"] = aliasSM["preselection"]+" && fatjetmass_1<65" 
+aliasSM["bb_vetoAK8"] = aliasSM["2b_vetoAK8"]
+aliasSM["bq_vetoAK8"] = aliasSM["1b_vetoAK8"]
+aliasSM["qq_vetoAK8"] = aliasSM["preselection_vetoAK8"]
 

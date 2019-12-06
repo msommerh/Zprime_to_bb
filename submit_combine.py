@@ -43,7 +43,7 @@ if YEAR=='run2c':
 else:
     separate_years=False
 
-mass_points = range(1200,8001,100)
+mass_points = range(1800,8001,100)
 nJobs = len(mass_points)
 
 if separate_years and not YEAR=='run2':
@@ -52,7 +52,7 @@ if separate_years and not YEAR=='run2':
 
 def submitJobs():
     path = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
-    workdir = "submission_files/tmp_combine{category}_{year}_{btagging}{suffix}".format(category="_"+args.category if args.category!="" else "", year=YEAR+'c' if separate_years else YEAR, btagging=args.btagging, suffix="_MC" if args.isMC else "")
+    workdir = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/submission_files/tmp_combine{category}_{year}_{btagging}{suffix}".format(category="_"+args.category if args.category!="" else "", year=YEAR+'c' if separate_years else YEAR, btagging=args.btagging, suffix="_MC" if args.isMC else "")
     if not os.path.exists(workdir):
         os.makedirs(workdir)
         print "Directory "+workdir+" created."

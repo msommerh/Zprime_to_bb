@@ -173,6 +173,7 @@ sample = {
         'label' : "m_{Z'} = 600 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
     },
     'ZpBB_M800' : {
         'order' : 1001,
@@ -185,6 +186,7 @@ sample = {
         'label' : "m_{Z'} = 800 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':97200, '2017':97000, '2018':100000},
     },
     'ZpBB_M1000' : {
         'order' : 1001,
@@ -197,6 +199,7 @@ sample = {
         'label' : "m_{Z'} = 1000 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
     },
     'ZpBB_M1200' : {
         'order' : 1001,
@@ -209,6 +212,7 @@ sample = {
         'label' : "m_{Z'} = 1200 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
     },
     'ZpBB_M1400' : {
         'order' : 1001,
@@ -221,6 +225,7 @@ sample = {
         'label' : "m_{Z'} = 1400 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':96400, '2017':100000, '2018':100000},
     },
     'ZpBB_M1600' : {
         'order' : 1001,
@@ -233,6 +238,7 @@ sample = {
         'label' : "m_{Z'} = 1600 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
     },
     'ZpBB_M1800' : {
         'order' : 1001,
@@ -245,6 +251,7 @@ sample = {
         'label' : "m_{Z'} = 1800 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':95600, '2017':100000, '2018':100000},
     },
     'ZpBB_M2000' : {
         'order' : 1001,
@@ -257,6 +264,7 @@ sample = {
         'label' : "m_{Z'} = 2000 GeV",
         'weight': 1.,
         'plot': True,
+        'genEvents' : { '2016':98400, '2017':100000, '2018':100000},
     },
     'ZpBB_M2500' : {
         'order' : 1001,
@@ -269,6 +277,7 @@ sample = {
         'label' : "m_{Z'} = 2500 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
     },
     'ZpBB_M3000' : {
         'order' : 1001,
@@ -281,6 +290,7 @@ sample = {
         'label' : "m_{Z'} = 3000 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
     },
     'ZpBB_M3500' : {
         'order' : 1001,
@@ -293,6 +303,7 @@ sample = {
         'label' : "m_{Z'} = 3500 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':95300, '2017':100000, '2018':100000},
     },
     'ZpBB_M4000' : {
         'order' : 1001,
@@ -305,6 +316,7 @@ sample = {
         'label' : "m_{Z'} = 4000 GeV",
         'weight': 1.,
         'plot': True,
+        'genEvents' : { '2016':95500, '2017':100000, '2018':100000},
     },
     'ZpBB_M4500' : {
         'order' : 1001,
@@ -317,6 +329,7 @@ sample = {
         'label' : "m_{Z'} = 4500 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
     },
     'ZpBB_M5000' : {
         'order' : 1001,
@@ -329,6 +342,7 @@ sample = {
         'label' : "m_{Z'} = 5000 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':98800, '2017':100000, '2018':100000},
     },
     'ZpBB_M5500' : {
         'order' : 1001,
@@ -341,6 +355,7 @@ sample = {
         'label' : "m_{Z'} = 5500 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
     },
     'ZpBB_M6000' : {
         'order' : 1001,
@@ -353,6 +368,7 @@ sample = {
         'label' : "m_{Z'} = 6000 GeV",
         'weight': 1.,
         'plot': True,
+        'genEvents' : { '2016':96800, '2017':100000, '2018':100000},
     },
     'ZpBB_M7000' : {
         'order' : 1001,
@@ -365,6 +381,7 @@ sample = {
         'label' : "m_{Z'} = 7000 GeV",
         'weight': 1.,
         'plot': False,
+        'genEvents' : { '2016':98400, '2017':100000, '2018':100000},
     },
     'ZpBB_M8000' : {
         'order' : 1001,
@@ -377,6 +394,7 @@ sample = {
         'label' : "m_{Z'} = 8000 GeV",
         'weight': 1.,
         'plot': True,
+        'genEvents' : { '2016':99908, '2017':100000, '2018':100000},
     },
 
 }

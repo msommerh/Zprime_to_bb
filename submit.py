@@ -82,7 +82,7 @@ def submitJobs(title, infiles, outdir, jobflavour):
         print "Directory "+outdir+title+" created."
     else:
         print "Directory "+outdir+title+" already exists."
-    workdir = "submission_files/tmp_"+title
+    workdir = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/submission_files/tmp_"+title
     if not os.path.exists(workdir):
         os.makedirs(workdir)
         print "Directory "+workdir+" created."
@@ -125,7 +125,7 @@ def submitJobs(title, infiles, outdir, jobflavour):
     makeSubmitFileCondor(title+".sh", title, jobflavour)
     os.system("condor_submit submit.sub")
     print "job submitted"
-    os.chdir("../..")
+    os.chdir(path)
 
 def makeSubmitFileCondor(exe, jobname, jobflavour):
     print "make options file for condor job submission"
@@ -204,7 +204,8 @@ def main():
                     data_set = data_sets[title]
                     infiles = "filelists/"+title+".txt"
     
-                    ## create filelist from DAS 
+                    ## create filelist from DAS
+                    print os.getcwd() 
                     txtfile = open(infiles, "w")
                     txtfile.write("# created from {}\n".format(data_set))
                     filelist = getFileListDAS(data_set)
@@ -213,7 +214,7 @@ def main():
                     txtfile.close()
     
                     ## submit job
-                    submitJobs(title, infiles, outdir, args.queue)
+                    submitJobs(title, infiles, outdir, args.queue) 
         print
         print
         print "your jobs:"

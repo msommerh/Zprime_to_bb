@@ -108,10 +108,30 @@ variable = {
     'jj_mass_widejet': {
         'title' : "m_{jj} (GeV)",
         'nbins' : 90,
-        'min' : 0,
+        'min' : 1400,
         'max' : 9000,
         'log' : True,
     },
-
+    'jnmuons_1':{
+        'title' : "n_{#mu, jet1}",
+        'nbins' : 30,
+        'min' : 0,
+        'max' : 30,
+        'log' : False,
+    },  
+     'jnmuons_2':{
+        'title' : "n_{#mu, jet2}",
+        'nbins' : 30,
+        'min' : 0,
+        'max' : 30,
+        'log' : False,
+    },  
+    'fatjetmass_1':{
+        'title' : "m_{fatjet}",
+        'nbins' : 100,
+        'min'   : 0,
+        'max'   : 2000,
+        'log'   : True,
+    },
 }
 

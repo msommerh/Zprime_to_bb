@@ -155,6 +155,7 @@ def dijet(category):
     #jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             0.,   1.        )
     jbtag_WP_1 = RooRealVar("jbtag_WP_1",       "",             -1.,   4.        )
     jbtag_WP_2 = RooRealVar("jbtag_WP_2",       "",             -1.,   4.        )
+    fatjetmass_1 = RooRealVar("fatjetmass_1",   "",             -1.,   2500.     )
     #MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
     jj_deltaEta = RooRealVar(    "jj_deltaEta",                "",      0.,     5.)
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
@@ -169,7 +170,7 @@ def dijet(category):
 
     variables = RooArgSet(X_mass)
     #variables.add(RooArgSet(jdeepFlavour_1, jdeepFlavour_2, weight))
-    variables.add(RooArgSet(jbtag_WP_1, jbtag_WP_2, weight))
+    variables.add(RooArgSet(jbtag_WP_1, jbtag_WP_2, fatjetmass_1, weight))
     variables.add(RooArgSet(j1_pt, jj_deltaEta))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))
@@ -179,11 +180,12 @@ def dijet(category):
    
     if BTAGGING=='semimedium': 
         #baseCut = aliasSM[category].format(b_threshold_medium=deepFlavour['medium'][YEAR], b_threshold_loose=deepFlavour['loose'][YEAR])
-        baseCut = aliasSM[category]
+        #baseCut = aliasSM[category]
+        baseCut = aliasSM[category+"_vetoAK8"]
     else:
         #baseCut = alias[category].format(b_threshold=deepFlavour[BTAGGING][YEAR])
-        baseCut = alias[category].format(WP=working_points[BTAGGING])
-
+        #baseCut = alias[category].format(WP=working_points[BTAGGING])
+        baseCut = alias[category+"_vetoAK8"].format(WP=working_points[BTAGGING])
 
 
     print stype, "|", baseCut

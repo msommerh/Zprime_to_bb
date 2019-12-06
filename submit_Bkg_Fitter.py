@@ -40,7 +40,7 @@ else:
 def submitJobs(title, category):
     #path = os.getcwd()
     path = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
-    workdir = "submission_files/tmp_fitting_"+title
+    workdir = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/submission_files/tmp_fitting_"+title
     if not os.path.exists(workdir):
         os.makedirs(workdir)
         print "Directory "+workdir+" created."

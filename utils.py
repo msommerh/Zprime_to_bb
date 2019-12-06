@@ -496,6 +496,8 @@ def getChannel(channel):
     elif 'bbb' in channel or '3b' in channel: text += "3 b tag"
     elif 'bb' in channel or '2b' in channel: text += "2 b tag"
     elif 'b' in channel or '1b' in channel: text += "1 b tag"
+    elif 'qq' in channel or 'preselection' in channel: text += 'preselection'
+    elif 'none' in channel: text += 'no selection'
     # region
     if 'SR' in channel: text += ", signal region"
     elif 'SB' in channel: text += ", sidebands region"
@@ -508,7 +510,7 @@ def getChannel(channel):
     
     return text
 
-def drawCMS(lumi, text, onTop=False):
+def drawCMS(lumi, text, onTop=False, year=''):
     latex = TLatex()
     latex.SetNDC()
     latex.SetTextSize(0.045)
@@ -516,8 +518,12 @@ def drawCMS(lumi, text, onTop=False):
     latex.SetTextFont(42)
     latex.SetTextAlign(33)
     if (type(lumi) is float or type(lumi) is int):
-        if float(lumi) > 0: 
+        if float(lumi) > 0:
             latex.DrawLatex(0.95, 0.99, "%.1f fb^{-1}  (13 TeV)" % (float(lumi)/1000.))
+        if year!='':
+            if year=="run2": year="RunII"
+            latex.DrawLatex(0.24, 0.99, year) 
+        elif float(lumi) > 0:
             if lumi==35920.:
                 year = '2016'
             elif lumi==41530.:
@@ -526,8 +532,6 @@ def drawCMS(lumi, text, onTop=False):
                 year = '2018'
             elif lumi==137190.:
                 year = 'RunII'
-            else: 
-                year = ''
             latex.DrawLatex(0.24, 0.99, year)
         else: latex.DrawLatex(0.95, 0.99, "(13 TeV)")
     elif type(lumi) is str: latex.DrawLatex(0.95, 0.985, "%s  (13 TeV)" % lumi)

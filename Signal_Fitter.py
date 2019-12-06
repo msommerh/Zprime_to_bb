@@ -125,6 +125,7 @@ def signal(category):
     #jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             -1.,   2.        )
     jbtag_WP_1 = RooRealVar("jbtag_WP_1",       "",             -1.,   4.        )
     jbtag_WP_2 = RooRealVar("jbtag_WP_2",       "",             -1.,   4.        )
+    fatjetmass_1 = RooRealVar("fatjetmass_1",   "",             -1.,   2500.     )
     #MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
     HLT_PFJet500            = RooRealVar("HLT_PFJet500"            , "" , -1., 1.    ) 
@@ -148,7 +149,7 @@ def signal(category):
     # there is a maximum of 9 variables in the declaration, so the others need to be added with 'add'
     variables = RooArgSet(X_mass)
     #variables.add(RooArgSet(j1_pt, jj_deltaEta, jdeepFlavour_1, jdeepFlavour_2, weight))
-    variables.add(RooArgSet(j1_pt, jj_deltaEta, jbtag_WP_1, jbtag_WP_2, weight))
+    variables.add(RooArgSet(j1_pt, jj_deltaEta, jbtag_WP_1, jbtag_WP_2, fatjetmass_1, weight))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     #X_mass.setRange("X_extended_range", X_mass.getMin(), X_mass.getMax())
     X_mass.setRange("X_reasonable_range", X_mass.getMin(), X_mass.getMax())
@@ -162,10 +163,12 @@ def signal(category):
     # Cuts
     if BTAGGING=='semimedium':
         #SRcut = aliasSM[category].format(b_threshold_medium=deepFlavour['medium'][YEAR], b_threshold_loose=deepFlavour['loose'][YEAR])
-        SRcut = aliasSM[category]
+        #SRcut = aliasSM[category]
+        SRcut = aliasSM[category+"_vetoAK8"]
     else:
         #SRcut = alias[category].format(b_threshold=deepFlavour[BTAGGING][YEAR])
-        SRcut = alias[category].format(WP=working_points[BTAGGING])
+        #SRcut = alias[category].format(WP=working_points[BTAGGING])
+        SRcut = alias[category+"_vetoAK8"].format(WP=working_points[BTAGGING])
 
     print "  Cut:\t", SRcut
 
@@ -260,6 +263,11 @@ def signal(category):
     xslope1_fit.setConstant(True)
     sslope1_fit.setConstant(True)
 
+    xalpha2_fit.setConstant(True)
+    salpha2_fit.setConstant(True)
+    xslope2_fit.setConstant(True)
+    sslope2_fit.setConstant(True)
+
 
     # the alpha method is now done.
     for m in massPoints:
@@ -273,27 +281,32 @@ def signal(category):
         # for the time being the signal is fitted using 1 Gaussian in a range defined below (hardcoded)
 
         # define the signal PDF
-        vmean[m] = RooRealVar(signalName + "_vmean", "Crystal Ball mean", m, m*0.96, m*1.2)
+        vmean[m] = RooRealVar(signalName + "_vmean", "Crystal Ball mean", m, m*0.96, m*1.05)
         smean[m] = RooFormulaVar(signalName + "_mean", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)", RooArgList(vmean[m], xmean_e, smean_e, xmean_m, smean_m, xmean_jes, smean_jes, xmean_fit, smean_fit))
 
         #vsigma[m] = RooRealVar(signalName + "_vsigma", "Crystal Ball sigma", m*0.07, m*0.05, m*0.9)
-        vsigma[m] = RooRealVar(signalName + "_vsigma", "Crystal Ball sigma", m*0.07, m*0.0005, m*0.9)
+        vsigma[m] = RooRealVar(signalName + "_vsigma", "Crystal Ball sigma", m*0.02, m*0.0005, m*0.025)
         sigmaList = RooArgList(vsigma[m], xsigma_e, ssigma_e, xsigma_m, ssigma_m, xsigma_jes, ssigma_jes, xsigma_jer, ssigma_jer)
         sigmaList.add(RooArgList(xsigma_fit, ssigma_fit))
         ssigma[m] = RooFormulaVar(signalName + "_sigma", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)*(1+@9*@10)", sigmaList)
         
         #valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha 1", 0.2,  0., 15.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
-        valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha 1", 0.2,  0., 1.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
+        valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha 1", 0.2,  0.05, 0.28) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
+        #valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha 1", 0.19)
+        #valpha1[m].setConstant(True)
+
         salpha1[m] = RooFormulaVar(signalName + "_alpha1", "@0*(1+@1*@2)", RooArgList(valpha1[m], xalpha1_fit, salpha1_fit))
 
         #vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 10., 0.1, 120.) # slope of the power tail
-        vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 11., 10., 120.) # slope of the power tail
+        vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 10. if category=='bb' else 10., 0.1 if category=='bb' else 0.1, 20. if category=='bb' else 20.) # slope of the power tail
         sslope1[m] = RooFormulaVar(signalName + "_slope1", "@0*(1+@1*@2)", RooArgList(vslope1[m], xslope1_fit, sslope1_fit))
 
-        valpha2[m] = RooRealVar(signalName + "_valpha2", "Crystal Ball alpha 2", 0.2,  0., 1.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
+        #valpha2[m] = RooRealVar(signalName + "_valpha2", "Crystal Ball alpha 2", 0.2,  0., 1.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
+        valpha2[m] = RooRealVar(signalName + "_valpha2", "Crystal Ball alpha 2", 1.)
+        valpha2[m].setConstant(True)
         salpha2[m] = RooFormulaVar(signalName + "_alpha2", "@0*(1+@1*@2)", RooArgList(valpha2[m], xalpha2_fit, salpha2_fit))
 
-        vslope2[m] = RooRealVar(signalName + "_vslope2", "Crystal Ball slope 2", 3., 0.1, 10.) # slope of the higher power tail
+        vslope2[m] = RooRealVar(signalName + "_vslope2", "Crystal Ball slope 2", 6., 2.5, 15.) # slope of the higher power tail
         sslope2[m] = RooFormulaVar(signalName + "_slope2", "@0*(1+@1*@2)", RooArgList(vslope2[m], xslope2_fit, sslope2_fit)) # slope of the higher power tail
 
         #signal[m] = RooCBShape(signalName, "m_{%s'} = %d GeV" % ('X', m), X_mass, smean[m], ssigma[m], salpha1[m], sslope1[m]) # Signal name does not have the channel
@@ -305,7 +318,7 @@ def signal(category):
         signalXS[m] = RooRealVar(signalName+"_xs", "signalXS", 1., 0., 1.e15)
         signalExt[m] = RooExtendPdf(signalName+"_ext", "extended p.d.f", signal[m], signalYield[m])
 
-        #vslope1[m].setMax(40.) #deavtivated to let the peacock fly FIXME
+        #vslope1[m].setMax(40.) #deactivated to let the peacock fly FIXME
 
         if m < 1000: vsigma[m].setVal(m*0.06)
 
@@ -444,7 +457,7 @@ def signal(category):
     drawAnalysis(category)
     drawRegion(category)
 
-    c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.pdf")
+    #c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.pdf")
     c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.png")
     #if VERBOSE: raw_input("Press Enter to continue...")
     # ====== CONTROL PLOT ======
@@ -643,6 +656,14 @@ def signal(category):
         islope2.SetPoint(islope2.GetN(), m, jslope2)
         if jslope2 > 0: vslope2[m].setVal(jslope2)
 
+
+        #### newly introduced: FIXME FIXME FIXME
+        vmean[m].removeError()
+        vsigma[m].removeError()
+        valpha1[m].removeError()
+        valpha2[m].removeError()
+        vslope1[m].removeError()
+        vslope2[m].removeError()
  
 
     #c1 = TCanvas("c1", "Crystal Ball", 1200, 800) #if not isAH else 1200
@@ -673,7 +694,7 @@ def signal(category):
     galpha1.Draw("APL")
     ialpha1.Draw("P, SAME")
     drawRegion(category)
-    galpha1.GetYaxis().SetRangeUser(0., 2.) #adjusted upper limit from 5 to 2
+    galpha1.GetYaxis().SetRangeUser(0., 1.1) #adjusted upper limit from 5 to 2
     #falpha1.FixParameter(0, 0.)
 #    ealpha1 = TGraphErrors(galpha1)
 #    ealpha1.SetFillStyle(3003)
@@ -696,7 +717,7 @@ def signal(category):
         ialpha2.Draw("P, SAME")
         drawRegion(category)
         #falpha2.FixParameter(0, 0.)
-#        galpha2.GetYaxis().SetRangeUser(0., 6.)
+        galpha2.GetYaxis().SetRangeUser(0., 2.)
 #        ealpha2 = TGraphErrors(galpha2)
 #        ealpha2.SetFillStyle(3003)
 #        ealpha2.SetFillColor(1)
@@ -706,7 +727,7 @@ def signal(category):
         gslope2.Draw("APL")
         islope2.Draw("P, SAME")
         drawRegion(category)
-        gslope2.GetYaxis().SetRangeUser(0., 10.)
+        gslope2.GetYaxis().SetRangeUser(0., 20.)
 #        eslope2 = TGraphErrors(gslope2)
 #        eslope2.SetFillStyle(3003)
 #        eslope2.SetFillColor(1)
@@ -714,7 +735,7 @@ def signal(category):
 #        eslope2.Draw("3, SAME")
 
 
-    c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.pdf")
+    #c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.pdf")
     c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.png")
 
 
@@ -731,7 +752,7 @@ def signal(category):
     drawCMS(-1, "Simulation Preliminary")
     drawAnalysis(category)
     drawRegion(category)
-    c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.pdf")
+    #c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.pdf")
     c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.png")
 
 
@@ -1136,7 +1157,7 @@ def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=No
         frame_res.GetXaxis().SetRangeUser(variable.getMin(), lastBin)
         line_res = drawLine(frame_res.GetXaxis().GetXmin(), 0, lastBin, 0)
 
-    c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".pdf")
+    #c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".pdf")
     c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".png")
     #if VERBOSE: raw_input("Press Enter to continue...")
     # ======   END PLOT   ======
