@@ -93,6 +93,9 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('HLT_CaloJet550_NoJetID'         , int)
         self.addBranch('HLT_PFHT1050'                   , int)
         self.addBranch('HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71' , int)
+        self.addBranch('HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71' , int)
+        self.addBranch('HLT_DoublePFJets40_CaloBTagDeepCSV_p71'                  , int)
+        self.addBranch('HLT_DoublePFJets100_CaloBTagDeepCSV_p71'                  , int)
         self.addBranch('HLT_DoublePFJets200_CaloBTagDeepCSV_p71'                 , int)
         self.addBranch('HLT_DoublePFJets350_CaloBTagDeepCSV_p71'                 , int)
 
@@ -268,7 +271,7 @@ class ZprimetobbProducer(Module):
         if event.nFatJet > 0: fatjetMass = event.FatJet_msoftdrop[0]
         
         nIsoElectrons = 0.
-        #print "event.nElectron", event.nElectron
+        #if event.nElectron>0: print "event.nElectron", event.nElectron #FIXME
         for iel in range(event.nElectron):
             ####### test start FIXME FIXME FIXME
             #if event.Electron_pt[iel] > 20:      
@@ -277,11 +280,13 @@ class ZprimetobbProducer(Module):
             #    print "abs(event.Electron_eta[iel]) < 2.5"
             #if event.Electron_cutBased[iel] >= 1:
             #    print "event.Electron_cutBased[iel] >= 1"
+            #if event.Electron_pt[iel] > 20. and abs(event.Electron_eta[iel]) < 2.5 and event.Electron_cutBased[iel] >= 1:
+            #    print "passes all!!!"
             ####### test end   FIXME FIXME FIXME
             if event.Electron_pt[iel] > 20. and abs(event.Electron_eta[iel]) < 2.5 and event.Electron_cutBased[iel] >= 1: nIsoElectrons += 1
 
         nIsoMuons = 0.
-        #print "event.nMuon", event.nMuon #FIXME
+        #if event.nMuon>0: print "event.nMuon", event.nMuon #FIXME
         for imu in range(event.nMuon):
             ####### test start FIXME FIXME FIXME
             #if event.Muon_pt[imu] > 20.:
@@ -290,6 +295,8 @@ class ZprimetobbProducer(Module):
             #    print "abs(event.Muon_eta[imu]) < 2.4"
             #if event.Muon_pfIsoId[imu] >= 2:
             #    print "event.Muon_pfIsoId[imu] >= 2"
+            #if event.Muon_pt[imu] > 20. and abs(event.Muon_eta[imu]) < 2.4 and event.Muon_looseId[imu] and event.Muon_pfIsoId[imu] >= 2:
+            #    print "passes all!!!"
             ####### test end   FIXME FIXME FIXME
            
             if event.Muon_pt[imu] > 20. and abs(event.Muon_eta[imu]) < 2.4 and event.Muon_looseId[imu] and event.Muon_pfIsoId[imu] >= 2: nIsoMuons += 1
@@ -421,15 +428,19 @@ class ZprimetobbProducer(Module):
                 self.out.HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71[0]                = event.HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71            
         except:
                 self.out.HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71[0]                = -1                    
-         try:
+        try:
                 self.out.HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71[0]                = event.HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71            
         except:
-                self.out.HLT_DoublePFJets1116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71[0]                = -1                    
+                self.out.HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71[0]                = -1                    
         
         try:
                 self.out.HLT_DoublePFJets40_CaloBTagDeepCSV_p71[0]                = event.HLT_DoublePFJets40_CaloBTagDeepCSV_p71            
         except:
                 self.out.HLT_DoublePFJets40_CaloBTagDeepCSV_p71[0]                = -1                    
+        try:
+                self.out.HLT_DoublePFJets100_CaloBTagDeepCSV_p71[0]                = event.HLT_DoublePFJets100_CaloBTagDeepCSV_p71            
+        except:
+                self.out.HLT_DoublePFJets100_CaloBTagDeepCSV_p71[0]                = -1                    
         try:
                 self.out.HLT_DoublePFJets200_CaloBTagDeepCSV_p71[0]                = event.HLT_DoublePFJets200_CaloBTagDeepCSV_p71            
         except:

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+process_list=$(ps | grep -e python) # | awk '{print $NF}')
+echo $process_list

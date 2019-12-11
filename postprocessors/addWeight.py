@@ -7,6 +7,8 @@ from ROOT import TFile, TH1, TF1, TLorentzVector
 import ROOT
 import sys
 
+from samples import sample as SAMPLE
+
 from argparse import ArgumentParser
 parser = ArgumentParser()
 parser.add_argument('-y', '--year', action='store', type=str, dest='year',default='2017')
@@ -157,7 +159,17 @@ def processFile(sample, origin, target, verbose=False):
     print "XS = ", XS
 
     Leq = LUMI*XS/totalEntries if totalEntries > 0 else 0.
-    if isSignal: Leq = LUMI*XS/100000
+    if isSignal: 
+        signName = sample.replace('MC_signal_', 'ZpBB')
+        if '2016' in signName:
+            yr = '2016'
+        elif '2017' in signName:
+            yr = '2017'
+        elif '2018' in signName:
+            yr = '2018'
+        signName = signName.replace(yr,'')
+        print "number of generated events:", SAMPLE[signName]['genEvents'][yr]
+        Leq = LUMI*XS/SAMPLE[signName]['genEvents'][yr]
     print sample, ": Leq =", (Leq if isMC else "Data")
 
 
@@ -261,8 +273,6 @@ else:
         sys.exit()
     for letter in letters:
         sample_names.append("data_{}_{}".format(year, letter))
-
-sample_names = ['MC_QCD_2016_HT1000to1500'] #REMOVE FIXME FIXME FIXME
 
 jobs = []
 for d in sample_names:

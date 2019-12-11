@@ -35,7 +35,8 @@ else
 fi
 echo "sample = ${sample}"
 
-p="submission_files/"
+#p="submission_files/"
+p="/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/submission_files/"
 dirs=$(ls -d  "${p}tmp_${sample}_"*)
 
 for dir in $dirs; do

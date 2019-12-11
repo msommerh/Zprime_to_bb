@@ -21,6 +21,7 @@ if __name__ == "__main__":
   parser.add_argument("-c", "--category", action="store", type=str, dest="category", default="", choices=['bb','bq','qq',''],
                                          help="b-tagging category for the fitting to run on: bb, bq, qq. Leave empty to run all three")
   parser.add_argument("-b", "--btagging", action="store", type=str, dest="btagging", default="medium", choices=['tight', 'medium', 'loose', 'semimedium'])
+  parser.add_argument("-s", "--selection", action="store", type=str, dest="selection", default="", choices=['', 'AK8veto'])
   args = parser.parse_args()
   #checkFiles.args = args
 
@@ -33,6 +34,8 @@ if __name__ == "__main__":
 
   #categories = ['bb', 'bq', 'qq']
   categories = ['bb', 'bq']
+    
+  ADDSELECTION= args.selection!=""
 
 else:
   args = None
@@ -72,7 +75,7 @@ def submitJobs(title, category):
         fout.write("export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh\n")
         fout.write("use_x509userproxy=true\n")
 
-        fout.write("./Bkg_Fitter.py {}{}{}{}\n".format('-M ' if args.isMC else '', '-y '+args.year, ' -c '+category, ' -b '+args.btagging))
+        fout.write("./Bkg_Fitter.py {}{}{}{}{}\n".format('-M ' if args.isMC else '', '-y '+args.year, ' -c '+category, ' -b '+args.btagging, ' -s '+args.selection if ADDSELECTION else ''))
         fout.write("echo 'STOP---------------'\n")
         fout.write("echo\n")
         fout.write("echo\n")

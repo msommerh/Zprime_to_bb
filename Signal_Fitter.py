@@ -29,6 +29,7 @@ parser.add_option("-y", "--year", action="store", type="string", dest="year",def
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
 parser.add_option("-u", "--unskimmed", action="store_true", default=False, dest="unskimmed")
+parser.add_option("-s", "--selection", action="store", type="string", dest="selection", default="")
 (options, args) = parser.parse_args()
 gROOT.SetBatch(True)
 
@@ -66,6 +67,7 @@ RATIO       = 4
 YEAR        = options.year
 VERBOSE     = options.verbose
 READTREE    = True
+ADDSELECTION= options.selection!=""
 
 if YEAR=='2016':
     LUMI=35920.
@@ -85,6 +87,11 @@ if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
 
 if options.unskimmed:
     NTUPLEDIR="/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
+
+SELECTIONS = {"": "", "AK8veto": " && fatjetmass_1<65"}
+if options.selection not in SELECTIONS.keys():
+    print "invalid selection!"
+    sys.exit()
 
 channelList = ['bb']
 signalList = ['Zprbb']
@@ -163,12 +170,14 @@ def signal(category):
     # Cuts
     if BTAGGING=='semimedium':
         #SRcut = aliasSM[category].format(b_threshold_medium=deepFlavour['medium'][YEAR], b_threshold_loose=deepFlavour['loose'][YEAR])
-        #SRcut = aliasSM[category]
-        SRcut = aliasSM[category+"_vetoAK8"]
+        SRcut = aliasSM[category]
+        #SRcut = aliasSM[category+"_vetoAK8"]
     else:
         #SRcut = alias[category].format(b_threshold=deepFlavour[BTAGGING][YEAR])
-        #SRcut = alias[category].format(WP=working_points[BTAGGING])
-        SRcut = alias[category+"_vetoAK8"].format(WP=working_points[BTAGGING])
+        SRcut = alias[category].format(WP=working_points[BTAGGING])
+        #SRcut = alias[category+"_vetoAK8"].format(WP=working_points[BTAGGING])
+
+    if ADDSELECTION: SRcut += SELECTIONS[options.selection]
 
     print "  Cut:\t", SRcut
 

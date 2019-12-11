@@ -107,7 +107,7 @@ variable = {
     },
     'jj_mass_widejet': {
         'title' : "m_{jj} (GeV)",
-        'nbins' : 90,
+        'nbins' : 76,
         'min' : 1400,
         'max' : 9000,
         'log' : True,

@@ -33,6 +33,7 @@ parser.add_option('-y', '--year', action='store', type='string', dest='year',def
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
 parser.add_option("-u", "--unskimmed", action="store_true", default=False, dest="unskimmed")
+parser.add_option("-s", "--selection", action="store", type="string", dest="selection", default="")
 #parser.add_option("-S", "--submitted", action="store_true", default=False, dest="submitted")
 (options, args) = parser.parse_args()
 gROOT.SetBatch(True) #suppress immediate graphic output
@@ -69,6 +70,7 @@ VARBINS     = False
 BIAS        = options.bias
 YEAR        = options.year
 ISMC        = options.isMC
+ADDSELECTION= options.selection!=""
 
 if YEAR=='2016':
     LUMI=35920.
@@ -96,6 +98,11 @@ if options.test: PLOTDIR += "_test"
 
 if options.unskimmed or options.test:
     NTUPLEDIR="/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/" 
+
+SELECTIONS = {"": "", "AK8veto": " && fatjetmass_1<65"}
+if options.selection not in SELECTIONS.keys():
+    print "invalid selection!"
+    sys.exit()
 
 #if options.submitted:
 #    CARDDIR +="submitted/"
@@ -180,13 +187,14 @@ def dijet(category):
    
     if BTAGGING=='semimedium': 
         #baseCut = aliasSM[category].format(b_threshold_medium=deepFlavour['medium'][YEAR], b_threshold_loose=deepFlavour['loose'][YEAR])
-        #baseCut = aliasSM[category]
-        baseCut = aliasSM[category+"_vetoAK8"]
+        baseCut = aliasSM[category]
+        #baseCut = aliasSM[category+"_vetoAK8"]
     else:
         #baseCut = alias[category].format(b_threshold=deepFlavour[BTAGGING][YEAR])
-        #baseCut = alias[category].format(WP=working_points[BTAGGING])
-        baseCut = alias[category+"_vetoAK8"].format(WP=working_points[BTAGGING])
+        baseCut = alias[category].format(WP=working_points[BTAGGING])
+        #baseCut = alias[category+"_vetoAK8"].format(WP=working_points[BTAGGING])
 
+    if ADDSELECTION: baseCut += SELECTIONS[options.selection]
 
     print stype, "|", baseCut
  

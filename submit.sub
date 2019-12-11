@@ -1,0 +1,8 @@
+executable            = addWeights_all_submit.sh
+arguments             = $(ClusterID) $(ProcId)
+output                = addWeights.$(ClusterId).$(ProcId).out
+error                 = addWeights.$(ClusterId).$(ProcId).err
+log                   = addWeights.$(ClusterId).log
++JobFlavour           = "tomorrow"
+RequestCpus           = 9
+queue

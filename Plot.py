@@ -14,6 +14,7 @@ from samples import sample
 from variables import variable
 from aliases import alias, aliasSM, deepFlavour, working_points
 from utils import *
+import sys
 
 ########## SETTINGS ##########
 
@@ -28,6 +29,8 @@ parser.add_option("-n", "--norm", action="store_true", default=False, dest="norm
 parser.add_option("-B", "--blind", action="store_true", default=False, dest="blind")
 parser.add_option("-f", "--final", action="store_true", default=False, dest="final")
 parser.add_option("-e", "--efficiency", action="store_true", default=False, dest="efficiency")
+parser.add_option("-s", "--selection", action="store", type="string", dest="selection", default="")
+parser.add_option("-a", "--acceptance", action="store_true", default=False, dest="acceptance")
 (options, args) = parser.parse_args()
 
 ########## SETTINGS ##########
@@ -40,15 +43,22 @@ gStyle.SetOptStat(0)
 
 BTAGGING    = options.btagging
 NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"
+ACCEPTANCEDIR = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/acceptance/"
 SIGNAL      = 1 # Signal magnification factor
 RATIO       = 4 # 0: No ratio plot; !=0: ratio between the top and bottom pads
 NORM        = options.norm
 PARALLELIZE = False
 BLIND       = False
 LUMI        = {"run2" : 137190, "2016" : 35920, "2017" : 41530, "2018" : 59740}
+ADDSELECTION= options.selection!=""
 #XRANGE      = (1400., 9000.)
 
-color = {'none': 14, 'qq': 1, 'bq': 2, 'bb': 4}
+color = {'none': 920, 'qq': 1, 'bq': 632, 'bb': 600}
+color_shift = {'none': 2, 'qq': 922, 'bq': 2, 'bb': 2}
+SELECTIONS = {"": "", "AK8veto": " && fatjetmass_1<65"}
+if options.selection not in SELECTIONS.keys():
+    print "invalid selection!"
+    sys.exit()
 
 ########## SAMPLES ##########
 data = ["data_obs"]
@@ -78,10 +88,20 @@ def plot(var, cut, year, norm=False, nm1=False):
         for k in sorted(alias.keys(), key=len, reverse=True):
             if BTAGGING=='semimedium':
                 #if k in cut: cut = cut.replace(k, aliasSM[k].format(b_threshold_medium=deepFlavour['medium'][year], b_threshold_loose=deepFlavour['loose'][year]))              
-                if k in cut: cut = cut.replace(k, aliasSM[k])
+                if k in cut: 
+                    if ADDSELECTION:
+                        cut = cut.replace(k, aliasSM[k]+SELECTIONS[options.selection])
+                    else:
+                        cut = cut.replace(k, aliasSM[k])
+        
             else:
                 #if k in cut: cut = cut.replace(k, alias[k].format(b_threshold=deepFlavour[BTAGGING][year]))
-                if k in cut: cut = cut.replace(k, alias[k].format(WP=working_points[BTAGGING]))
+                if k in cut: 
+                    if ADDSELECTION:
+                        cut = cut.replace(k, alias[k].format(WP=working_points[BTAGGING])+SELECTIONS[options.selection])
+                    else:
+                        cut = cut.replace(k, alias[k].format(WP=working_points[BTAGGING]))
+
     
     # Determine Primary Dataset
     pd = sample['data_obs']['files']
@@ -289,6 +309,7 @@ def plot(var, cut, year, norm=False, nm1=False):
         if not os.path.exists("plots/"+channel): os.makedirs("plots/"+channel)
         suffix = ''
         if "b" in channel: suffix+="_"+BTAGGING
+        if ADDSELECTION: suffix+="_"+options.selection
         c1.Print("plots/"+channel+"/"+varname+"_"+year+suffix+".png")
         c1.Print("plots/"+channel+"/"+varname+"_"+year+suffix+".pdf")
     
@@ -341,6 +362,7 @@ def plotAll():
 def efficiency(year):
     genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
     eff = {}
+    if ADDSELECTION: eff_add = {}
     
     channels = ['none', 'qq', 'bq', 'bb']
 
@@ -349,11 +371,15 @@ def efficiency(year):
         ngenSign = {}
         nevtSign = {}
         eff[channel] = TGraphErrors()
+        if ADDSELECTION:
+            nevtSign_add = {}
+            eff_add[channel] = TGraphErrors()
 
         for i, m in enumerate(genPoints):
             signName = "ZpBB_M"+str(m)
             ngenSign[m] = 0.
             nevtSign[m] = 0.
+            if ADDSELECTION: nevtSign_add[m] = 0.
             for j, ss in enumerate(sample[signName]['files']):
                 if year=="run2" or year in ss:
                     sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
@@ -371,19 +397,32 @@ def efficiency(year):
                     treeSign[m] = sfile.Get("tree")
                     if BTAGGING=='semimedium':
                         nevtSign[m] += treeSign[m].GetEntries(aliasSM[channel])
+                        if ADDSELECTION: nevtSign_add[m] += treeSign[m].GetEntries(aliasSM[channel]+SELECTIONS[options.selection])
                     else:
                         nevtSign[m] += treeSign[m].GetEntries(alias[channel].format(WP=working_points[BTAGGING]))
+                        if ADDSELECTION: nevtSign_add[m] += treeSign[m].GetEntries(alias[channel].format(WP=working_points[BTAGGING])+SELECTIONS[options.selection])
                     sfile.Close()
                     #print channel, ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
             if nevtSign[m] == 0 or ngenSign[m] < 0: continue
             n = eff[channel].GetN()
             eff[channel].SetPoint(n, m, nevtSign[m]/ngenSign[m])
             eff[channel].SetPointError(n, 0, math.sqrt(nevtSign[m])/ngenSign[m])
+            if ADDSELECTION:
+                eff_add[channel].SetPoint(n, m, nevtSign_add[m]/ngenSign[m])
+                eff_add[channel].SetPointError(n, 0, math.sqrt(nevtSign_add[m])/ngenSign[m])
 
         eff[channel].SetMarkerColor(color[channel])
         eff[channel].SetMarkerStyle(20)
         eff[channel].SetLineColor(color[channel])
         eff[channel].SetLineWidth(2)
+
+        if ADDSELECTION:
+            eff_add[channel].SetMarkerColor(color[channel]+color_shift[channel])
+            eff_add[channel].SetMarkerStyle(21)
+            eff_add[channel].SetLineColor(color[channel]+color_shift[channel])
+            eff_add[channel].SetLineWidth(2)
+            eff_add[channel].SetLineStyle(7)
+
         if channel=='qq' or channel=='none': eff[channel].SetLineStyle(3)
 
     n = max([eff[x].GetN() for x in channels])
@@ -394,15 +433,26 @@ def efficiency(year):
     eff["sum"].SetMarkerStyle(24)
     eff["sum"].SetMarkerColor(1)
     eff["sum"].SetLineWidth(2)
+    
+    if ADDSELECTION:
+        eff_add["sum"] = TGraphErrors(n)
+        eff_add["sum"].SetMarkerStyle(25)
+        eff_add["sum"].SetMarkerColor(1)
+        eff_add["sum"].SetLineWidth(2)
+        eff_add["sum"].SetLineStyle(7)
+
     for i in range(n):
         tot, mass = 0., 0.
+        if ADDSELECTION: tot_add = 0.
         for channel in channels:
             if channel=='qq' or channel=='none': continue
             if eff[channel].GetN() > i:
                 tot += eff[channel].GetY()[i]
+                if ADDSELECTION: tot_add += eff_add[channel].GetY()[i]
                 mass = eff[channel].GetX()[i]
                 if tot > maxEff: maxEff = tot
         eff["sum"].SetPoint(i, mass, tot)
+        if ADDSELECTION: eff_add["sum"].SetPoint(i, mass, tot_add)
 
 
     leg = TLegend(0.15, 0.60, 0.95, 0.8)
@@ -411,25 +461,36 @@ def efficiency(year):
     leg.SetFillColor(0)
     leg.SetNColumns(len(channels)/4)
     for i, channel in enumerate(channels):
-        if eff[channel].GetN() > 0: leg.AddEntry(eff[channel], getChannel(channel), "pl")
-    leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])/2.*0.045)
-
+        if eff[channel].GetN() > 0: 
+            leg.AddEntry(eff[channel], getChannel(channel), "pl")
+            if ADDSELECTION: leg.AddEntry(eff_add[channel], getChannel(channel)+" "+options.selection, "pl") 
+    if ADDSELECTION: 
+        leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])*0.045)
+    else:
+        leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])/2.*0.045)
     legS = TLegend(0.5, 0.85-0.045, 0.9, 0.85)
     legS.SetBorderSize(0)
     legS.SetFillStyle(0) #1001
     legS.SetFillColor(0)
     legS.AddEntry(eff['sum'], "Total efficiency (1 b tag + 2 b tag)", "pl")
-
+    if ADDSELECTION: legS.AddEntry(eff_add['sum'], "Total efficiency (1 b tag + 2 b tag) "+options.selection, "pl")
     c1 = TCanvas("c1", "Signal Efficiency", 1200, 800)
     c1.cd(1)
     eff['sum'].Draw("APL")
-    for i, channel in enumerate(channels): eff[channel].Draw("SAME, PL")
+    if ADDSELECTION: eff_add['sum'].Draw("SAME, PL")
+    for i, channel in enumerate(channels): 
+        eff[channel].Draw("SAME, PL")
+        if ADDSELECTION: eff_add[channel].Draw("SAME, PL")
     leg.Draw()
     legS.Draw()
     setHistStyle(eff["sum"], 1.1)
     eff["sum"].SetTitle(";m_{Z'} (GeV);Acceptance #times efficiency")
     eff["sum"].SetMinimum(0.)
     eff["sum"].SetMaximum(max(1., maxEff*1.5)) #0.65
+    if ADDSELECTION: 
+        eff_add["sum"].SetTitle(";m_{Z'} (GeV);Acceptance #times efficiency")
+        eff_add["sum"].SetMinimum(0.)
+        eff_add["sum"].SetMaximum(1.)
 
     eff["sum"].GetXaxis().SetTitleSize(0.045)
     eff["sum"].GetYaxis().SetTitleSize(0.045)
@@ -440,8 +501,12 @@ def efficiency(year):
     drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
     drawAnalysis("")
 
-    c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+".pdf") 
-    c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+".png") 
+    if ADDSELECTION:
+        c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+"_"+options.selection+".pdf") 
+        c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+"_"+options.selection+".png") 
+    else:
+        c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+".pdf") 
+        c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+".png") 
 
     # print
     print "category",
@@ -456,11 +521,95 @@ def efficiency(year):
         print "\\\\"
 
 
+def acceptance(year):
+    genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+    
+    treeSign = {}
+    ngenSign = {}
+    nevtSign = {}
+    eff = TGraphErrors()
+
+    for i, m in enumerate(genPoints):
+        ngenSign[m] = 0.
+        nevtSign[m] = 0.
+
+        if year == "run2":
+            years = ['2016', '2017', '2018']
+        else:
+            years = [year]
+
+        for yr in years: 
+            signName = "MC_signal_{}_M{}".format(yr, m)
+            sfile = TFile(ACCEPTANCEDIR + signName + "_acceptanceHist.root", "READ")
+
+            ngenSign[m] += sample["ZpBB_M"+str(m)]['genEvents'][yr]
+
+            #all_events_hist = sfile.Get('all_events')
+            #nEvents = all_events_hist.GetBinContent(1)
+            #ngenSign[m] += nEvents  
+            
+            passing_events_hist = sfile.Get('passing')
+            nEvents = passing_events_hist.GetBinContent(1)
+            nevtSign[m] += nEvents
+
+            sfile.Close()
+        
+        print m, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
+        if nevtSign[m] == 0 or ngenSign[m] < 0: continue
+        n = eff.GetN()
+        eff.SetPoint(n, m, nevtSign[m]/ngenSign[m])
+        eff.SetPointError(n, 0, math.sqrt(nevtSign[m])/ngenSign[m])
+
+    eff.SetMarkerColor(4)
+    eff.SetMarkerStyle(20)
+    eff.SetLineColor(4)
+    eff.SetLineWidth(2)
+
+    n = eff.GetN()
+    maxEff = 0.
+
+    #leg = TLegend(0.15, 0.60, 0.95, 0.8)
+    #leg.SetBorderSize(0)
+    #leg.SetFillStyle(0) #1001
+    #leg.SetFillColor(0)
+    #leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])/2.*0.045)
+
+    #legS = TLegend(0.5, 0.85-0.045, 0.9, 0.85)
+    #legS.SetBorderSize(0)
+    #legS.SetFillStyle(0) #1001
+    #legS.SetFillColor(0)
+    #legS.AddEntry(eff['sum'], "Total efficiency (1 b tag + 2 b tag)", "pl")
+
+    c1 = TCanvas("c1", "Signal Acceptance", 1200, 800)
+    c1.cd(1)
+    eff.Draw("APL")
+    #leg.Draw()
+    #legS.Draw()
+    #setHistStyle(eff["sum"], 1.1)
+    eff.SetTitle(";m_{Z'} (GeV);Acceptance")
+    eff.SetMinimum(0.)
+    eff.SetMaximum(max(1., maxEff*1.5)) #0.65
+
+    eff.GetXaxis().SetTitleSize(0.045)
+    eff.GetYaxis().SetTitleSize(0.045)
+    eff.GetYaxis().SetTitleOffset(1.1)
+    eff.GetXaxis().SetTitleOffset(1.05)
+    eff.GetXaxis().SetRangeUser(1500, 8000)
+    c1.SetTopMargin(0.05)
+    drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    drawAnalysis("")
+
+    c1.Print("plots/Efficiency/"+year+"_Acceptance.pdf") 
+    c1.Print("plots/Efficiency/"+year+"_Acceptance.png") 
+
+
 #if options.all: plotAll()
 #elif options.norm: plotNorm(options.variable, options.cut)
 #elif options.top: plotTop()
 if options.efficiency:
     efficiency(options.year)
+elif options.acceptance:
+    acceptance(options.year)
 else:
     plot(options.variable, options.cut, options.year)
 
