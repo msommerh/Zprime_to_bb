@@ -114,17 +114,17 @@ variable = {
     },
     'nmuons':{
         'title' : "n_{#mu}",
-        'nbins' : 15,
+        'nbins' : 8,
         'min' : 0,
-        'max' : 15,
-        'log' : False,
+        'max' : 8,
+        'log' : True,
     },  
      'nelectrons':{
         'title' : "n_{e}",
-        'nbins' : 10,
+        'nbins' : 4,
         'min' : 0,
-        'max' : 10,
-        'log' : False,
+        'max' : 4,
+        'log' : True,
     },  
     'fatjetmass_1':{
         'title' : "m_{fatjet}",

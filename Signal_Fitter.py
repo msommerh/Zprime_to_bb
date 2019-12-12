@@ -465,7 +465,7 @@ def signal(category):
     drawAnalysis(category)
     drawRegion(category)
 
-    #c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.pdf")
+    c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.pdf")
     c_signal.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_Signal.png")
     #if VERBOSE: raw_input("Press Enter to continue...")
     # ====== CONTROL PLOT ======
@@ -743,7 +743,7 @@ def signal(category):
 #        eslope2.Draw("3, SAME")
 
 
-    #c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.pdf")
+    c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.pdf")
     c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.png")
 
 
@@ -760,7 +760,7 @@ def signal(category):
     drawCMS(-1, "Simulation Preliminary")
     drawAnalysis(category)
     drawRegion(category)
-    #c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.pdf")
+    c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.pdf")
     c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.png")
 
 
@@ -1165,7 +1165,7 @@ def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=No
         frame_res.GetXaxis().SetRangeUser(variable.getMin(), lastBin)
         line_res = drawLine(frame_res.GetXaxis().GetXmin(), 0, lastBin, 0)
 
-    #c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".pdf")
+    c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".pdf")
     c.SaveAs(PLOTDIR+"MC_signal_"+YEAR+"/"+name+".png")
     #if VERBOSE: raw_input("Press Enter to continue...")
     # ======   END PLOT   ======

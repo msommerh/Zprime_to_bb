@@ -146,6 +146,37 @@ if [[ $plot_type == 'fatjetmass' || $plot_type == 'all' ]]; then
 fi
 
 
+### leptons:
+
+if [[ $plot_type == 'leptons' || $plot_type == 'all' ]]; then
+    echo "plotting leptons"
+    ./Plot.py -B -v nelectrons -c "preselection" -y 2018 
+    ./Plot.py -B -v nelectrons -c "1b" -y 2018 -b medium
+    ./Plot.py -B -v nelectrons -c "2b" -y 2018 -b medium
+    ./Plot.py -B -v nelectrons -c "preselection" -y 2017
+    ./Plot.py -B -v nelectrons -c "1b" -y 2017 -b medium
+    ./Plot.py -B -v nelectrons -c "2b" -y 2017 -b medium
+    ./Plot.py -B -v nelectrons -c "preselection" -y 2016
+    ./Plot.py -B -v nelectrons -c "1b" -y 2016 -b medium
+    ./Plot.py -B -v nelectrons -c "2b" -y 2016 -b medium
+    ./Plot.py -B -v nelectrons -c "preselection" -y run2
+    ./Plot.py -B -v nelectrons -c "1b" -y run2 -b medium
+    ./Plot.py -B -v nelectrons -c "2b" -y run2 -b medium
+    ./Plot.py -B -v nmuons -c "preselection" -y 2018 
+    ./Plot.py -B -v nmuons -c "1b" -y 2018 -b medium
+    ./Plot.py -B -v nmuons -c "2b" -y 2018 -b medium
+    ./Plot.py -B -v nmuons -c "preselection" -y 2017
+    ./Plot.py -B -v nmuons -c "1b" -y 2017 -b medium
+    ./Plot.py -B -v nmuons -c "2b" -y 2017 -b medium
+    ./Plot.py -B -v nmuons -c "preselection" -y 2016
+    ./Plot.py -B -v nmuons -c "1b" -y 2016 -b medium
+    ./Plot.py -B -v nmuons -c "2b" -y 2016 -b medium
+    ./Plot.py -B -v nmuons -c "preselection" -y run2
+    ./Plot.py -B -v nmuons -c "1b" -y run2 -b medium
+    ./Plot.py -B -v nmuons -c "2b" -y run2 -b medium
+fi
+
+
 ### efficiency:
 
 if [[ $plot_type == 'eff' || $plot_type == 'all' ]]; then

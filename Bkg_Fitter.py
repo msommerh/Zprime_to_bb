@@ -465,10 +465,10 @@ def dijet(category):
     line = drawLine(X_mass.getMin(), 0, lastBin, 0)
 
     if VARBINS:
-        #c.SaveAs(PLOTDIR+"/BkgSR_"+category+".pdf")
+        c.SaveAs(PLOTDIR+"/BkgSR_"+category+".pdf")
         c.SaveAs(PLOTDIR+"/BkgSR_"+category+".png")
     else:
-        #c.SaveAs(PLOTDIR+"/BkgSR_"+category+".pdf")
+        c.SaveAs(PLOTDIR+"/BkgSR_"+category+".pdf")
         c.SaveAs(PLOTDIR+"/BkgSR_"+category+".png")
  
      
@@ -761,7 +761,7 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     line = drawLine(variable.getMin(), 0, variable.getMax(), 0)
 
     if len(name) > 0 and len(category) > 0:
-        #c.SaveAs(PLOTDIR+"/"+name+"_"+category+".pdf")
+        c.SaveAs(PLOTDIR+"/"+name+"_"+category+".pdf")
         c.SaveAs(PLOTDIR+"/"+name+"_"+category+".png")
 
 #    if( hMassNEW.GetXaxis().GetBinLowEdge(bin+1)>=fFitXmin and hMassNEW.GetXaxis().GetBinUpEdge(bin-1)<=fFitXmax ):
@@ -789,7 +789,7 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     #print "  Chi2:", chi2, " - ", roochi2
     return out
 
-def getSignal(cat, sig, mass):   ## FIXME still working on this function. Difficulty: the file seems wo contain already a workspace, not a conventional tree....
+def getSignal(cat, sig, mass):   
     #try:
     #    sample = "" # FIXME
     #    file = TFile(NTUPLEDIR+sample+"/"+sample+"_flatTuple_0.root", "READ")
