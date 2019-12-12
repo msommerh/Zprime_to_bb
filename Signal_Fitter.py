@@ -17,7 +17,7 @@ from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooP
 from rooUtils import *
 from samples import sample
 from aliases import alias, aliasSM, deepFlavour, working_points
-
+from aliases import additional_selections as SELECTIONS
 
 import optparse
 
@@ -88,7 +88,6 @@ if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
 if options.unskimmed:
     NTUPLEDIR="/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
 
-SELECTIONS = {"": "", "AK8veto": " && fatjetmass_1<65"}
 if options.selection not in SELECTIONS.keys():
     print "invalid selection!"
     sys.exit()

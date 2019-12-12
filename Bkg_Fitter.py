@@ -16,6 +16,7 @@ from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooP
 from rooUtils import *
 from samples import sample
 from aliases import alias, aliasSM, deepFlavour, working_points
+from aliases import additional_selections as SELECTIONS
 #from selections import selection
 #from utils import *
 
@@ -99,7 +100,6 @@ if options.test: PLOTDIR += "_test"
 if options.unskimmed or options.test:
     NTUPLEDIR="/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/" 
 
-SELECTIONS = {"": "", "AK8veto": " && fatjetmass_1<65"}
 if options.selection not in SELECTIONS.keys():
     print "invalid selection!"
     sys.exit()

@@ -13,6 +13,7 @@ from ROOT import TLegend, TLatex, TText, TLine
 from samples import sample
 from variables import variable
 from aliases import alias, aliasSM, deepFlavour, working_points
+from aliases import additional_selections as SELECTIONS
 from utils import *
 import sys
 
@@ -55,7 +56,6 @@ ADDSELECTION= options.selection!=""
 
 color = {'none': 920, 'qq': 1, 'bq': 632, 'bb': 600}
 color_shift = {'none': 2, 'qq': 922, 'bq': 2, 'bb': 2}
-SELECTIONS = {"": "", "AK8veto": " && fatjetmass_1<65"}
 if options.selection not in SELECTIONS.keys():
     print "invalid selection!"
     sys.exit()
@@ -78,6 +78,8 @@ def plot(var, cut, year, norm=False, nm1=False):
     ### Preliminary Operations ###
     treeRead = not cut in ["nnqq", "en", "enqq", "mn", "mnqq", "ee", "eeqq", "mm", "mmqq", "em", "emqq", "qqqq"] # Read from tree
     channel = cut
+    unit = ''
+    if "GeV" in variable[var]['title']: unit = ' GeV'
     isBlind = BLIND and 'SR' in channel
     isAH = False #'qqqq' in channel or 'hp' in channel or 'lp' in channel
     showSignal = False if 'SB' in cut or 'TR' in cut else True #'SR' in channel or channel=='qqqq'#or len(channel)==5
@@ -124,7 +126,7 @@ def plot(var, cut, year, norm=False, nm1=False):
                 if not 'data' in s or ('data' in s and ss in pd):
                     if year=="run2" or year in ss:
                         tree[s].Add(NTUPLEDIR + ss + ".root")
-            if variable[var]['nbins']>0: hist[s] = TH1F(s, ";"+variable[var]['title']+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+" GeV );"+('log' if variable[var]['log'] else ''), variable[var]['nbins'], variable[var]['min'], variable[var]['max'])
+            if variable[var]['nbins']>0: hist[s] = TH1F(s, ";"+variable[var]['title']+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+unit+" );"+('log' if variable[var]['log'] else ''), variable[var]['nbins'], variable[var]['min'], variable[var]['max'])
             else: hist[s] = TH1F(s, ";"+variable[var]['title'], len(variable[var]['bins'])-1, array('f', variable[var]['bins']))
             hist[s].Sumw2()
             cutstring = "(eventWeightLumi)" + ("*("+cut+")" if len(cut)>0 else "")
@@ -199,7 +201,7 @@ def plot(var, cut, year, norm=False, nm1=False):
                 for j in range(first, last): hist[s].SetBinContent(j, -1.e-4)
     
     # Create stack
-    bkg = THStack("Bkg", ";"+hist['BkgSum'].GetXaxis().GetTitle()+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+" GeV )")
+    bkg = THStack("Bkg", ";"+hist['BkgSum'].GetXaxis().GetTitle()+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+unit+" )")
     for i, s in enumerate(back): bkg.Add(hist[s])
     
     

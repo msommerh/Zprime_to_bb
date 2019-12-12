@@ -2,9 +2,9 @@
 variable = {
     'jpt_1': {
         'title' : "jet 1 p_{T} (GeV)",
-        'nbins' : 100,
+        'nbins' : 125,
         'min' : 0,
-        'max' : 4000,
+        'max' : 5000,
         'log' : True,
     },
     'jpt_2': {
@@ -17,30 +17,30 @@ variable = {
     'jeta_1': {
         'title' : "jet 1 #eta",
         'nbins' : 100,
-        'min' : 0,
-        'max' : 5,
-        'log' : False,
+        'min' : -2.8,
+        'max' : 2.8,
+        'log' : True,
     },
     'jeta_2': {
         'title' : "jet 2 #eta",
         'nbins' : 100,
-        'min' : 0,
-        'max' : 5,
-        'log' : False,
+        'min' : -2.8,
+        'max' : 2.8,
+        'log' : True,
     },
     'jphi_1': {
         'title' : "jet 1 #phi",
         'nbins' : 100,
-        'min' : -3.15,
-        'max' : 3.15,
-        'log' : False,
+        'min' : -3.3,
+        'max' : 3.3,
+        'log' : True,
     },
     'jphi_2': {
         'title' : "jet 2 #phi",
         'nbins' : 100,
-        'min' : -3.15,
-        'max' : 3.15,
-        'log' : False,
+        'min' : -3.3,
+        'max' : 3.3,
+        'log' : True,
     },
     'jdeepCSV_1': {
         'title' : "jet 1 deepCSV",
@@ -112,18 +112,18 @@ variable = {
         'max' : 9000,
         'log' : True,
     },
-    'jnmuons_1':{
-        'title' : "n_{#mu, jet1}",
-        'nbins' : 30,
+    'nmuons':{
+        'title' : "n_{#mu}",
+        'nbins' : 15,
         'min' : 0,
-        'max' : 30,
+        'max' : 15,
         'log' : False,
     },  
-     'jnmuons_2':{
-        'title' : "n_{#mu, jet2}",
-        'nbins' : 30,
+     'nelectrons':{
+        'title' : "n_{e}",
+        'nbins' : 10,
         'min' : 0,
-        'max' : 30,
+        'max' : 10,
         'log' : False,
     },  
     'fatjetmass_1':{

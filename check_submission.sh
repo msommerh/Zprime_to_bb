@@ -25,8 +25,13 @@ read -p "year: " year
 read -p "isMC [y/n]: " isMC
 if [ $isMC = "y" ]; then
     read -p "isBkg [y/n]: " isBkg
-    if [ $isBkg = "y" ]; then 
-        sample="MC_QCD_${year}"
+    if [ $isBkg = "y" ]; then
+        read -p "isQCD [y/n]: " isQCD
+        if [ $isQCD = "y" ]; then     
+            sample="MC_QCD_${year}"
+        else
+            sample="MC_TTbar_${year}"
+        fi
     else
         sample="MC_signal_${year}"
     fi

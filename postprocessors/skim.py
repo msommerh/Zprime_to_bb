@@ -37,6 +37,6 @@ def skim(sample):
 
 
 #dirList = [x for x in os.listdir(inDir) if not x in blacklist]
-dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'data' in x] ## veto data, remove later FIXME FIXME FIXME
+dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'data' in x and '2017' in x] ## veto data, remove later FIXME FIXME FIXME
 for d in dirList:
     skim(d)

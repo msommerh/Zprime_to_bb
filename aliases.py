@@ -60,3 +60,8 @@ aliasSM["bb_vetoAK8"] = aliasSM["2b_vetoAK8"]
 aliasSM["bq_vetoAK8"] = aliasSM["1b_vetoAK8"]
 aliasSM["qq_vetoAK8"] = aliasSM["preselection_vetoAK8"]
 
+additional_selections = {"": "", "AK8veto": " && fatjetmass_1<65", "electronVeto": " && jnelectrons_1<1 && jnelectrons_2<1", "muonVeto": " && jnmuons_1<1 && jnmuons_2<1"}
+
+additional_selections['leptonVeto'] = additional_selections['electronVeto']+additional_selections['muonVeto']
+
+
