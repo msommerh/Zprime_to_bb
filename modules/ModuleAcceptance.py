@@ -22,7 +22,11 @@ class TreeProducerAcceptance(TreeProducerCommon):
 
         self.passing = TH1F('passing', 'passing', 1,0,1)
         self.all_events = TH1F('all_events', 'all_events',1,0,1)
- 
+        self.eta1_flag = TH1F('eta1_flag', 'eta1_flag', 1,0,1)
+        self.eta2_flag = TH1F('eta2_flag', 'eta2_flag', 1,0,1)
+        self.eta_flag = TH1F('eta_flag', 'eta_flag', 1,0,1)
+        self.dEta_flag = TH1F('dEta_flag', 'dEta_flag', 1,0,1)
+
     def endJob(self):
         self.outputfile.Write()
         self.outputfile.Close()
@@ -96,6 +100,14 @@ class AcceptanceProducer(Module):
             dEta = abs(event.GenPart_eta[genB1]-event.GenPart_eta[genB2]) 
 
             ##if passing criteria
+            if eta1<2.5:
+                self.out.eta1_flag.Fill(0.)
+            if eta2<2.5:
+                self.out.eta2_flag.Fill(0.)
+            if eta1<2.5 and eta2<2.5:
+                 self.out.eta_flag.Fill(0.)       
+            if dEta<1.1:
+                self.out.dEta_flag.Fill(0.)
             if eta1<2.5 and eta2<2.5 and dEta<1.1:
                 self.out.passing.Fill(0.)   
  
