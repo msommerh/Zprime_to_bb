@@ -529,11 +529,17 @@ def acceptance(year):
     treeSign = {}
     ngenSign = {}
     nevtSign = {}
+    nevtSign_eta = {}
+    nevtSign_dEta = {}
     eff = TGraphErrors()
+    eff_eta = TGraphErrors()
+    eff_dEta = TGraphErrors()
 
     for i, m in enumerate(genPoints):
         ngenSign[m] = 0.
         nevtSign[m] = 0.
+        nevtSign_eta[m] = 0.
+        nevtSign_dEta[m] = 0.
 
         if year == "run2":
             years = ['2016', '2017', '2018']
@@ -551,8 +557,16 @@ def acceptance(year):
             #ngenSign[m] += nEvents  
             
             passing_events_hist = sfile.Get('passing')
+            eta_flag_hist = sfile.Get('eta_flag')
+            dEta_flag_hist = sfile.Get('dEta_flag')
+            
             nEvents = passing_events_hist.GetBinContent(1)
+            nEvents_eta = eta_flag_hist.GetBinContent(1)
+            nEvents_dEta = dEta_flag_hist.GetBinContent(1)
+
             nevtSign[m] += nEvents
+            nevtSign_eta[m] += nEvents_eta
+            nevtSign_dEta[m] += nEvents_dEta
 
             sfile.Close()
         
@@ -561,20 +575,38 @@ def acceptance(year):
         n = eff.GetN()
         eff.SetPoint(n, m, nevtSign[m]/ngenSign[m])
         eff.SetPointError(n, 0, math.sqrt(nevtSign[m])/ngenSign[m])
+        eff_eta.SetPoint(n, m, nevtSign_eta[m]/ngenSign[m])
+        eff_eta.SetPointError(n, 0, math.sqrt(nevtSign_eta[m])/ngenSign[m])
+        eff_dEta.SetPoint(n, m, nevtSign_dEta[m]/ngenSign[m])
+        eff_dEta.SetPointError(n, 0, math.sqrt(nevtSign_dEta[m])/ngenSign[m])
 
     eff.SetMarkerColor(4)
     eff.SetMarkerStyle(20)
     eff.SetLineColor(4)
-    eff.SetLineWidth(2)
+    eff.SetLineWidth(3)
+    eff_eta.SetMarkerColor(2)
+    eff_eta.SetMarkerStyle(20)
+    eff_eta.SetLineColor(2)
+    eff_eta.SetLineWidth(2)
+    eff_eta.SetLineStyle(2)
+    eff_dEta.SetMarkerColor(8)
+    eff_dEta.SetMarkerStyle(20)
+    eff_dEta.SetLineColor(8)
+    eff_dEta.SetLineWidth(2)
+    eff_dEta.SetLineStyle(2)
 
     n = eff.GetN()
     maxEff = 0.
 
-    #leg = TLegend(0.15, 0.60, 0.95, 0.8)
-    #leg.SetBorderSize(0)
-    #leg.SetFillStyle(0) #1001
-    #leg.SetFillColor(0)
+    leg = TLegend(0.15, 0.7, 0.95, 0.8)
+    leg.SetBorderSize(0)
+    leg.SetFillStyle(0) #1001
+    leg.SetFillColor(0)
     #leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])/2.*0.045)
+
+    leg.AddEntry(eff, "total") 
+    leg.AddEntry(eff_eta, "|#eta|<2.5")
+    leg.AddEntry(eff_dEta, "#Delta#eta<1.1")
 
     #legS = TLegend(0.5, 0.85-0.045, 0.9, 0.85)
     #legS.SetBorderSize(0)
@@ -585,12 +617,14 @@ def acceptance(year):
     c1 = TCanvas("c1", "Signal Acceptance", 1200, 800)
     c1.cd(1)
     eff.Draw("APL")
-    #leg.Draw()
+    eff_eta.Draw("SAME, PL")
+    eff_dEta.Draw("SAME, PL")
+    leg.Draw()
     #legS.Draw()
     #setHistStyle(eff["sum"], 1.1)
     eff.SetTitle(";m_{Z'} (GeV);Acceptance")
     eff.SetMinimum(0.)
-    eff.SetMaximum(max(1., maxEff*1.5)) #0.65
+    eff.SetMaximum(max(1.5, maxEff*1.5)) #0.65
 
     eff.GetXaxis().SetTitleSize(0.045)
     eff.GetYaxis().SetTitleSize(0.045)
