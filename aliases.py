@@ -9,15 +9,15 @@ deepFlavour = {
 working_points = {'loose': 1, 'medium': 2, 'tight': 3}
 
 #alias = {
-#    "preselection" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550)",
-#    "2b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && jdeepFlavour_1>{b_threshold} && jdeepFlavour_2>{b_threshold}",
-#    "1b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && ((jdeepFlavour_1>{b_threshold} && jdeepFlavour_2<{b_threshold}) || (jdeepFlavour_1<{b_threshold} && jdeepFlavour_2>{b_threshold}))",
+#    "preselection" : "jj_mass>1400 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550)",
+#    "2b" : "jj_mass>1400 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && jdeepFlavour_1>{b_threshold} && jdeepFlavour_2>{b_threshold}",
+#    "1b" : "jj_mass>1400 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && ((jdeepFlavour_1>{b_threshold} && jdeepFlavour_2<{b_threshold}) || (jdeepFlavour_1<{b_threshold} && jdeepFlavour_2>{b_threshold}))",
 #}
 #
 #aliasSM = { ## a new btagging category that is semi medium, semi loose. Written for the direct b-tagging via the deepJet variable
-#    "preselection" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550)",
-#    "2b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && jdeepFlavour_1>{b_threshold_medium} && jdeepFlavour_2>{b_threshold_loose}",
-#    "1b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && ((jdeepFlavour_1>{b_threshold_medium} && jdeepFlavour_2<{b_threshold_loose}) || (jdeepFlavour_1<{b_threshold_loose} && jdeepFlavour_2>{b_threshold_medium}))",
+#    "preselection" : "jj_mass>1400 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550)",
+#    "2b" : "jj_mass>1400 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && jdeepFlavour_1>{b_threshold_medium} && jdeepFlavour_2>{b_threshold_loose}",
+#    "1b" : "jj_mass>1400 && jpt_1>600 && jj_deltaEta<1.1 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550) && ((jdeepFlavour_1>{b_threshold_medium} && jdeepFlavour_2<{b_threshold_loose}) || (jdeepFlavour_1<{b_threshold_loose} && jdeepFlavour_2>{b_threshold_medium}))",
 #}
 
 triggers = "(HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550)"
@@ -25,15 +25,15 @@ triggers = "(HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_
 #triggers = "(HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550 || HLT_DoublePFJets100_CaloBTagDeepCSV_p71 || HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71 || HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71 || HLT_DoublePFJets200_CaloBTagDeepCSV_p71 || HLT_DoublePFJets350_CaloBTagDeepCSV_p71 || HLT_DoublePFJets40_CaloBTagDeepCSV_p71)"
 
 alias = { ## the same as above with the new btag_WP variable
-    "preselection" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && "+triggers,
-    "2b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && "+triggers+" && jbtag_WP_1>={WP} && jbtag_WP_2>={WP}",
-    "1b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && "+triggers+" && ((jbtag_WP_1>={WP} && jbtag_WP_2<{WP}) || (jbtag_WP_1<{WP} && jbtag_WP_2>={WP}))",
+    "preselection" : "jj_mass>1400 && jpt_1>600 && jj_deltaEta<1.1 && "+triggers,
+    "2b" : "jj_mass>1800 && jpt_1>600 && jj_deltaEta<1.1 && "+triggers+" && jbtag_WP_1>={WP} && jbtag_WP_2>={WP}",
+    "1b" : "jj_mass>1400 && jpt_1>600 && jj_deltaEta<1.1 && "+triggers+" && ((jbtag_WP_1>={WP} && jbtag_WP_2<{WP}) || (jbtag_WP_1<{WP} && jbtag_WP_2>={WP}))",
 }
 
 aliasSM = { ## a new btagging category that is semi medium, semi loose.
-    "preselection" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && "+triggers,
-    "2b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && "+triggers+" && ((jbtag_WP_1>=2 && jbtag_WP_2>=1) || (jbtag_WP_1>=1 && jbtag_WP_2>=2))",
-    "1b" : "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta<1.1 && "+triggers+" && ((jbtag_WP_1>=2 && jbtag_WP_2<1) || (jbtag_WP_1<1 && jbtag_WP_2>=2))",
+    "preselection" : "jj_mass>1400 && jpt_1>600 && jj_deltaEta<1.1 && "+triggers,
+    "2b" : "jj_mass>1400 && jpt_1>600 && jj_deltaEta<1.1 && "+triggers+" && ((jbtag_WP_1>=2 && jbtag_WP_2>=1) || (jbtag_WP_1>=1 && jbtag_WP_2>=2))",
+    "1b" : "jj_mass>1400 && jpt_1>600 && jj_deltaEta<1.1 && "+triggers+" && ((jbtag_WP_1>=2 && jbtag_WP_2<1) || (jbtag_WP_1<1 && jbtag_WP_2>=2))",
 }
 
 alias["bb"] = alias["2b"]
