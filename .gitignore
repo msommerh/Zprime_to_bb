@@ -8,3 +8,4 @@ CMSSW_10_3_3/
 *.pdf
 ._*
 obsolete/
+*.swo

@@ -119,7 +119,8 @@ def signal(category):
     #              Variables and selections                 #
     #                                                       #
     #*******************************************************#
-    X_mass  = RooRealVar (      "jj_mass_widejet",              "m_{jj}",       1800.,     13000.,  "GeV") ## changed from 1.4TeV to 1.8TeV for now FIXME
+
+    X_mass  = RooRealVar (      "jj_mass_widejet",              "m_{jj}",       1800.,     9000.,  "GeV")
     #j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
     #j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
     j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     13000.,  "GeV")
@@ -144,12 +145,8 @@ def signal(category):
 
     weight = RooRealVar(        "eventWeightLumi",      "",             -1.e9,  1.e9    )
 
-
-    Xmin = 0            ## might need to adjust these FIXME
-    Xmax = Xmin + 10000
-
-#    X_mass.setMin(Xmin)
-#    X_mass.setMax(Xmax)
+    #X_mass.setMin(Xmin)
+    #X_mass.setMax(Xmax)
 
     # Define the RooArgSet which will include all the variables defined before
     # there is a maximum of 9 variables in the declaration, so the others need to be added with 'add'
@@ -157,11 +154,10 @@ def signal(category):
     #variables.add(RooArgSet(j1_pt, jj_deltaEta, jdeepFlavour_1, jdeepFlavour_2, weight))
     variables.add(RooArgSet(j1_pt, jj_deltaEta, jbtag_WP_1, jbtag_WP_2, fatjetmass_1, weight))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
-    #X_mass.setRange("X_extended_range", X_mass.getMin(), X_mass.getMax())
     X_mass.setRange("X_reasonable_range", X_mass.getMin(), X_mass.getMax())
     X_mass.setRange("X_integration_range", X_mass.getMin(), X_mass.getMax())
-    #X_mass.setRange("X_integration_range", Xmin, Xmax)
-    X_mass.setBins(int((X_mass.getMax() - X_mass.getMin())/100))
+    #X_mass.setBins(int((X_mass.getMax() - X_mass.getMin())/100))
+    X_mass.setBins(int((X_mass.getMax() - X_mass.getMin())/10))
     binsXmass = RooBinning(int((X_mass.getMax() - X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
     X_mass.setBinning(binsXmass, "PLOT")
     massArg = RooArgSet(X_mass)

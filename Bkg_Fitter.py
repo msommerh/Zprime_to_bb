@@ -150,8 +150,8 @@ def dijet(category):
     
     order = 0
     RSS = {}
-    
-    X_mass = RooRealVar(        "jj_mass_widejet",              "m_{jj}",       1800.,  13000.,  "GeV") 
+
+    X_mass = RooRealVar(        "jj_mass_widejet",              "m_{jj}",       1800.,  9000.,  "GeV") 
     #j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
     #j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
     j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     13000.,  "GeV")
@@ -181,10 +181,11 @@ def dijet(category):
     variables.add(RooArgSet(j1_pt, jj_deltaEta))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))
+    #X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/100))
 
-    if VARBINS: binsXmass = RooBinning(len(abins)-1, abins)
-    else: binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
-   
+    binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
+    X_mass.setBinning(binsXmass, "PLOT") #just for a test FIXME    
+ 
     if BTAGGING=='semimedium': 
         #baseCut = aliasSM[category].format(b_threshold_medium=deepFlavour['medium'][YEAR], b_threshold_loose=deepFlavour['loose'][YEAR])
         baseCut = aliasSM[category]
@@ -223,7 +224,7 @@ def dijet(category):
         setData = RooDataSet("setData", "Data (QCD MC)", variables, RooFit.Cut(baseCut), RooFit.WeightVar(weight), RooFit.Import(treeBkg))
  
     nevents = setData.sumEntries()
-    dataMin, dataMax = array('d', [0.]), array('d', [0.])   # not sure what is happening here...
+    dataMin, dataMax = array('d', [0.]), array('d', [0.])
     setData.getRange(X_mass, dataMin, dataMax)
     xmin, xmax = dataMin[0], dataMax[0]
     
@@ -235,7 +236,7 @@ def dijet(category):
                 break
     
     print "Imported", ("data" if isData else "MC"), "RooDataSet with", nevents, "events between [%.1f, %.1f]" % (xmin, xmax)
-    xmax = xmax+binsXmass.averageBinWidth() # start form next bin
+    #xmax = xmax+binsXmass.averageBinWidth() # start form next bin
     
     # 1 parameter
     print "fitting 1 parameter model"

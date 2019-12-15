@@ -1,0 +1,173 @@
+ <<< Combine >>> 
+>>> method used is AsymptoticLimits
+>>> random number generator seed is 123456
+Parameters: 
+  1) RooRealVar::                      CMSrun2_bb_p2_1 = 11.6631 +/- 0.714871
+  2) RooRealVar::                      CMSrun2_bb_p2_2 = 3.71634 +/- 0.173316
+  3) RooRealVar::                      CMSrun2_bq_p3_1 = 9.62568 +/- 1.58118
+  4) RooRealVar::                      CMSrun2_bq_p3_2 = 5.15449 +/- 1.32882
+  5) RooRealVar::                      CMSrun2_bq_p3_3 = 0.233425 +/- 0.284214
+  6) RooRealVar::                   CMSrun2_sig_p1_fit = 0
+  7) RooRealVar::                   CMSrun2_sig_p1_jes = 0
+  8) RooRealVar::               CMSrun2_sig_p1_scale_e = 0
+  9) RooRealVar::               CMSrun2_sig_p1_scale_m = 0
+ 10) RooRealVar::                   CMSrun2_sig_p2_fit = 0
+ 11) RooRealVar::                   CMSrun2_sig_p2_jer = 0
+ 12) RooRealVar::                   CMSrun2_sig_p2_jes = 0
+ 13) RooRealVar::               CMSrun2_sig_p2_scale_e = 0
+ 14) RooRealVar::               CMSrun2_sig_p2_scale_m = 0
+ 15) RooRealVar::                   CMSrun2_sig_p3_fit = 0
+ 16) RooRealVar::                   CMSrun2_sig_p4_fit = 0
+ 17) RooRealVar::                   CMSrun2_sig_p5_fit = 0
+ 18) RooRealVar::                   CMSrun2_sig_p6_fit = 0
+ 19) RooRealVar::           ZpBB_run2_bb_M4000_valpha1 = 0.181784
+ 20) RooRealVar::           ZpBB_run2_bb_M4000_valpha2 = 1
+ 21) RooRealVar::             ZpBB_run2_bb_M4000_vmean = 3959.92
+ 22) RooRealVar::            ZpBB_run2_bb_M4000_vsigma = 99.9567
+ 23) RooRealVar::           ZpBB_run2_bb_M4000_vslope1 = 19.9999
+ 24) RooRealVar::           ZpBB_run2_bb_M4000_vslope2 = 5.16
+ 25) RooRealVar::           ZpBB_run2_bq_M4000_valpha1 = 0.187705
+ 26) RooRealVar::           ZpBB_run2_bq_M4000_valpha2 = 1
+ 27) RooRealVar::             ZpBB_run2_bq_M4000_vmean = 3966.68
+ 28) RooRealVar::            ZpBB_run2_bq_M4000_vsigma = 100
+ 29) RooRealVar::           ZpBB_run2_bq_M4000_vslope1 = 9.42619
+ 30) RooRealVar::           ZpBB_run2_bq_M4000_vslope2 = 4.65134
+ 31) RooRealVar::         n_exp_binbb_proc_Bkg_run2_bb = 1
+ 32) RooRealVar::         n_exp_binbq_proc_Bkg_run2_bq = 1
+ 33) RooRealVar::                                    r = 0.2 +/- 2
+ 34) RooRealVar::        shapeBkg_Bkg_run2_bb_bb__norm = 37807.7 +/- 143.425
+ 35) RooRealVar::        shapeBkg_Bkg_run2_bq_bq__norm = 598803 +/- 573.266
+ 36) RooRealVar:: shapeSig_ZpBB_run2_bb_M4000_bb__norm = 9.69214
+ 37) RooRealVar:: shapeSig_ZpBB_run2_bq_M4000_bq__norm = 27.4415
+ 38) RooRealVar::                           sig_p1_fit = 0.005
+ 39) RooRealVar::                       sig_p1_scale_e = 0.001
+ 40) RooRealVar::                     sig_p1_scale_jes = 0.01
+ 41) RooRealVar::                       sig_p1_scale_m = 0.001
+ 42) RooRealVar::                           sig_p2_fit = 0.02
+ 43) RooRealVar::                       sig_p2_scale_e = 0.001
+ 44) RooRealVar::                     sig_p2_scale_jer = 0.02
+ 45) RooRealVar::                     sig_p2_scale_jes = 0.01
+ 46) RooRealVar::                       sig_p2_scale_m = 0.04
+ 47) RooRealVar::                           sig_p3_fit = 0.03
+ 48) RooRealVar::                           sig_p4_fit = 0.1
+ 49) RooRealVar::                           sig_p5_fit = 0.03
+ 50) RooRealVar::                           sig_p6_fit = 0.1
+Obs: 
+  1) RooRealVar:: jj_mass_widejet = 8950
+  2) RooCategory::     CMS_channel = bq(idx = 1)
+
+Parameters: 
+  1) RooRealVar::                      CMSrun2_bb_p2_1 = 12.6539 +/- 0.15635
+  2) RooRealVar::                      CMSrun2_bb_p2_2 = 3.4249 +/- 0.0414926
+  3) RooRealVar::                      CMSrun2_bq_p3_1 = 9.38606 +/- 1.03277
+  4) RooRealVar::                      CMSrun2_bq_p3_2 = 5.34026 +/- 0.886559
+  5) RooRealVar::                      CMSrun2_bq_p3_3 = 0.273559 +/- 0.191301
+  6) RooRealVar::                   CMSrun2_sig_p1_fit = 0
+  7) RooRealVar::                   CMSrun2_sig_p1_jes = 0
+  8) RooRealVar::               CMSrun2_sig_p1_scale_e = 0
+  9) RooRealVar::               CMSrun2_sig_p1_scale_m = 0
+ 10) RooRealVar::                   CMSrun2_sig_p2_fit = 0
+ 11) RooRealVar::                   CMSrun2_sig_p2_jer = 0
+ 12) RooRealVar::                   CMSrun2_sig_p2_jes = 0
+ 13) RooRealVar::               CMSrun2_sig_p2_scale_e = 0
+ 14) RooRealVar::               CMSrun2_sig_p2_scale_m = 0
+ 15) RooRealVar::                   CMSrun2_sig_p3_fit = 0
+ 16) RooRealVar::                   CMSrun2_sig_p4_fit = 0
+ 17) RooRealVar::                   CMSrun2_sig_p5_fit = 0
+ 18) RooRealVar::                   CMSrun2_sig_p6_fit = 0
+ 19) RooRealVar::           ZpBB_run2_bb_M4000_valpha1 = 0.181784
+ 20) RooRealVar::           ZpBB_run2_bb_M4000_valpha2 = 1
+ 21) RooRealVar::             ZpBB_run2_bb_M4000_vmean = 3959.92
+ 22) RooRealVar::            ZpBB_run2_bb_M4000_vsigma = 99.9567
+ 23) RooRealVar::           ZpBB_run2_bb_M4000_vslope1 = 19.9999
+ 24) RooRealVar::           ZpBB_run2_bb_M4000_vslope2 = 5.16
+ 25) RooRealVar::           ZpBB_run2_bq_M4000_valpha1 = 0.187705
+ 26) RooRealVar::           ZpBB_run2_bq_M4000_valpha2 = 1
+ 27) RooRealVar::             ZpBB_run2_bq_M4000_vmean = 3966.68
+ 28) RooRealVar::            ZpBB_run2_bq_M4000_vsigma = 100
+ 29) RooRealVar::           ZpBB_run2_bq_M4000_vslope1 = 9.42619
+ 30) RooRealVar::           ZpBB_run2_bq_M4000_vslope2 = 4.65134
+ 31) RooRealVar::         n_exp_binbb_proc_Bkg_run2_bb = 1
+ 32) RooRealVar::         n_exp_binbq_proc_Bkg_run2_bq = 1
+ 33) RooRealVar::                                    r = 2
+ 34) RooRealVar::        shapeBkg_Bkg_run2_bb_bb__norm = 37807.7 +/- 143.425
+ 35) RooRealVar::        shapeBkg_Bkg_run2_bq_bq__norm = 598803 +/- 573.266
+ 36) RooRealVar:: shapeSig_ZpBB_run2_bb_M4000_bb__norm = 9.69214
+ 37) RooRealVar:: shapeSig_ZpBB_run2_bq_M4000_bq__norm = 27.4415
+ 38) RooRealVar::                           sig_p1_fit = 0.005
+ 39) RooRealVar::                       sig_p1_scale_e = 0.001
+ 40) RooRealVar::                     sig_p1_scale_jes = 0.01
+ 41) RooRealVar::                       sig_p1_scale_m = 0.001
+ 42) RooRealVar::                           sig_p2_fit = 0.02
+ 43) RooRealVar::                       sig_p2_scale_e = 0.001
+ 44) RooRealVar::                     sig_p2_scale_jer = 0.02
+ 45) RooRealVar::                     sig_p2_scale_jes = 0.01
+ 46) RooRealVar::                       sig_p2_scale_m = 0.04
+ 47) RooRealVar::                           sig_p3_fit = 0.03
+ 48) RooRealVar::                           sig_p4_fit = 0.1
+ 49) RooRealVar::                           sig_p5_fit = 0.03
+ 50) RooRealVar::                           sig_p6_fit = 0.1
+Obs: 
+  1) RooCategory::     CMS_channel = bq(idx = 1)
+
+  2) RooRealVar:: jj_mass_widejet = 2783.09
+Parameters: 
+  1) RooRealVar::                      CMSrun2_bb_p2_1 = 12.6539 +/- 0.15635
+  2) RooRealVar::                      CMSrun2_bb_p2_2 = 3.4249 +/- 0.0414926
+  3) RooRealVar::                      CMSrun2_bq_p3_1 = 9.38606 +/- 1.03277
+  4) RooRealVar::                      CMSrun2_bq_p3_2 = 5.34026 +/- 0.886559
+  5) RooRealVar::                      CMSrun2_bq_p3_3 = 0.273559 +/- 0.191301
+  6) RooRealVar::                   CMSrun2_sig_p1_fit = 0
+  7) RooRealVar::                   CMSrun2_sig_p1_jes = 0
+  8) RooRealVar::               CMSrun2_sig_p1_scale_e = 0
+  9) RooRealVar::               CMSrun2_sig_p1_scale_m = 0
+ 10) RooRealVar::                   CMSrun2_sig_p2_fit = 0
+ 11) RooRealVar::                   CMSrun2_sig_p2_jer = 0
+ 12) RooRealVar::                   CMSrun2_sig_p2_jes = 0
+ 13) RooRealVar::               CMSrun2_sig_p2_scale_e = 0
+ 14) RooRealVar::               CMSrun2_sig_p2_scale_m = 0
+ 15) RooRealVar::                   CMSrun2_sig_p3_fit = 0
+ 16) RooRealVar::                   CMSrun2_sig_p4_fit = 0
+ 17) RooRealVar::                   CMSrun2_sig_p5_fit = 0
+ 18) RooRealVar::                   CMSrun2_sig_p6_fit = 0
+ 19) RooRealVar::           ZpBB_run2_bb_M4000_valpha1 = 0.181784
+ 20) RooRealVar::           ZpBB_run2_bb_M4000_valpha2 = 1
+ 21) RooRealVar::             ZpBB_run2_bb_M4000_vmean = 3959.92
+ 22) RooRealVar::            ZpBB_run2_bb_M4000_vsigma = 99.9567
+ 23) RooRealVar::           ZpBB_run2_bb_M4000_vslope1 = 19.9999
+ 24) RooRealVar::           ZpBB_run2_bb_M4000_vslope2 = 5.16
+ 25) RooRealVar::           ZpBB_run2_bq_M4000_valpha1 = 0.187705
+ 26) RooRealVar::           ZpBB_run2_bq_M4000_valpha2 = 1
+ 27) RooRealVar::             ZpBB_run2_bq_M4000_vmean = 3966.68
+ 28) RooRealVar::            ZpBB_run2_bq_M4000_vsigma = 100
+ 29) RooRealVar::           ZpBB_run2_bq_M4000_vslope1 = 9.42619
+ 30) RooRealVar::           ZpBB_run2_bq_M4000_vslope2 = 4.65134
+ 31) RooRealVar::         n_exp_binbb_proc_Bkg_run2_bb = 1
+ 32) RooRealVar::         n_exp_binbq_proc_Bkg_run2_bq = 1
+ 33) RooRealVar::                                    r = 2
+ 34) RooRealVar::        shapeBkg_Bkg_run2_bb_bb__norm = 37807.7 +/- 143.425
+ 35) RooRealVar::        shapeBkg_Bkg_run2_bq_bq__norm = 598803 +/- 573.266
+ 36) RooRealVar:: shapeSig_ZpBB_run2_bb_M4000_bb__norm = 9.69214
+ 37) RooRealVar:: shapeSig_ZpBB_run2_bq_M4000_bq__norm = 27.4415
+ 38) RooRealVar::                           sig_p1_fit = 0.005
+ 39) RooRealVar::                       sig_p1_scale_e = 0.001
+ 40) RooRealVar::                     sig_p1_scale_jes = 0.01
+ 41) RooRealVar::                       sig_p1_scale_m = 0.001
+ 42) RooRealVar::                           sig_p2_fit = 0.02
+ 43) RooRealVar::                       sig_p2_scale_e = 0.001
+ 44) RooRealVar::                     sig_p2_scale_jer = 0.02
+ 45) RooRealVar::                     sig_p2_scale_jes = 0.01
+ 46) RooRealVar::                       sig_p2_scale_m = 0.04
+ 47) RooRealVar::                           sig_p3_fit = 0.03
+ 48) RooRealVar::                           sig_p4_fit = 0.1
+ 49) RooRealVar::                           sig_p5_fit = 0.03
+ 50) RooRealVar::                           sig_p6_fit = 0.1
+Obs: 
+  1) RooRealVar:: jj_mass_widejet = 8950
+  2) RooCategory::     CMS_channel = bq(idx = 1)
+
+
+ -- AsymptoticLimits ( CLs ) --
+Observed Limit: r < 8.3174
+
+Done in 5.19 min (cpu), 5.22 min (real)
