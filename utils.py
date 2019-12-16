@@ -497,6 +497,7 @@ def getChannel(channel):
     elif 'bb' in channel or '2b' in channel: text += "2 b tag"
     elif 'b' in channel or '1b' in channel: text += "1 b tag"
     elif 'qq' in channel or 'preselection' in channel: text += 'preselection'
+    elif 'mumu' in channel or '2mu' in channel: text += '2 #mu'
     elif 'none' in channel: text += 'no selection'
     # region
     if 'SR' in channel: text += ", signal region"

@@ -9,8 +9,8 @@ shapes            data_obs  *    ./workspace/medium/MC_QCD_TTbar_2016_bb.root   
 bin               bb
 observation       -1
 -----------------------------------------------------------------------------------
-bin               bb                  bb                  
-process           ZpBB_2016_bb_M4200  Bkg_2016_bb         
-process           0                   1                   
-rate              1                   1                   
+bin               bb                       bb                       
+process           ZpBB_2016_bb_M4200       Bkg_2016_bb              
+process           0                        1                        
+rate              1                        1                        
 -----------------------------------------------------------------------------------

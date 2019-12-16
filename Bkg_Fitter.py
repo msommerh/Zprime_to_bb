@@ -32,7 +32,7 @@ parser.add_option("-t", "--test_run", action="store_true", default=False, dest="
 parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
-parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
+parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
 parser.add_option("-u", "--unskimmed", action="store_true", default=False, dest="unskimmed")
 parser.add_option("-s", "--selection", action="store", type="string", dest="selection", default="")
 #parser.add_option("-S", "--submitted", action="store_true", default=False, dest="submitted")
@@ -110,7 +110,7 @@ if options.selection not in SELECTIONS.keys():
 #    PLOTDIR +="submitted/"
 
 signalList = ['Zprime_to_bb']
-categories = ['bb', 'bq', 'qq']
+categories = ['bb', 'bq', 'qq', 'mumu']
 
 dijet_bins = [955, 1000, 1058, 1118, 1181, 1246, 1313, 1383, 1455, 1530, 1607, 1687, 1770, 1856, 1945, 2037, 2132, 2231, 2332, 2438, 2546, 2659, 2775, 2895, 3019, 3147, 3279, 3416, 3558, 3704, 3854, 4010, 4171, 4337, 4509, 4686, 4869, 5058, 5253, 5455, 5663, 5877, 6099, 6328, 6564, 6808]
 bins = [x+30 for x in dijet_bins]
@@ -163,6 +163,8 @@ def dijet(category):
     jbtag_WP_1 = RooRealVar("jbtag_WP_1",       "",             -1.,   4.        )
     jbtag_WP_2 = RooRealVar("jbtag_WP_2",       "",             -1.,   4.        )
     fatjetmass_1 = RooRealVar("fatjetmass_1",   "",             -1.,   2500.     )
+    jnmuons_1 = RooRealVar("jnmuons_1",   "j1 n_{#mu}",         -1.,   8.     )
+    jnmuons_2 = RooRealVar("jnmuons_2",   "j2 n_{#mu}",         -1.,   8.     )
     #MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
     jj_deltaEta = RooRealVar(    "jj_deltaEta",                "",      0.,     5.)
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
@@ -177,7 +179,7 @@ def dijet(category):
 
     variables = RooArgSet(X_mass)
     #variables.add(RooArgSet(jdeepFlavour_1, jdeepFlavour_2, weight))
-    variables.add(RooArgSet(jbtag_WP_1, jbtag_WP_2, fatjetmass_1, weight))
+    variables.add(RooArgSet(jbtag_WP_1, jbtag_WP_2, fatjetmass_1, jnmuons_1, jnmuons_2, weight))
     variables.add(RooArgSet(j1_pt, jj_deltaEta))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))

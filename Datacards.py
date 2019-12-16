@@ -45,7 +45,8 @@ if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
     print "unknown btagging requirement:", BTAGGING
     sys.exit()
 
-categories = ['bb', 'bq']
+#categories = ['bb', 'bq']
+categories = ['bb', 'bq', 'mumu']
 
 #massPoints = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 massPoints = [x for x in range(1200, 8000+1, 100)]
@@ -72,10 +73,10 @@ def generate_datacard(year, category, masspoint, btagging, outname):
     card += "bin               {}\n".format(category)
     card += "observation       -1\n"
     card += "-----------------------------------------------------------------------------------\n"
-    card += "bin               {:20}{:20}\n".format(category, category)
-    card += "process           {:20}{:20}\n".format(signalName, backgroundName) 
-    card += "process           {:20}{:20}\n".format("0", "1")
-    card += "rate              {:20}{:20}\n".format("1", "1") 
+    card += "bin               {:25}{:25}\n".format(category, category)
+    card += "process           {:25}{:25}\n".format(signalName, backgroundName) 
+    card += "process           {:25}{:25}\n".format("0", "1")
+    card += "rate              {:25}{:25}\n".format("1", "1") 
     card += "-----------------------------------------------------------------------------------\n"
     cardfile = open(outname, 'w')
     cardfile.write(card)

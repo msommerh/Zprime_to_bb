@@ -19,7 +19,7 @@ if __name__ == "__main__":
   parser.add_argument('-MC', '--isMC',   dest='isMC',  action='store_true', default=False,
                                          help="Select this if the sample is MC, otherwise it is flagged as data.")
   parser.add_argument("-b", "--btagging", action="store", type=str, dest="btagging", default="tight", choices=['tight', 'medium', 'loose', 'semimedium'])
-  parser.add_argument("-c", "--category", action="store", type=str, dest="category", default="", choices=['', 'bb', 'bq'],
+  parser.add_argument("-c", "--category", action="store", type=str, dest="category", default="", choices=['', 'bb', 'bq', 'mumu'],
                                          help="Choose b-tagging category (bb or bq) if combine should run merely on a single category.")
 
   args = parser.parse_args()

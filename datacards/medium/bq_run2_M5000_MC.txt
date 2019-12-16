@@ -9,8 +9,8 @@ shapes            data_obs  *    ./workspace/medium/MC_QCD_TTbar_run2_bq.root   
 bin               bq
 observation       -1
 -----------------------------------------------------------------------------------
-bin               bq                  bq                  
-process           ZpBB_run2_bq_M5000  Bkg_run2_bq         
-process           0                   1                   
-rate              1                   1                   
+bin               bq                       bq                       
+process           ZpBB_run2_bq_M5000       Bkg_run2_bq              
+process           0                        1                        
+rate              1                        1                        
 -----------------------------------------------------------------------------------

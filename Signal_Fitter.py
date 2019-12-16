@@ -27,7 +27,7 @@ parser = optparse.OptionParser(usage)
 parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose")
 parser.add_option("-y", "--year", action="store", type="string", dest="year",default="2017")
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
-parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
+parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
 parser.add_option("-u", "--unskimmed", action="store_true", default=False, dest="unskimmed")
 parser.add_option("-s", "--selection", action="store", type="string", dest="selection", default="")
 (options, args) = parser.parse_args()
@@ -94,10 +94,10 @@ if options.selection not in SELECTIONS.keys():
 
 channelList = ['bb']
 signalList = ['Zprbb']
-color = {'bb' : 4, 'bq': 2, 'qq':8}
+color = {'bb' : 4, 'bq': 2, 'qq': 8, 'mumu': 6}
 channel = 'bb'
 #categories = ['bb', 'bq', 'qq'] ## don't really need the qq category
-categories = ['bb', 'bq']
+categories = ['bb', 'bq', 'mumu']
 stype = 'Zprime' 
 signalType = 'Zprime'
 
@@ -133,6 +133,8 @@ def signal(category):
     jbtag_WP_1 = RooRealVar("jbtag_WP_1",       "",             -1.,   4.        )
     jbtag_WP_2 = RooRealVar("jbtag_WP_2",       "",             -1.,   4.        )
     fatjetmass_1 = RooRealVar("fatjetmass_1",   "",             -1.,   2500.     )
+    jnmuons_1 = RooRealVar(   "jnmuons_1",      "j1 n_{#mu}",    -1.,   8.)
+    jnmuons_2 = RooRealVar(   "jnmuons_2",      "j2 n_{#mu}",    -1.,   8.)
     #MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
     HLT_PFJet500            = RooRealVar("HLT_PFJet500"            , "" , -1., 1.    ) 
@@ -152,7 +154,7 @@ def signal(category):
     # there is a maximum of 9 variables in the declaration, so the others need to be added with 'add'
     variables = RooArgSet(X_mass)
     #variables.add(RooArgSet(j1_pt, jj_deltaEta, jdeepFlavour_1, jdeepFlavour_2, weight))
-    variables.add(RooArgSet(j1_pt, jj_deltaEta, jbtag_WP_1, jbtag_WP_2, fatjetmass_1, weight))
+    variables.add(RooArgSet(j1_pt, jj_deltaEta, jbtag_WP_1, jbtag_WP_2, fatjetmass_1, jnmuons_1, jnmuons_2, weight))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     X_mass.setRange("X_reasonable_range", X_mass.getMin(), X_mass.getMax())
     X_mass.setRange("X_integration_range", X_mass.getMin(), X_mass.getMax())
@@ -302,7 +304,7 @@ def signal(category):
         salpha1[m] = RooFormulaVar(signalName + "_alpha1", "@0*(1+@1*@2)", RooArgList(valpha1[m], xalpha1_fit, salpha1_fit))
 
         #vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 10., 0.1, 120.) # slope of the power tail
-        vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 10. if category=='bb' else 10., 0.1 if category=='bb' else 0.1, 20. if category=='bb' else 20.) # slope of the power tail
+        vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 10., 0.1, 20.) # slope of the power tail
         sslope1[m] = RooFormulaVar(signalName + "_slope1", "@0*(1+@1*@2)", RooArgList(vslope1[m], xslope1_fit, sslope1_fit))
 
         #valpha2[m] = RooRealVar(signalName + "_valpha2", "Crystal Ball alpha 2", 0.2,  0., 1.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right

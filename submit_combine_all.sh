@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #./submit_combine.py -MC -q longlunch -y run2 -b tight
-#./submit_combine.py -MC -q longlunch -y run2 -b medium
+./submit_combine.py -MC -q espresso -y run2 -b medium
 #./submit_combine.py -MC -q longlunch -y run2 -b loose
 #./submit_combine.py -MC -q longlunch -y run2 -b semimedium
 #./submit_combine.py -MC -q longlunch -y run2c -b tight
