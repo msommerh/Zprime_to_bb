@@ -212,67 +212,67 @@ def signal(category):
     frSignal3 = {}
 
     # Signal shape uncertainties (common amongst all mass points) ## no idea how to put these yet FIXME
-    xmean_fit = RooRealVar("sig_p1_fit", "Variation of the resonance position with the fit uncertainty", 0.005, -1., 1.)
-    smean_fit = RooRealVar("CMS"+YEAR+"_sig_p1_fit", "Change of the resonance position with the fit uncertainty", 0., -10, 10)
-    xmean_jes = RooRealVar("sig_p1_scale_jes", "Variation of the resonance position with the jet energy scale", 0.020 if isAH else 0.010, -1., 1.) #0.001
-    smean_jes = RooRealVar("CMS"+YEAR+"_sig_p1_jes", "Change of the resonance position with the jet energy scale", 0., -10, 10)
-    xmean_e = RooRealVar("sig_p1_scale_e", "Variation of the resonance position with the electron energy scale", 0.001, -1., 1.)
-    smean_e = RooRealVar("CMS"+YEAR+"_sig_p1_scale_e", "Change of the resonance position with the electron energy scale", 0., -10, 10)
-    xmean_m = RooRealVar("sig_p1_scale_m", "Variation of the resonance position with the muon energy scale", 0.001, -1., 1.)
-    smean_m = RooRealVar("CMS"+YEAR+"_sig_p1_scale_m", "Change of the resonance position with the muon energy scale", 0., -10, 10)
+    #xmean_fit = RooRealVar("sig_p1_fit", "Variation of the resonance position with the fit uncertainty", 0.005, -1., 1.)
+    #smean_fit = RooRealVar("CMS"+YEAR+"_sig_p1_fit", "Change of the resonance position with the fit uncertainty", 0., -10, 10)
+    xmean_jes = RooRealVar("sig_"+category+"_p1_scale_jes", "Variation of the resonance position with the jet energy scale", 0.020 if isAH else 0.010, -1., 1.) #0.001
+    smean_jes = RooRealVar("CMS"+YEAR+"_sig_"+category+"_p1_jes", "Change of the resonance position with the jet energy scale", 0., -10, 10)
+    #xmean_e = RooRealVar("sig_p1_scale_e", "Variation of the resonance position with the electron energy scale", 0.001, -1., 1.)
+    #smean_e = RooRealVar("CMS"+YEAR+"_sig_p1_scale_e", "Change of the resonance position with the electron energy scale", 0., -10, 10)
+    #xmean_m = RooRealVar("sig_p1_scale_m", "Variation of the resonance position with the muon energy scale", 0.001, -1., 1.)
+    #smean_m = RooRealVar("CMS"+YEAR+"_sig_p1_scale_m", "Change of the resonance position with the muon energy scale", 0., -10, 10)
 
-    xsigma_fit = RooRealVar("sig_p2_fit", "Variation of the resonance width with the fit uncertainty", 0.02, -1., 1.)
-    ssigma_fit = RooRealVar("CMS"+YEAR+"_sig_p2_fit", "Change of the resonance width with the fit uncertainty", 0., -10, 10)
-    xsigma_jes = RooRealVar("sig_p2_scale_jes", "Variation of the resonance width with the jet energy scale", 0.010, -1., 1.) #0.001
-    ssigma_jes = RooRealVar("CMS"+YEAR+"_sig_p2_jes", "Change of the resonance width with the jet energy scale", 0., -10, 10)
-    xsigma_jer = RooRealVar("sig_p2_scale_jer", "Variation of the resonance width with the jet energy resolution", 0.020, -1., 1.)
-    ssigma_jer = RooRealVar("CMS"+YEAR+"_sig_p2_jer", "Change of the resonance width with the jet energy resolution", 0., -10, 10)
-    xsigma_e = RooRealVar("sig_p2_scale_e", "Variation of the resonance width with the electron energy scale", 0.001, -1., 1.)
-    ssigma_e = RooRealVar("CMS"+YEAR+"_sig_p2_scale_e", "Change of the resonance width with the electron energy scale", 0., -10, 10)
-    xsigma_m = RooRealVar("sig_p2_scale_m", "Variation of the resonance width with the muon energy scale", 0.040, -1., 1.)
-    ssigma_m = RooRealVar("CMS"+YEAR+"_sig_p2_scale_m", "Change of the resonance width with the muon energy scale", 0., -10, 10)
+    #xsigma_fit = RooRealVar("sig_p2_fit", "Variation of the resonance width with the fit uncertainty", 0.02, -1., 1.)
+    #ssigma_fit = RooRealVar("CMS"+YEAR+"_sig_p2_fit", "Change of the resonance width with the fit uncertainty", 0., -10, 10)
+    #xsigma_jes = RooRealVar("sig_p2_scale_jes", "Variation of the resonance width with the jet energy scale", 0.010, -1., 1.) #0.001
+    #ssigma_jes = RooRealVar("CMS"+YEAR+"_sig_p2_jes", "Change of the resonance width with the jet energy scale", 0., -10, 10)
+    xsigma_jer = RooRealVar("sig_"+category+"_p2_scale_jer", "Variation of the resonance width with the jet energy resolution", 0.020, -1., 1.)
+    ssigma_jer = RooRealVar("CMS"+YEAR+"_sig_"+category+"_p2_jer", "Change of the resonance width with the jet energy resolution", 0., -10, 10)
+    #xsigma_e = RooRealVar("sig_p2_scale_e", "Variation of the resonance width with the electron energy scale", 0.001, -1., 1.)
+    #ssigma_e = RooRealVar("CMS"+YEAR+"_sig_p2_scale_e", "Change of the resonance width with the electron energy scale", 0., -10, 10)
+    #xsigma_m = RooRealVar("sig_p2_scale_m", "Variation of the resonance width with the muon energy scale", 0.040, -1., 1.)
+    #ssigma_m = RooRealVar("CMS"+YEAR+"_sig_p2_scale_m", "Change of the resonance width with the muon energy scale", 0., -10, 10)
     
-    xalpha1_fit = RooRealVar("sig_p3_fit", "Variation of the resonance alpha1 with the fit uncertainty", 0.03, -1., 1.)
-    salpha1_fit = RooRealVar("CMS"+YEAR+"_sig_p3_fit", "Change of the resonance alpha1 with the fit uncertainty", 0., -10, 10)
-    
-    xslope1_fit = RooRealVar("sig_p4_fit", "Variation of the resonance slope1 with the fit uncertainty", 0.10, -1., 1.)
-    sslope1_fit = RooRealVar("CMS"+YEAR+"_sig_p4_fit", "Change of the resonance slope1 with the fit uncertainty", 0., -10, 10)
+    #xalpha1_fit = RooRealVar("sig_p3_fit", "Variation of the resonance alpha1 with the fit uncertainty", 0.03, -1., 1.)
+    #salpha1_fit = RooRealVar("CMS"+YEAR+"_sig_p3_fit", "Change of the resonance alpha1 with the fit uncertainty", 0., -10, 10)
+    #
+    #xslope1_fit = RooRealVar("sig_p4_fit", "Variation of the resonance slope1 with the fit uncertainty", 0.10, -1., 1.)
+    #sslope1_fit = RooRealVar("CMS"+YEAR+"_sig_p4_fit", "Change of the resonance slope1 with the fit uncertainty", 0., -10, 10)
 
-    xalpha2_fit = RooRealVar("sig_p5_fit", "Variation of the resonance alpha2 with the fit uncertainty", 0.03, -1., 1.)
-    salpha2_fit = RooRealVar("CMS"+YEAR+"_sig_p5_fit", "Change of the resonance alpha2 with the fit uncertainty", 0., -10, 10)
-    
-    xslope2_fit = RooRealVar("sig_p6_fit", "Variation of the resonance slope2 with the fit uncertainty", 0.10, -1., 1.)
-    sslope2_fit = RooRealVar("CMS"+YEAR+"_sig_p6_fit", "Change of the resonance slope2 with the fit uncertainty", 0., -10, 10)
+    #xalpha2_fit = RooRealVar("sig_p5_fit", "Variation of the resonance alpha2 with the fit uncertainty", 0.03, -1., 1.)
+    #salpha2_fit = RooRealVar("CMS"+YEAR+"_sig_p5_fit", "Change of the resonance alpha2 with the fit uncertainty", 0., -10, 10)
+    #
+    #xslope2_fit = RooRealVar("sig_p6_fit", "Variation of the resonance slope2 with the fit uncertainty", 0.10, -1., 1.)
+    #sslope2_fit = RooRealVar("CMS"+YEAR+"_sig_p6_fit", "Change of the resonance slope2 with the fit uncertainty", 0., -10, 10)
 
-    xmean_fit.setConstant(True)
-    smean_fit.setConstant(True)
+    #xmean_fit.setConstant(True)
+    #smean_fit.setConstant(True)
     xmean_jes.setConstant(True)
     smean_jes.setConstant(True)
-    xmean_e.setConstant(True)
-    smean_e.setConstant(True)
-    xmean_m.setConstant(True)
-    smean_m.setConstant(True)
+    #xmean_e.setConstant(True)
+    #smean_e.setConstant(True)
+    #xmean_m.setConstant(True)
+    #smean_m.setConstant(True)
     
-    xsigma_fit.setConstant(True)
-    ssigma_fit.setConstant(True)
-    xsigma_jes.setConstant(True)
-    ssigma_jes.setConstant(True)
+    #xsigma_fit.setConstant(True)
+    #ssigma_fit.setConstant(True)
+    #xsigma_jes.setConstant(True)
+    #ssigma_jes.setConstant(True)
     xsigma_jer.setConstant(True)
     ssigma_jer.setConstant(True)
-    xsigma_e.setConstant(True)
-    ssigma_e.setConstant(True)
-    xsigma_m.setConstant(True)
-    ssigma_m.setConstant(True)
+    #xsigma_e.setConstant(True)
+    #ssigma_e.setConstant(True)
+    #xsigma_m.setConstant(True)
+    #ssigma_m.setConstant(True)
     
-    xalpha1_fit.setConstant(True)
-    salpha1_fit.setConstant(True)
-    xslope1_fit.setConstant(True)
-    sslope1_fit.setConstant(True)
+    #xalpha1_fit.setConstant(True)
+    #salpha1_fit.setConstant(True)
+    #xslope1_fit.setConstant(True)
+    #sslope1_fit.setConstant(True)
 
-    xalpha2_fit.setConstant(True)
-    salpha2_fit.setConstant(True)
-    xslope2_fit.setConstant(True)
-    sslope2_fit.setConstant(True)
+    #xalpha2_fit.setConstant(True)
+    #salpha2_fit.setConstant(True)
+    #xslope2_fit.setConstant(True)
+    #sslope2_fit.setConstant(True)
 
 
     # the alpha method is now done.
@@ -288,32 +288,38 @@ def signal(category):
 
         # define the signal PDF
         vmean[m] = RooRealVar(signalName + "_vmean", "Crystal Ball mean", m, m*0.96, m*1.05)
-        smean[m] = RooFormulaVar(signalName + "_mean", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)", RooArgList(vmean[m], xmean_e, smean_e, xmean_m, smean_m, xmean_jes, smean_jes, xmean_fit, smean_fit))
+        #smean[m] = RooFormulaVar(signalName + "_mean", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)", RooArgList(vmean[m], xmean_e, smean_e, xmean_m, smean_m, xmean_jes, smean_jes, xmean_fit, smean_fit))
+        smean[m] = RooFormulaVar(signalName + "_mean", "@0*(1+@1*@2)", RooArgList(vmean[m], xmean_jes, smean_jes))
 
         #vsigma[m] = RooRealVar(signalName + "_vsigma", "Crystal Ball sigma", m*0.07, m*0.05, m*0.9)
         vsigma[m] = RooRealVar(signalName + "_vsigma", "Crystal Ball sigma", m*0.02, m*0.0005, m*0.025)
-        sigmaList = RooArgList(vsigma[m], xsigma_e, ssigma_e, xsigma_m, ssigma_m, xsigma_jes, ssigma_jes, xsigma_jer, ssigma_jer)
-        sigmaList.add(RooArgList(xsigma_fit, ssigma_fit))
-        ssigma[m] = RooFormulaVar(signalName + "_sigma", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)*(1+@9*@10)", sigmaList)
-        
+        #sigmaList = RooArgList(vsigma[m], xsigma_e, ssigma_e, xsigma_m, ssigma_m, xsigma_jes, ssigma_jes, xsigma_jer, ssigma_jer)
+        #sigmaList.add(RooArgList(xsigma_fit, ssigma_fit))
+        #ssigma[m] = RooFormulaVar(signalName + "_sigma", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)*(1+@9*@10)", sigmaList)
+        ssigma[m] = RooFormulaVar(signalName + "_sigma", "@0*(1+@1*@2)", RooArgList(vsigma[m], xsigma_jer, ssigma_jer))
+ 
         #valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha 1", 0.2,  0., 15.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
         valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha 1", 0.2,  0.05, 0.28) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
         #valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha 1", 0.19)
         #valpha1[m].setConstant(True)
 
-        salpha1[m] = RooFormulaVar(signalName + "_alpha1", "@0*(1+@1*@2)", RooArgList(valpha1[m], xalpha1_fit, salpha1_fit))
+        #salpha1[m] = RooFormulaVar(signalName + "_alpha1", "@0*(1+@1*@2)", RooArgList(valpha1[m], xalpha1_fit, salpha1_fit))
+        salpha1[m] = RooFormulaVar(signalName + "_alpha1", "@0", RooArgList(valpha1[m]))
 
         #vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 10., 0.1, 120.) # slope of the power tail
         vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 10., 0.1, 20.) # slope of the power tail
-        sslope1[m] = RooFormulaVar(signalName + "_slope1", "@0*(1+@1*@2)", RooArgList(vslope1[m], xslope1_fit, sslope1_fit))
+        #sslope1[m] = RooFormulaVar(signalName + "_slope1", "@0*(1+@1*@2)", RooArgList(vslope1[m], xslope1_fit, sslope1_fit))
+        sslope1[m] = RooFormulaVar(signalName + "_slope1", "@0", RooArgList(vslope1[m]))
 
         #valpha2[m] = RooRealVar(signalName + "_valpha2", "Crystal Ball alpha 2", 0.2,  0., 1.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
         valpha2[m] = RooRealVar(signalName + "_valpha2", "Crystal Ball alpha 2", 1.)
         valpha2[m].setConstant(True)
-        salpha2[m] = RooFormulaVar(signalName + "_alpha2", "@0*(1+@1*@2)", RooArgList(valpha2[m], xalpha2_fit, salpha2_fit))
+        #salpha2[m] = RooFormulaVar(signalName + "_alpha2", "@0*(1+@1*@2)", RooArgList(valpha2[m], xalpha2_fit, salpha2_fit))
+        salpha2[m] = RooFormulaVar(signalName + "_alpha2", "@0", RooArgList(valpha2[m]))
 
         vslope2[m] = RooRealVar(signalName + "_vslope2", "Crystal Ball slope 2", 6., 2.5, 15.) # slope of the higher power tail
-        sslope2[m] = RooFormulaVar(signalName + "_slope2", "@0*(1+@1*@2)", RooArgList(vslope2[m], xslope2_fit, sslope2_fit)) # slope of the higher power tail
+        #sslope2[m] = RooFormulaVar(signalName + "_slope2", "@0*(1+@1*@2)", RooArgList(vslope2[m], xslope2_fit, sslope2_fit)) # slope of the higher power tail
+        sslope2[m] = RooFormulaVar(signalName + "_slope2", "@0", RooArgList(vslope2[m])) # slope of the higher power tail
 
         #signal[m] = RooCBShape(signalName, "m_{%s'} = %d GeV" % ('X', m), X_mass, smean[m], ssigma[m], salpha1[m], sslope1[m]) # Signal name does not have the channel
         signal[m] = RooDoubleCrystalBall(signalName, "m_{%s'} = %d GeV" % ('X', m), X_mass, smean[m], ssigma[m], salpha1[m], sslope1[m], salpha2[m], sslope2[m])
@@ -790,267 +796,6 @@ def signal(category):
     print "Workspace", WORKDIR+"MC_signal_%s_%s.root" % (YEAR, category), "saved successfully"
     sys.exit()
 
-#def efficiency(stype, Zlep=True):
-#    genPoints = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500]
-#    eff = {}
-#    
-#    channels = [x for x in channelList if len(x)<5]
-#
-#    for channel in channels:
-#        isAH = ('hp' in channel or 'lp' in channel)
-#        treeSign = {}
-#        ngenSign = {}
-#        nevtSign = {}
-#        eff[channel] = TGraphErrors()
-#
-#        for i, m in enumerate(genPoints):
-#            if isAH and m < 1000: continue
-#            #if m==1600 or m==2000: continue
-#            signName = "%s_M%d" % (stype, m) #"%s_M%d" % (channel[:3], m)
-#            ngenSign[m] = 0.
-#            nevtSign[m] = 0.
-#            for j, ss in enumerate(sample[signName]['files']):
-#                if isAH and not 'had' in ss: continue
-#                if 'nn' in channel and not 'Zinv' in ss: continue
-#                if ('en' in channel or 'mn' in channel) and not 'Wlep' in ss: continue
-#                if ('ee' in channel or 'mm' in channel) and not 'Zlep' in ss: continue
-#                if Zlep and 'Zinv' in ss: continue
-#                if not Zlep and 'Zlep' in ss: continue
-#
-#                sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
-#                if not sfile.Get("Events")==None:
-#                    ngenSign[m] += sfile.Get("Events").GetEntries()
-#                    # From trees
-#                    treeSign[m] = sfile.Get("tree")
-#                    nevtSign[m] += treeSign[m].GetEntries(selection[channel] + selection['SR'])
-#                    # From hist
-#                    #nevtSign[m] += sfile.Get(channel+"SR/X_mass").GetEntries()
-#                else:
-#                    ngenSign[m] = -1
-#                    print "Failed reading file", NTUPLEDIR + ss + ".root"
-#                sfile.Close()
-#                #print channel, ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
-#            if nevtSign[m] == 0 or ngenSign[m] < 0: continue
-#            # Gen Br
-#            #if ('en' in channel or 'mn' in channel or 'ee' in channel or 'mm' in channel): ngenSign[m] /= 1.5
-#            n = eff[channel].GetN()
-#            eff[channel].SetPoint(n, m, nevtSign[m]/ngenSign[m])
-#            eff[channel].SetPointError(n, 0, math.sqrt(nevtSign[m])/ngenSign[m])
-#
-#        eff[channel].SetMarkerColor(color[channel])
-#        eff[channel].SetMarkerStyle(20)
-#        eff[channel].SetLineColor(color[channel])
-#        eff[channel].SetLineWidth(2)
-#        if channel.count('b')==1: eff[channel].SetLineStyle(3)
-#
-#    n = max([eff[x].GetN() for x in channels])
-#    maxEff = 0.
-#
-#    # Total efficiency
-#    eff["sum"] = TGraphErrors(n)
-#    eff["sum"].SetMarkerStyle(24)
-#    eff["sum"].SetMarkerColor(1)
-#    eff["sum"].SetLineWidth(2)
-#    for i in range(n):
-#        tot, mass = 0., 0.
-#        for channel in channels:
-#            if eff[channel].GetN() > i:
-#                tot += eff[channel].GetY()[i]
-#                mass = eff[channel].GetX()[i]
-#                if tot > maxEff: maxEff = tot
-#        eff["sum"].SetPoint(i, mass, tot)
-#
-#
-#    leg = TLegend(0.15, 0.60, 0.95, 0.8)
-#    leg.SetBorderSize(0)
-#    leg.SetFillStyle(0) #1001
-#    leg.SetFillColor(0)
-#    leg.SetNColumns(len(channels)/4)
-#    for i, channel in enumerate(channels):
-#        if eff[channel].GetN() > 0: leg.AddEntry(eff[channel], getChannel(channel), "pl")
-#    leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])/2.*0.045)
-#
-#    legS = TLegend(0.55, 0.85-0.045, 0.95, 0.85)
-#    legS.SetBorderSize(0)
-#    legS.SetFillStyle(0) #1001
-#    legS.SetFillColor(0)
-#    legS.AddEntry(eff['sum'], "Total efficiency", "pl")
-#
-#    c1 = TCanvas("c1", "Signal Efficiency", 1200, 800)
-#    c1.cd(1)
-#    eff['sum'].Draw("APL")
-#    for i, channel in enumerate(channels): eff[channel].Draw("SAME, PL")
-#    leg.Draw()
-#    legS.Draw()
-#    setHistStyle(eff["sum"], 1.1)
-#    eff["sum"].SetTitle(";m_{"+stype[1]+"'} (GeV);Acceptance #times efficiency")
-#    eff["sum"].SetMinimum(0.)
-#    eff["sum"].SetMaximum(max(1., maxEff*1.5)) #0.65
-#    eff["sum"].GetXaxis().SetTitleSize(0.045)
-#    eff["sum"].GetYaxis().SetTitleSize(0.045)
-#    eff["sum"].GetYaxis().SetTitleOffset(1.1)
-#    eff["sum"].GetXaxis().SetTitleOffset(1.05)
-#    eff["sum"].GetXaxis().SetRangeUser(750, 5000)
-#    if stype=='XWH' or (stype=='XZH' and Zlep): line = drawLine(750, 2./3., 4500, 2./3.)
-#    drawCMS(-1, "Simulation") #Preliminary
-#    drawAnalysis("VH")
-#
-#    suffix = ""
-#    if isAH: suffix = "ah"
-#    elif stype=='XZH' and Zlep: suffix = "ll"
-#    elif stype=='XZH' and not Zlep: suffix = "nn"
-#    elif stype=='XWH': suffix = "ln"
-#
-#    c1.Print("plotsSignal/Efficiency/"+stype+suffix+".pdf")
-#    c1.Print("plotsSignal/Efficiency/"+stype+suffix+".png")
-#
-#    # print
-#    print "category",
-#    for m in range(0, eff["sum"].GetN()):
-#        print " & %d" % int(eff["sum"].GetX()[m]),
-#    print "\\\\", "\n\\hline"
-#    for i, channel in enumerate(channels+["sum"]):
-#        if channel=='sum': print "\\hline"
-#        print getChannel(channel).replace("high ", "H").replace("low ", "L").replace("purity", "P").replace("b-tag", ""),
-#        for m in range(0, eff[channel].GetN()):
-#            print "& %.1f" % (100.*eff[channel].GetY()[m]),
-#        print "\\\\"
-#
-#
-#
-#def efficiencyAll():
-#    signals = {'XWHln' : ['enb', 'enbb', 'mnb', 'mnbb'], 'XZHll' : ['eeb', 'eebb', 'mmb', 'mmbb'], 'XZHnn' : ['nnb', 'nnbb'], 'AZhll' : ['eeb', 'eebb', 'mmb', 'mmbb'], 'AZhnn' : ['nnb', 'nnbb'], 'BBAZhll' : ['eeb', 'eebb', 'mmb', 'mmbb'], 'BBAZhnn' : ['nnb', 'nnbb'], 'monoH' : ['nnb', 'nnbb']}
-#    labels = {'XWHln' : "q#bar{q} #rightarrow W' #rightarrow Wh #rightarrow l#nub#bar{b}", 'XZHll' : "q#bar{q} #rightarrow Z' #rightarrow Zh #rightarrow llb#bar{b}", 'XZHnn' : "q#bar{q} #rightarrow Z' #rightarrow Zh #rightarrow #nu#nub#bar{b}", 'AZhll' : "gg #rightarrow A #rightarrow Zh #rightarrow llb#bar{b}", 'AZhnn' : "gg #rightarrow A #rightarrow Zh #rightarrow #nu#nub#bar{b}", 'BBAZhll' : "b#bar{b}A #rightarrow Zh #rightarrow llb#bar{b}", 'BBAZhnn' : "b#bar{b}A #rightarrow Zh #rightarrow #nu#nub#bar{b}", 'monoH' : "q#bar{q} #rightarrow Z' #rightarrow Ah #rightarrow #chi#chib#bar{b}"} # (m_{A}=300 GeV)
-#    #colors = {'XWHln' : 882, 'XZHll' : 418, 'XZHnn' : 856, 'AZhll' : 633, 'AZhnn' : 625, 'BBAZhll' : 633, 'BBAZhnn' : 625, 'monoH' : 602}
-#    colors = {'XWHln' : 1007, 'XZHll' : 1004, 'XZHnn' : 1003, 'AZhll' : 1006, 'AZhnn' : 1005, 'BBAZhll' : 1002, 'BBAZhnn' : 1003, 'monoH' : 1}
-#    styles = {'XWHln' : 1, 'XZHll' : 1, 'XZHnn' : 1, 'AZhll' : 2, 'AZhnn' : 2, 'BBAZhll' : 3, 'BBAZhnn' : 3, 'monoH' : 8}
-#    marker = {'XWHln' : 22, 'XZHll' : 21, 'XZHnn' : 20, 'AZhll' : 21, 'AZhnn' : 20, 'BBAZhll' : 25, 'BBAZhnn' : 24, 'monoH' : 24}
-##    {'nnb' : 634, 'nnbb' : 634, 'enb' : 410, 'enbb' : 410, 'mnb' : 856, 'mnbb' : 856, 'eeb' : 418, 'eebb' : 418, 'mmb' : 602, 'mmbb' : 602, 'wrhpb': 634, 'wrhpbb': 634, 'wrlpb': 826, 'wrlpbb': 826, 'zrhpb': 856, 'zrhpbb': 856, 'zrlpb': 602, 'zrlpbb': 602, 'vrbbb' : 800, 'vrbbbb' : 801}
-#    genPoints = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500]
-#    eff = {}
-#    
-#    for sign, channels in signals.iteritems():
-#        treeSign = {}
-#        ngenSign = {}
-#        nevtSign = {}
-#        eff[sign] = TGraphErrors()
-#        eff[sign].SetTitle(sign)
-#        eff[sign].SetMarkerColor(colors[sign])
-#        eff[sign].SetMarkerSize(1.25)
-#        eff[sign].SetLineColor(colors[sign])
-#        eff[sign].SetLineWidth(2)
-#        eff[sign].SetLineStyle(styles[sign])
-#        eff[sign].SetMarkerStyle(marker[sign])
-#        #if channel.count('b')==1: eff[channel].SetLineStyle(3)
-#        for i, m in enumerate(genPoints):
-#            neff = 0.
-#            for channel in channels:
-#                signName = "%s_M%d" % (sign, m)
-#                if 'AZh' in sign and m > 2000: continue
-#                if sign=='monoH' and m==1600: m = 1700
-#                if sign=='monoH' and m==1800: continue
-#                if sign=='monoH' and m>4000: continue
-#                if sign=='monoH': signName = "monoH_MZ%d_MA300" % (m)
-#                
-#                ngenSign[m] = 0.
-#                nevtSign[m] = 0.
-#                for j, ss in enumerate(sample[signName]['files']):
-##                    if ('nn' in channel) and not ('inv' in channel): continue
-##                    if ('en' in channel or 'mn' in channel) and not 'Wlep' in ss: continue
-##                    if ('ee' in channel or 'mm' in channel) and not ('Zlep' in ss or 'LL' in ss): continue
-#                    #if Zlep and 'Zinv' in ss: continue
-#                    #if not Zlep and 'Zlep' in ss: continue
-#                    sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
-#                    if not sfile.Get("Events")==None:
-#                        ngenSign[m] += sfile.Get("Events").GetEntries()
-#                        # From trees
-#                        treeSign[m] = sfile.Get("tree")
-#                        nevtSign[m] += treeSign[m].GetEntries(selection[channel] + selection['SR'])
-#                        # From hist
-#                        #nevtSign[m] += sfile.Get(channel+"SR/X_mass").GetEntries()
-#                    else:
-#                        ngenSign[m] = -1
-#                        print "Failed reading file", NTUPLEDIR + ss + ".root"
-#                    sfile.Close()
-#                    #print channel, ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
-#                if nevtSign[m] == 0 or ngenSign[m] < 0: continue
-#                # Gen Br
-#                #if ('en' in channel or 'mn' in channel or 'ee' in channel or 'mm' in channel): ngenSign[m] /= 1.5
-#                neff += nevtSign[m]/ngenSign[m]
-#            if neff<=0.: continue
-#            if 'ln' in sign or 'll' in sign: neff *= 1.5
-#            n = eff[sign].GetN()
-#            eff[sign].SetPoint(n, m, neff)
-#            eff[sign].SetPointError(n, 0, 0)
-#
-#
-#    n = 0. #max([eff[x].GetN() for x in channels])
-#    maxEff = 0.
-#
-#    leg = TLegend(0.15, 0.35, 0.95, 0.35)
-#    leg.SetBorderSize(0)
-#    leg.SetFillStyle(0) #1001
-#    leg.SetFillColor(0)
-#    for sign in ['XZHnn', 'AZhll', 'XWHln', 'AZhnn', 'XZHll', 'BBAZhll', 'monoH', 'BBAZhnn']:
-#        if eff[sign].GetN() > 0:
-#            leg.AddEntry(eff[sign], labels[sign], "pl")
-#            n += 1
-#    leg.SetNColumns(int(n/3))
-#    leg.SetY1(leg.GetY2()-n*0.045/leg.GetNColumns())
-#
-##    legS = TLegend(0.55, 0.85-0.045, 0.95, 0.85)
-##    legS.SetBorderSize(0)
-##    legS.SetFillStyle(0) #1001
-##    legS.SetFillColor(0)
-##    legS.AddEntry(eff['sum'], "Total efficiency", "pl")
-#
-#    c1 = TCanvas("c1", "Signal Efficiency", 1200, 800)
-#    c1.cd(1)
-#    c1.GetPad(0).SetTicks(1, 1)
-#    first = 'XZHnn'
-#    eff[first].Draw("APL")
-#    for sign, channels in signals.iteritems():
-#        eff[sign].Draw("APL" if i==0 else "SAME, PL")
-#    leg.Draw()
-##    legS.Draw()
-#    setHistStyle(eff[first], 1.1)
-#    eff[first].SetTitle(";m_{X} (GeV);Acceptance #times efficiency")
-#    eff[first].SetMinimum(0.)
-#    eff[first].SetMaximum(max(1., maxEff*1.5)) #0.65
-#    eff[first].GetXaxis().SetTitleSize(0.045)
-#    eff[first].GetYaxis().SetTitleSize(0.045)
-#    eff[first].GetXaxis().SetLabelSize(0.045)
-#    eff[first].GetYaxis().SetLabelSize(0.045)
-#    eff[first].GetYaxis().SetTitleOffset(1.1)
-#    eff[first].GetXaxis().SetTitleOffset(1.05)
-#    eff[first].GetXaxis().SetRangeUser(750, 4500)
-#    eff[first].GetYaxis().SetRangeUser(0., 0.5)
-##    if stype=='XWH' or (stype=='XZH' and Zlep): line = drawLine(750, 2./3., 4500, 2./3.)
-#    #drawCMS(-1, "Simulation", True)
-#    #drawAnalysis("XVHsl")
-#
-#    latex = TLatex()
-#    latex.SetNDC()
-#    latex.SetTextSize(0.05)
-#    latex.SetTextColor(1)
-#    latex.SetTextFont(42)
-#    latex.SetTextAlign(13)
-#    latex.DrawLatex(0.83, 0.99, "(13 TeV)")
-#    latex.SetTextFont(62)
-#    latex.SetTextSize(0.06)
-#    latex.DrawLatex(0.15, 0.90, "CMS")
-#    latex.SetTextSize(0.05)
-#    latex.SetTextFont(52)
-##    latex.DrawLatex(0.15, 0.84, "Simulation")
-#    
-##    suffix = ""
-##    if isAH: suffix = "ah"
-##    elif stype=='XZH' and Zlep: suffix = "ll"
-##    elif stype=='XZH' and not Zlep: suffix = "nn"
-##    elif stype=='XWH': suffix = "ln"
-#
-#    c1.Print("plotsSignal/Efficiency/Efficiency.pdf")
-#    c1.Print("plotsSignal/Efficiency/Efficiency.png")
 
 def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=None, cat="", alt=None, anorm=-1, signal=None, snorm=-1):
     isData = norm>0

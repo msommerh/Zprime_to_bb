@@ -7,52 +7,39 @@
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation94X
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X
 from array import array
-#from ScaleFactorTool import ensureTFile ## imported directly to this script
 import ROOT
-#ROOT.gROOT.ProcessLine('.L ./BTagCalibrationStandalone.cpp+')
-from ROOT import TH2F, BTagCalibration, BTagCalibrationReader
+from ROOT import TH2F, BTagCalibration, BTagCalibrationReader, TFile
 from ROOT.BTagEntry import OP_LOOSE, OP_MEDIUM, OP_TIGHT, OP_RESHAPING
 from ROOT.BTagEntry import FLAV_B, FLAV_C, FLAV_UDSG
-path = 'CorrectionTools/btag/'
+import os
+import sys
+#path = 'CorrectionTools/btag/'
+path = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/btag/"
 
 class BTagWPs:
   """Contain b tagging working points."""
   def __init__( self, tagger, year=2017 ):
     assert( year in [2016,2017,2018] ), "You must choose a year from: 2016, 2017, or 2018."
+    assert(tagger=='DeepJet'), "You must choose deepJet as your tagger, since the other WPs are currently not implemented."
     if year==2016:
-      if 'deep' in tagger.lower():
-        self.loose    = 0.2217 # 0.2219 for 2016ReReco vs. 2016Legacy
-        self.medium   = 0.6321 # 0.6324
-        self.tight    = 0.8953 # 0.8958
-      else:
-        self.loose    = 0.5426 # for 80X ReReco
-        self.medium   = 0.8484
-        self.tight    = 0.9535
+      self.loose    = 0.0614
+      self.medium   = 0.3093
+      self.tight    = 0.7221
     elif year==2017:
-      if 'deep' in tagger.lower():
-        self.loose    = 0.1522 # for 94X
-        self.medium   = 0.4941
-        self.tight    = 0.8001
-      else:
-        self.loose    = 0.5803 # for 94X
-        self.medium   = 0.8838
-        self.tight    = 0.9693
+      self.loose    = 0.0521
+      self.medium   = 0.3033
+      self.tight    = 0.7489
     elif year==2018:
-      if 'deep' in tagger.lower():
-        self.loose    = 0.1241 # for 102X
-        self.medium   = 0.4184
-        self.tight    = 0.7527
-      else:
-        self.loose    = 0.5803 # for 94X
-        self.medium   = 0.8838
-        self.tight    = 0.9693
-  
+      self.loose    = 0.0494
+      self.medium   = 0.2770
+      self.tight    = 0.7264
 
+ 
 class BTagWeightTool:
     
     def __init__(self, tagger, jettype, wp='loose', sigma='central', channel='ll', year=2017):
         """Load b tag weights from CSV file."""
-        #print "Loading BTagWeightTool for %s (%s WP)..."%(tagger,wp)
+        print "Loading BTagWeightTool for %s (%s WP)..."%(tagger,wp)
         
         assert(year in [2016,2017,2018]), "You must choose a year from: 2016, 2017, or 2018."
         assert(tagger in ['CSVv2','DeepCSV','DeepJet']), "BTagWeightTool: You must choose a tagger from: CSVv2, DeepCSV, DeepJet!"
@@ -71,7 +58,7 @@ class BTagWeightTool:
               effname = path+'DeepCSV_AK8_2016_eff.root'
             elif tagger == 'DeepJet':
               csvname = path+'DeepJet_2016LegacySF_V1.csv'
-              effname = ''
+              effname = path+'DeepJet_AK8_2016_eff.root'
           elif jettype=='AK4':
             if tagger == 'CSVv2':
               csvname = path+'CSVv2_Moriond17_B_H.csv'
@@ -81,7 +68,7 @@ class BTagWeightTool:
               effname = path+'DeepCSV_AK4_2016_eff.root'
             elif tagger == 'DeepJet':
               csvname = path+'DeepJet_2016LegacySF_V1.csv'
-              effname = ''
+              effname = path+'DeepJet_AK4_2016_eff.root'
         elif year==2017:
           if jettype=='AK8':
             if tagger == 'CSVv2':
@@ -92,7 +79,7 @@ class BTagWeightTool:
               effname = path+'DeepCSV_AK8_2017_eff.root' 
             elif tagger == 'DeepJet':
               csvname = path+'DeepFlavour_94XSF_V4_B_F.csv'
-              effname = '' 
+              effname = path+'DeepJet_AK8_2017_eff.root'
           elif jettype=='AK4':
             if tagger == 'CSVv2':
               csvname = path+'CSVv2_94XSF_V2_B_F.csv'
@@ -102,7 +89,7 @@ class BTagWeightTool:
               effname = path+'DeepCSV_AK4_2017_eff.root'
             elif tagger == 'DeepJet':
               csvname = path+'DeepFlavour_94XSF_V4_B_F.csv'
-              effname = '' 
+              effname = path+'DeepJet_AK4_2017_eff.root'
         elif year==2018:
           if jettype=='AK8':
             if tagger == 'CSVv2':
@@ -113,7 +100,7 @@ class BTagWeightTool:
               effname = path+'DeepCSV_AK8_2018_eff.root'
             elif tagger == 'DeepJet':
               csvname = path+'DeepJet_102XSF_V1.csv'
-              effname = ''
+              effname = path+'DeepJet_AK8_2018_eff.root'
           elif jettype=='AK4':
             if tagger == 'CSVv2':
               csvname = path+'CSVv2_94XSF_V2_B_F.csv'
@@ -123,7 +110,7 @@ class BTagWeightTool:
               effname = path+'DeepCSV_AK4_2018_eff.root'
             elif tagger == 'DeepJet':
               csvname = path+'DeepJet_102XSF_V1.csv'
-              effname = ''
+              effname = path+'DeepJet_AK4_2018_eff.root'
 
         # TAGGING WP
         self.wp     = getattr(BTagWPs(tagger,year),wp) 
@@ -132,6 +119,8 @@ class BTagWeightTool:
             tagged = lambda e,i: e.Jet_btagCSVV2[i]>self.wp
           elif tagger == 'DeepCSV':
             tagged = lambda e,i: e.Jet_btagDeepB[i]>self.wp
+          elif tagger == 'DeepJet':
+            tagged = lambda e,i: e.Jet_btagDeepFlavB[i]>self.wp
         elif jettype == 'AK8':
           if tagger == 'CSVv2':
             tagged = lambda e,i: e.FatJet_btagCSVV2[i]>self.wp
@@ -142,16 +131,21 @@ class BTagWeightTool:
           #elif tagger == 'Hbb':
           #  tagged = lambda e,i: e.FatJet_btagHbb[i]>self.wp
         # CSV READER
+        print "initializing BTagCalibrationReader..."
         op        = OP_LOOSE if wp=='loose' else OP_MEDIUM if wp=='medium' else OP_TIGHT if wp=='tight' else OP_RESHAPING
         type_udsg = 'incl'
         type_bc   = 'comb' # 'mujets' for QCD; 'comb' for QCD+TT
+        print "...calibration..."
         calib     = BTagCalibration(tagger, csvname)
+        print "...reader..."
         reader    = BTagCalibrationReader(op, sigma)
+        print "...loading..."
         reader.load(calib, FLAV_B, type_bc)
         reader.load(calib, FLAV_C, type_bc)
         reader.load(calib, FLAV_UDSG, type_udsg)
     
         # EFFICIENCIES
+        print "initializing Efficiencies..."
         ptbins     = array('d',[10,20,30,50,70,100,140,200,300,500,1000,1500])
         etabins    = array('d',[-2.5,-1.5,0.0,1.5,2.5])
         bins       = (len(ptbins)-1,ptbins,len(etabins)-1,etabins)
@@ -159,11 +153,20 @@ class BTagWeightTool:
         effs       = { }
         
         if tagger in ['CSVv2','DeepCSV','DeepJet']:
+          if not os.path.isfile(effname): ## newly added to take into account case where efficiency file hasn't been made yet
+            f = TFile(effname, "RECREATE")   
+            for flavor in [0,4,5]:
+                flavor   = flavorToString(flavor) 
+                efftitle = "eff_%s_%s_%s"%(tagger,flavor,wp) 
+                effhist = TH2F(efftitle,efftitle,*bins)
+                effhist.Write()
+            f.Close()
           efffile    = ensureTFile(effname)
           for flavor in [0,4,5]:
+          #for flavor in [5]:
             flavor   = flavorToString(flavor)
             histname = "%s_%s_%s"%(tagger,flavor,wp)
-            effname  = "%s/eff_%s_%s_%s"%(channel,tagger,flavor,wp)
+            effname  = "eff_%s_%s_%s"%(tagger,flavor,wp)
             hists[flavor]        = TH2F(histname,histname,*bins)
             hists[flavor+'_all'] = TH2F(histname+'_all',histname+'_all',*bins)
             effs[flavor]         = efffile.Get(effname)
@@ -174,9 +177,10 @@ class BTagWeightTool:
         else:
           efffile    = ensureTFile(effname)
           for flavor in [0,4,5]:
+          #for flavor in [5]:
             flavor   = flavorToString(flavor)
             histname = "%s_%s_%s"%(tagger,flavor,wp)
-            effname  = "%s/eff_%s_%s_%s"%(channel,tagger,flavor,wp)
+            effname  = "eff_%s_%s_%s"%(tagger,flavor,wp)
             hists[flavor]        = TH2F(histname,histname,*bins)
             hists[flavor+'_all'] = TH2F(histname+'_all',histname+'_all',*bins)
             #effs[flavor]         = efffile.Get(effname)
@@ -190,6 +194,7 @@ class BTagWeightTool:
         self.reader = reader
         self.hists  = hists
         self.effs   = effs
+        print "finished initialization..."
 
     def getWeight(self,event,jetids):
         """Get event weight for a given set of jets."""
@@ -247,6 +252,17 @@ class BTagWeightTool:
         for histname, hist in self.hists.iteritems():
           hist.SetDirectory(directory)
 
+     #def saveHists(self,directory,subdirname=None):
+     #   if subdirname:
+     #     subdir = directory.Get(subdirname)
+     #     if not subdir:
+     #       subdir = directory.mkdir(subdirname)
+     #     directory = subdir
+     #   for histname, hist in self.hists.iteritems():
+     #     hist.SetDirectory(directory)
+     #     hist.Write()
+
+
 def flavorToFLAV(flavor):
   return FLAV_B if abs(flavor)==5 else FLAV_C if abs(flavor)==4 or abs(flavor)==15 else FLAV_UDSG       
 
@@ -258,9 +274,9 @@ def ensureTFile(filename,option='READ'):
   """Open TFile, checking if the file in the given path exists."""
   if not os.path.isfile(filename):
     print '>>> ERROR! File in path "%s" does not exist!!'%(filename)
-    exit(1)
+    sys.exit(1)
   file = TFile(filename,option)
   if not file or file.IsZombie():
     print '>>> ERROR! Could not open file by name "%s"'%(filename)
-    exit(1)
+    sys.exit(1)
   return file

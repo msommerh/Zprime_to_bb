@@ -129,19 +129,19 @@ class ZprimetobbProducer(Module):
         self.lumi       = 1.
         if self.year == 2016:
                 self.lumi = 35920.
-                self.btagLoose = 0.0614
+                self.btagLoose =  0.0614
                 self.btagMedium = 0.3093
-                self.btagTight = 0.7221
+                self.btagTight =  0.7221
         elif self.year == 2017:
                 self.lumi = 41530.
-                self.btagLoose = 0.0521
+                self.btagLoose =  0.0521
                 self.btagMedium = 0.3033
-                self.btagTight = 0.7489
+                self.btagTight =  0.7489
         elif self.year == 2018:
                 self.lumi = 59740.
-                self.btagLoose = 0.0494
+                self.btagLoose =  0.0494
                 self.btagMedium = 0.2770
-                self.btagTight = 0.7264
+                self.btagTight =  0.7264
         else:
                 print "Unknown year!!!! Abort module!!!"
                 import sys
@@ -271,34 +271,11 @@ class ZprimetobbProducer(Module):
         if event.nFatJet > 0: fatjetMass = event.FatJet_msoftdrop[0]
         
         nIsoElectrons = 0.
-        #if event.nElectron>0: print "event.nElectron", event.nElectron #FIXME
         for iel in range(event.nElectron):
-            ####### test start FIXME FIXME FIXME
-            #if event.Electron_pt[iel] > 20:      
-            #    print "event.Electron_pt[iel] > 20" 
-            #if abs(event.Electron_eta[iel]) < 2.5:
-            #    print "abs(event.Electron_eta[iel]) < 2.5"
-            #if event.Electron_cutBased[iel] >= 1:
-            #    print "event.Electron_cutBased[iel] >= 1"
-            #if event.Electron_pt[iel] > 20. and abs(event.Electron_eta[iel]) < 2.5 and event.Electron_cutBased[iel] >= 1:
-            #    print "passes all!!!"
-            ####### test end   FIXME FIXME FIXME
             if event.Electron_pt[iel] > 20. and abs(event.Electron_eta[iel]) < 2.5 and event.Electron_cutBased[iel] >= 1: nIsoElectrons += 1
 
         nIsoMuons = 0.
-        #if event.nMuon>0: print "event.nMuon", event.nMuon #FIXME
         for imu in range(event.nMuon):
-            ####### test start FIXME FIXME FIXME
-            #if event.Muon_pt[imu] > 20.:
-            #    print "event.Muon_pt[imu] > 20." 
-            #if abs(event.Muon_eta[imu]) < 2.4:
-            #    print "abs(event.Muon_eta[imu]) < 2.4"
-            #if event.Muon_pfIsoId[imu] >= 2:
-            #    print "event.Muon_pfIsoId[imu] >= 2"
-            #if event.Muon_pt[imu] > 20. and abs(event.Muon_eta[imu]) < 2.4 and event.Muon_looseId[imu] and event.Muon_pfIsoId[imu] >= 2:
-            #    print "passes all!!!"
-            ####### test end   FIXME FIXME FIXME
-           
             if event.Muon_pt[imu] > 20. and abs(event.Muon_eta[imu]) < 2.4 and event.Muon_looseId[imu] and event.Muon_pfIsoId[imu] >= 2: nIsoMuons += 1
         
         ptMuons1, ptMuons2 = 0., 0.

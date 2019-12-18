@@ -13,6 +13,6 @@
 #./Signal_Fitter.py -y 2018 -b tight
 #./Signal_Fitter.py -y 2018 -b semimedium
 #./Signal_Fitter.py -y run2 -b loose
-#./Signal_Fitter.py -y run2 -b medium
+./Signal_Fitter.py -y run2 -b medium
 #./Signal_Fitter.py -y run2 -b tight
 #./Signal_Fitter.py -y run2 -b semimedium

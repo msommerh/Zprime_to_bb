@@ -51,7 +51,17 @@ categories = ['bb', 'bq', 'mumu']
 #massPoints = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 massPoints = [x for x in range(1200, 8000+1, 100)]
 
-########## ######## ##########
+######## syst uncert #########
+
+syst_sig = {}
+syst_sig["lnN"] = {}
+syst_sig["param"] = {}
+
+syst_sig["lnN"]["lumi"] = 0.026
+syst_sig["param"]["CMS"+YEAR+"sig_p1_jes"] = (0., 1.)
+syst_sig["param"]["CMS"+YEAR+"sig_p2_jer"] = (0., 1.)
+
+##############################
 
 def datacards(category):
 
@@ -66,18 +76,25 @@ def generate_datacard(year, category, masspoint, btagging, outname):
     card += "jmax 1\n"
     card += "kmax *\n"
     card += "-----------------------------------------------------------------------------------\n"
-    card += "shapes            {sname}  *    {path}/workspace/{btagging}/MC_signal_{year}_{category}.root     Zprime_{year}:{sname}\n".format(sname=signalName, year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
-    card += "shapes            {bname}  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:{bname}\n".format(bname=backgroundName, data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
-    card += "shapes            data_obs  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:data_obs\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
+    card += "shapes         {sname}  *    {path}/workspace/{btagging}/MC_signal_{year}_{category}.root     Zprime_{year}:{sname}\n".format(sname=signalName, year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
+    card += "shapes         {bname}  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:{bname}\n".format(bname=backgroundName, data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
+    card += "shapes         data_obs  *    {path}/workspace/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:data_obs\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging, path=ABSOLUTEPATH)
     card += "-----------------------------------------------------------------------------------\n"
-    card += "bin               {}\n".format(category)
-    card += "observation       -1\n"
+    card += "bin                              {}\n".format(category)
+    card += "observation                      -1\n"
     card += "-----------------------------------------------------------------------------------\n"
-    card += "bin               {:25}{:25}\n".format(category, category)
-    card += "process           {:25}{:25}\n".format(signalName, backgroundName) 
-    card += "process           {:25}{:25}\n".format("0", "1")
-    card += "rate              {:25}{:25}\n".format("1", "1") 
+    card += "bin                              {:25}{:25}\n".format(category, category)
+    card += "process                          {:25}{:25}\n".format(signalName, backgroundName) 
+    card += "process                          {:25}{:25}\n".format("0", "1")
+    card += "rate                             {:25}{:25}\n".format("1", "1") 
     card += "-----------------------------------------------------------------------------------\n"
+    #for syst_unc in sorted(syst_sig["lnN"].keys()):
+    #    card += "{:<25}{:<6}  {:<25}{:<25}\n".format(syst_unc+'_'+category, 'lnN', 1+syst_sig["lnN"][syst_unc], '-')
+    for syst_unc in sorted(syst_sig["lnN"].keys()):
+        card += "{:<25}{:<6}  {:<25}{:<25}\n".format(syst_unc, 'lnN', 1+syst_sig["lnN"][syst_unc], '-')
+    for syst_unc in sorted(syst_sig["param"].keys()):
+        card += "{:<25}{:<6}  {:<25}{:<25}\n".format(syst_unc.replace('sig_', 'sig_'+category+'_'), 'param', syst_sig["param"][syst_unc][0], syst_sig["param"][syst_unc][1])
+   
     cardfile = open(outname, 'w')
     cardfile.write(card)
     cardfile.close()

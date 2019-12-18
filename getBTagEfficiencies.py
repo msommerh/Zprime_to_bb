@@ -13,9 +13,9 @@ description = '''This script extracts histograms to create b tag efficiencies.''
 parser = ArgumentParser(prog="pileup",description=description,epilog="Succes!")
 parser.add_argument('-y', '--year',    dest='years', choices=[2016,2017,2018], type=int, nargs='+', default=[2017], action='store',
                                        help="year to run" )
-parser.add_argument('-t', '--tagger',  dest='taggers', choices=['CSVv2','DeepCSV'], type=str, nargs='+', default=['CSVv2','DeepCSV'], action='store',
+parser.add_argument('-t', '--tagger',  dest='taggers', choices=['CSVv2','DeepCSV','DeepJet'], type=str, nargs='+', default=['DeepJet'], action='store',
                                        help="tagger to run" )
-parser.add_argument('-w', '--wp',      dest='wps', choices=['loose','medium','tight'], type=str, nargs='+', default=['loose'], action='store',
+parser.add_argument('-w', '--wp',      dest='wps', choices=['loose','medium','tight'], type=str, nargs='+', default=['medium'], action='store',
                                        help="working point to run" )
 parser.add_argument('-p', '--plot',    dest="plot", default=False, action='store_true', 
                                        help="plot efficiencies" )
@@ -32,16 +32,16 @@ def getBTagEfficiencies(tagger,wp,outfilename,indir,samples,jettype,plot=False):
     # GET HISTOGRAMS
     nhists  = { }
     hists   = { }
-    if jettype == 'AK8':
-        if tagger == 'CSVv2':
-            histdir = 'AK8btag'
-        elif tagger == 'DeepCSV':
-            histdir = 'AK8btag_deep'
-    elif jettype == 'AK4':
-        if tagger == 'CSVv2':
-            histdir = 'AK4btag'
-        elif tagger == 'DeepCSV':
-            histdir = 'AK4btag_deep'
+    #if jettype == 'AK8':
+    #    if tagger == 'CSVv2':
+    #        histdir = 'AK8btag'
+    #    elif tagger == 'DeepCSV':
+    #        histdir = 'AK8btag_deep'
+    #elif jettype == 'AK4':
+    #    if tagger == 'CSVv2':
+    #        histdir = 'AK4btag'
+    #    elif tagger == 'DeepCSV':
+    #        histdir = 'AK4btag_deep'
     for flavor in ['b','c','udsg']:
       histname = '%s_%s_%s'%(tagger,flavor,wp)
       hists[histname] = None
@@ -54,12 +54,13 @@ def getBTagEfficiencies(tagger,wp,outfilename,indir,samples,jettype,plot=False):
         print ">>>   Warning! getBTagEfficiencies: Could not open %s"%(filename)
         continue
       for histname in hists:
-        histpath = "%s/%s"%(histdir,histname)
+        #histpath = "%s/%s"%(histdir,histname)
+        histpath = histname
         hist = file.Get(histpath)
         if not hist:
           print ">>>   Warning! getBTagEfficiencies: Could not open histogram '%s' in %s"%(histpath,filename)        
-          dir = file.Get(histdir)
-          if dir: dir.ls()
+          #dir = file.Get(histdir)
+          #if dir: dir.ls()
           continue
         if hists[histname]==None:
           hists[histname] = hist.Clone(histname)
@@ -79,8 +80,8 @@ def getBTagEfficiencies(tagger,wp,outfilename,indir,samples,jettype,plot=False):
     
     # SAVE HISTOGRAMS
     print ">>>   writing to %s..."%(outfilename)
-    file = TFile(outfilename,'UPDATE') #RECREATE
-    ensureTDirectory(file,'ll')
+    file = TFile(outfilename,'RECREATE') #UPDATE
+    #ensureTDirectory(file,'ll')
     for histname, hist in hists.iteritems():
       if 'all' in histname:
         continue
@@ -105,7 +106,8 @@ def getBTagEfficiencies(tagger,wp,outfilename,indir,samples,jettype,plot=False):
 def plot2D(histname,hist,log=False):
     """Plot efficiency."""
     dir    = ensureDirectory('plots')
-    name   = "%s/%s"%(dir,histname)
+    #name   = "%s/%s"%(dir,histname)
+    name   = histname
     if log:
       name += "_log"
     xtitle = 'jet p_{T} [GeV]'

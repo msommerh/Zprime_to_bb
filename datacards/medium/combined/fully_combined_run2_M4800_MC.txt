@@ -1,7 +1,7 @@
 Combination of bb_2016=bb_2016_M4800_MC.txt  bq_2016=bq_2016_M4800_MC.txt  mumu_2016=mumu_2016_M4800_MC.txt  bb_2017=bb_2017_M4800_MC.txt  bq_2017=bq_2017_M4800_MC.txt  mumu_2017=mumu_2017_M4800_MC.txt  bb_2018=bb_2018_M4800_MC.txt  bq_2018=bq_2018_M4800_MC.txt  mumu_2018=mumu_2018_M4800_MC.txt
 imax 9 number of bins
 jmax 17 number of processes minus 1
-kmax 0 number of nuisance parameters
+kmax 19 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
 shapes Bkg_2016_bb           bb_2016               ./workspace/medium/MC_QCD_TTbar_2016_bb.root Zprime_2016:Bkg_2016_bb
 shapes ZpBB_2016_bb_M4800    bb_2016               ./workspace/medium/MC_signal_2016_bb.root Zprime_2016:ZpBB_2016_bb_M4800
@@ -34,8 +34,27 @@ shapes data_obs              mumu_2018             ./workspace/medium/MC_QCD_TTb
 bin          bb_2016    bq_2016    mumu_2016  bb_2017    bq_2017    mumu_2017  bb_2018    bq_2018    mumu_2018
 observation  -1         -1         -1         -1         -1         -1         -1         -1         -1       
 ----------------------------------------------------------------------------------------------------------------------------------
-bin          bb_2016               bb_2016               bq_2016               bq_2016               mumu_2016             mumu_2016             bb_2017               bb_2017               bq_2017               bq_2017               mumu_2017             mumu_2017             bb_2018               bb_2018               bq_2018               bq_2018               mumu_2018             mumu_2018           
-process      ZpBB_2016_bb_M4800    Bkg_2016_bb           ZpBB_2016_bq_M4800    Bkg_2016_bq           ZpBB_2016_mumu_M4800  Bkg_2016_mumu         ZpBB_2017_bb_M4800    Bkg_2017_bb           ZpBB_2017_bq_M4800    Bkg_2017_bq           ZpBB_2017_mumu_M4800  Bkg_2017_mumu         ZpBB_2018_bb_M4800    Bkg_2018_bb           ZpBB_2018_bq_M4800    Bkg_2018_bq           ZpBB_2018_mumu_M4800  Bkg_2018_mumu       
-process      -8                    1                     -7                    2                     -6                    3                     -5                    4                     -4                    5                     -3                    6                     -2                    7                     -1                    8                     0                     9                   
-rate         1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                   
+bin                             bb_2016               bb_2016               bq_2016               bq_2016               mumu_2016             mumu_2016             bb_2017               bb_2017               bq_2017               bq_2017               mumu_2017             mumu_2017             bb_2018               bb_2018               bq_2018               bq_2018               mumu_2018             mumu_2018           
+process                         ZpBB_2016_bb_M4800    Bkg_2016_bb           ZpBB_2016_bq_M4800    Bkg_2016_bq           ZpBB_2016_mumu_M4800  Bkg_2016_mumu         ZpBB_2017_bb_M4800    Bkg_2017_bb           ZpBB_2017_bq_M4800    Bkg_2017_bq           ZpBB_2017_mumu_M4800  Bkg_2017_mumu         ZpBB_2018_bb_M4800    Bkg_2018_bb           ZpBB_2018_bq_M4800    Bkg_2018_bq           ZpBB_2018_mumu_M4800  Bkg_2018_mumu       
+process                         -8                    1                     -7                    2                     -6                    3                     -5                    4                     -4                    5                     -3                    6                     -2                    7                     -1                    8                     0                     9                   
+rate                            1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                     1                   
 ----------------------------------------------------------------------------------------------------------------------------------
+lumi                    lnN     1.026                 -                     1.026                 -                     1.026                 -                     1.026                 -                     1.026                 -                     1.026                 -                     1.026                 -                     1.026                 -                     1.026                 -                   
+CMS2016sig_bq_p2_jer  param  0.0 1.0
+CMS2017sig_mumu_p2_jer  param  0.0 1.0
+CMS2016sig_mumu_p2_jer  param  0.0 1.0
+CMS2017sig_bb_p2_jer  param  0.0 1.0
+CMS2016sig_bq_p1_jes  param  0.0 1.0
+CMS2016sig_bb_p2_jer  param  0.0 1.0
+CMS2017sig_bq_p1_jes  param  0.0 1.0
+CMS2017sig_mumu_p1_jes  param  0.0 1.0
+CMS2017sig_bb_p1_jes  param  0.0 1.0
+CMS2018sig_bb_p1_jes  param  0.0 1.0
+CMS2018sig_bq_p2_jer  param  0.0 1.0
+CMS2018sig_bq_p1_jes  param  0.0 1.0
+CMS2016sig_mumu_p1_jes  param  0.0 1.0
+CMS2018sig_bb_p2_jer  param  0.0 1.0
+CMS2018sig_mumu_p1_jes  param  0.0 1.0
+CMS2018sig_mumu_p2_jer  param  0.0 1.0
+CMS2017sig_bq_p2_jer  param  0.0 1.0
+CMS2016sig_bb_p1_jes  param  0.0 1.0
