@@ -154,6 +154,7 @@ class BTagWeightTool:
         
         if tagger in ['CSVv2','DeepCSV','DeepJet']:
           if not os.path.isfile(effname): ## newly added to take into account case where efficiency file hasn't been made yet
+            print "Efficiency file",effname,"doesn't exit yet. Creating a blank file with empty histograms..."
             f = TFile(effname, "RECREATE")   
             for flavor in [0,4,5]:
                 flavor   = flavorToString(flavor) 
@@ -163,7 +164,6 @@ class BTagWeightTool:
             f.Close()
           efffile    = ensureTFile(effname)
           for flavor in [0,4,5]:
-          #for flavor in [5]:
             flavor   = flavorToString(flavor)
             histname = "%s_%s_%s"%(tagger,flavor,wp)
             effname  = "eff_%s_%s_%s"%(tagger,flavor,wp)
@@ -177,7 +177,6 @@ class BTagWeightTool:
         else:
           efffile    = ensureTFile(effname)
           for flavor in [0,4,5]:
-          #for flavor in [5]:
             flavor   = flavorToString(flavor)
             histname = "%s_%s_%s"%(tagger,flavor,wp)
             effname  = "eff_%s_%s_%s"%(tagger,flavor,wp)
@@ -220,7 +219,6 @@ class BTagWeightTool:
           else:
             weight = (1-SF*eff)/(1-eff)
         return weight
-
         
     def getEfficiency(self,pt,eta,flavor):
         """Get SF for one jet."""
@@ -251,16 +249,6 @@ class BTagWeightTool:
           directory = subdir
         for histname, hist in self.hists.iteritems():
           hist.SetDirectory(directory)
-
-     #def saveHists(self,directory,subdirname=None):
-     #   if subdirname:
-     #     subdir = directory.Get(subdirname)
-     #     if not subdir:
-     #       subdir = directory.mkdir(subdirname)
-     #     directory = subdir
-     #   for histname, hist in self.hists.iteritems():
-     #     hist.SetDirectory(directory)
-     #     hist.Write()
 
 
 def flavorToFLAV(flavor):

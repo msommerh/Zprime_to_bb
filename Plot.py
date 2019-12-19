@@ -12,7 +12,7 @@ from ROOT import TLegend, TLatex, TText, TLine
 
 from samples import sample
 from variables import variable
-from aliases import alias, aliasSM, deepFlavour, working_points
+from aliases import alias, aliasSM, working_points
 from aliases import additional_selections as SELECTIONS
 from utils import *
 import sys
@@ -310,7 +310,7 @@ def plot(var, cut, year, norm=False, nm1=False):
         varname = var.replace('.', '_').replace('()', '')
         if not os.path.exists("plots/"+channel): os.makedirs("plots/"+channel)
         suffix = ''
-        if "b" in channel: suffix+="_"+BTAGGING
+        if "b" in channel or 'mu' in channel: suffix+="_"+BTAGGING
         if ADDSELECTION: suffix+="_"+options.selection
         c1.Print("plots/"+channel+"/"+varname+"_"+year+suffix+".png")
         c1.Print("plots/"+channel+"/"+varname+"_"+year+suffix+".pdf")

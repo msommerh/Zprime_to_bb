@@ -16,7 +16,7 @@ from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooP
 #from alpha import drawPlot
 from rooUtils import *
 from samples import sample
-from aliases import alias, aliasSM, deepFlavour, working_points
+from aliases import alias, aliasSM, working_points
 from aliases import additional_selections as SELECTIONS
 
 import optparse
@@ -144,6 +144,12 @@ def signal(category):
     HLT_PFJet550            = RooRealVar("HLT_PFJet550"            , "" , -1., 1.    ) 
     HLT_CaloJet550_NoJetID  = RooRealVar("HLT_CaloJet550_NoJetID"  , "" , -1., 1.    ) 
     HLT_PFHT1050            = RooRealVar("HLT_PFHT1050"            , "" , -1., 1.    ) 
+    HLT_DoublePFJets100_CaloBTagDeepCSV_p71                 =RooRealVar("HLT_DoublePFJets100_CaloBTagDeepCSV_p71"                , "", -1., 1. ) 
+    HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71 =RooRealVar("HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71", "", -1., 1. ) 
+    HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71 =RooRealVar("HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71", "", -1., 1. ) 
+    HLT_DoublePFJets200_CaloBTagDeepCSV_p71                 =RooRealVar("HLT_DoublePFJets200_CaloBTagDeepCSV_p71"                , "", -1., 1. ) 
+    HLT_DoublePFJets350_CaloBTagDeepCSV_p71                 =RooRealVar("HLT_DoublePFJets350_CaloBTagDeepCSV_p71"                , "", -1., 1. ) 
+    HLT_DoublePFJets40_CaloBTagDeepCSV_p71                  =RooRealVar("HLT_DoublePFJets40_CaloBTagDeepCSV_p71"                 , "", -1., 1. )
 
     weight = RooRealVar(        "eventWeightLumi",      "",             -1.e9,  1.e9    )
 
@@ -156,6 +162,7 @@ def signal(category):
     #variables.add(RooArgSet(j1_pt, jj_deltaEta, jdeepFlavour_1, jdeepFlavour_2, weight))
     variables.add(RooArgSet(j1_pt, jj_deltaEta, jbtag_WP_1, jbtag_WP_2, fatjetmass_1, jnmuons_1, jnmuons_2, weight))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
+    variables.add(RooArgSet(HLT_DoublePFJets100_CaloBTagDeepCSV_p71, HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets200_CaloBTagDeepCSV_p71, HLT_DoublePFJets350_CaloBTagDeepCSV_p71, HLT_DoublePFJets40_CaloBTagDeepCSV_p71))
     X_mass.setRange("X_reasonable_range", X_mass.getMin(), X_mass.getMax())
     X_mass.setRange("X_integration_range", X_mass.getMin(), X_mass.getMax())
     #X_mass.setBins(int((X_mass.getMax() - X_mass.getMin())/100))
@@ -166,11 +173,9 @@ def signal(category):
 
     # Cuts
     if BTAGGING=='semimedium':
-        #SRcut = aliasSM[category].format(b_threshold_medium=deepFlavour['medium'][YEAR], b_threshold_loose=deepFlavour['loose'][YEAR])
         SRcut = aliasSM[category]
         #SRcut = aliasSM[category+"_vetoAK8"]
     else:
-        #SRcut = alias[category].format(b_threshold=deepFlavour[BTAGGING][YEAR])
         SRcut = alias[category].format(WP=working_points[BTAGGING])
         #SRcut = alias[category+"_vetoAK8"].format(WP=working_points[BTAGGING])
 

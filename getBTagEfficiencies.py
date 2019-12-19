@@ -25,23 +25,23 @@ args = parser.parse_args()
 
 
 
-def getBTagEfficiencies(tagger,wp,outfilename,indir,samples,jettype,plot=False):
+def getBTagEfficiencies(tagger,wp,outfilename,indir,samples,jettype,plot=False, year=''):
     """Get pileup profile in MC by adding Pileup_nTrueInt histograms from a given list of samples."""
     print ">>> getBTagEfficiencies(%s)"%(outfilename)
     
     # GET HISTOGRAMS
     nhists  = { }
     hists   = { }
-    #if jettype == 'AK8':
-    #    if tagger == 'CSVv2':
-    #        histdir = 'AK8btag'
-    #    elif tagger == 'DeepCSV':
-    #        histdir = 'AK8btag_deep'
-    #elif jettype == 'AK4':
-    #    if tagger == 'CSVv2':
-    #        histdir = 'AK4btag'
-    #    elif tagger == 'DeepCSV':
-    #        histdir = 'AK4btag_deep'
+    if jettype == 'AK8':
+        if tagger == 'CSVv2':
+            histdir = 'AK8btag'
+        elif tagger == 'DeepJet':
+            histdir = 'AK8btag_deep'
+    elif jettype == 'AK4':
+        if tagger == 'CSVv2':
+            histdir = 'AK4btag'
+        elif tagger == 'DeepJet':
+            histdir = 'AK4btag_deep'
     for flavor in ['b','c','udsg']:
       histname = '%s_%s_%s'%(tagger,flavor,wp)
       hists[histname] = None
@@ -54,8 +54,8 @@ def getBTagEfficiencies(tagger,wp,outfilename,indir,samples,jettype,plot=False):
         print ">>>   Warning! getBTagEfficiencies: Could not open %s"%(filename)
         continue
       for histname in hists:
-        #histpath = "%s/%s"%(histdir,histname)
-        histpath = histname
+        histpath = "%s/%s"%(histdir,histname)
+        #histpath = histname
         hist = file.Get(histpath)
         if not hist:
           print ">>>   Warning! getBTagEfficiencies: Could not open histogram '%s' in %s"%(histpath,filename)        
@@ -98,22 +98,23 @@ def getBTagEfficiencies(tagger,wp,outfilename,indir,samples,jettype,plot=False):
       hist_all.Write(histname_all,TH2F.kOverwrite)
       hist_eff.Write(histname_eff,TH2F.kOverwrite)
       if plot:
-        plot2D(histname_eff,hist_eff,log=True)
-        plot2D(histname_eff,hist_eff,log=False)
+        plot2D(histname_eff,hist_eff,log=True, year=year)
+        plot2D(histname_eff,hist_eff,log=False, year=year)
     file.Close()
   
 
-def plot2D(histname,hist,log=False):
+def plot2D(histname,hist,log=False, year=''):
     """Plot efficiency."""
-    dir    = ensureDirectory('plots')
-    #name   = "%s/%s"%(dir,histname)
-    name   = histname
+    dir    = ensureDirectory('plots/Efficiency')
+    name   = "%s/%s"%(dir,histname)
     if log:
       name += "_log"
     xtitle = 'jet p_{T} [GeV]'
     ytitle = 'jet #eta'
     ztitle = 'b tag efficiencies' if '_b_' in histname else 'b miss-tag rate'
-    
+   
+    name = name+"_"+str(year)
+ 
     canvas = TCanvas('canvas','canvas',100,100,800,700)
     canvas.SetFillColor(0)
     canvas.SetBorderMode(0)
@@ -185,384 +186,67 @@ def main():
     for year in args.years:
         if year==2016:
             samples = [
-          ('DY', "DYJetsToLL_HT-100to200"),
-          ('DY', "DYJetsToLL_HT-200to400"),
-          ('DY', "DYJetsToLL_HT-400to600"),
-          ('DY', "DYJetsToLL_HT-600to800"),
-          ('DY', "DYJetsToLL_HT-800to1200"),
-          ('DY', "DYJetsToLL_HT-1200to2500"),
-          ('DY', "DYJetsToLL_HT-2500toInf"),
-          ('ZJ', "ZJetsToNuNu_HT-100to200"),
-          ('ZJ', "ZJetsToNuNu_HT-200to400"),
-          ('ZJ', "ZJetsToNuNu_HT-400to600"),
-          ('ZJ', "ZJetsToNuNu_HT-600to800"),
-          ('ZJ', "ZJetsToNuNu_HT-800to1200"),
-          ('ZJ', "ZJetsToNuNu_HT-1200to2500"),
-          ('ZJ', "ZJetsToNuNu_HT-2500toInf"),
-          ('WJ', "WJetsToLNu_HT-100to200"),
-          ('WJ', "WJetsToLNu_HT-200to400"),
-          ('WJ', "WJetsToLNu_HT-400to600"),
-          ('WJ', "WJetsToLNu_HT-600to800"),
-          ('WJ', "WJetsToLNu_HT-800to1200"),
-          ('WJ', "WJetsToLNu_HT-1200to2500"),
-          ('WJ', "WJetsToLNu_HT-2500toInf"),
-          ('ST', "ST_s-channel"),
-          ('ST', "ST_t-channel_top"),
-          ('ST', "ST_t-channel_antitop"),
-          ('ST', "ST_tW_top"),
-          ('ST', "ST_tW_antitop"),
-          ('TT', "TTTo2L2Nu"),
-          ('TT', "TTToSemiLeptonic"),
-          ('TT', "TTWJetsToLNu"),
-          ('TT', "TTZToLLNuNu"),     
-          ('VV', "WWTo1L1Nu2Q"),
-          ('VV', "WWTo2L2Nu"),
-          ('VV', "WWTo4Q"),
-          ('VV', "WZTo1L1Nu2Q"),
-          ('VV', "WZTo2L2Q"),
-          ('VV', "ZZTo2L2Q"),
-          ('VV', "ZZTo2Q2Nu"),
-          ('VV', "ZZTo2L2Nu_ext1"),
-          ('VV', "ZZTo2L2Nu_main"),
-          ('VV', "ZZTo4L_ext1"),
-          ('VV', "ZZTo4L_main"),
-          ('VV', "GluGluHToBB"),
-          ('VV', "ZH_HToBB_ZToNuNu"),
-          ('VV', "ZH_HToBB_ZToLL"),
-          ('VV', "WplusH_HToBB_WToLNu"),
-          ('VV', "WminusH_HToBB_WToLNu"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M600"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M800"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M1000"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M1200"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M1400"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M1600"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M1800"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M2000"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M2500"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M3000"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M3500"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M4000"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M4500"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M5000"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M5500"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M6000"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M7000"),
-          ('XZH',"ZprimeToZHToZlepHinc_narrow_M8000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M600" ),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M800" ),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1200"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1400"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1600"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1800"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M2000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M2500"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M3000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M3500"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M4000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M4500"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M5000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M5500"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M6000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M7000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M8000"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-600"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-800"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1000"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1200"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1400"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1600"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1800"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-2000"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-2500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-3000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-3500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-4000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-4500"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-5000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-5500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-6000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-7000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-8000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-600" ),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-800"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1000"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1200"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1400"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1600"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1800"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-2000"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-2500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-3000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-3500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-4000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-4500"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-5000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-5500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-6000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-7000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-8000")
+          ('MC_signal_hists',        "MC_signal_2016_M1800_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2016_M2000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2016_M2500_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2016_M3000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2016_M3500_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2016_M4000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2016_M4500_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2016_M5000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2016_M5500_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2016_M6000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2016_M7000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2016_M8000_btagEff"),
                 ]
-
 
         elif year==2017:  
             samples = [
-          ('DY',             "DYJetsToLL_HT-100to200"  ),
-          ('DY',             "DYJetsToLL_HT-200to400"  ),
-          ('DY',             "DYJetsToLL_HT-400to600"  ),
-          ('DY',             "DYJetsToLL_HT-600to800"  ),
-          ('DY',             "DYJetsToLL_HT-800to1200" ),
-          ('DY',             "DYJetsToLL_HT-1200to2500" ),
-          ('DY',             "DYJetsToLL_HT-2500toInf"  ),
-          ('ZJ',             "ZJetsToNuNu_HT-100to200"  ),
-          ('ZJ',             "ZJetsToNuNu_HT-200to400"  ),
-          ('ZJ',             "ZJetsToNuNu_HT-400to600"  ),
-          ('ZJ',             "ZJetsToNuNu_HT-600to800"  ),
-          ('ZJ',             "ZJetsToNuNu_HT-800to1200" ),
-          ('ZJ',             "ZJetsToNuNu_HT-1200to2500"),
-          ('ZJ',             "ZJetsToNuNu_HT-2500toInf" ),
-          ('WJ',             "WJetsToLNu_HT-100to200"   ),
-          ('WJ',             "WJetsToLNu_HT-200to400"   ),
-          ('WJ',             "WJetsToLNu_HT-400to600"   ),
-          ('WJ',             "WJetsToLNu_HT-600to800"   ),
-          ('WJ',             "WJetsToLNu_HT-800to1200"  ),
-          ('WJ',             "WJetsToLNu_HT-1200to2500" ),
-          ('WJ',             "WJetsToLNu_HT-2500toInf"  ),
-          ('ST',             "ST_s-channel"             ),
-          ('ST',             "ST_t-channel_antitop"     ),
-          ('ST',             "ST_t-channel_top"         ),
-          ('ST',             "ST_tW_antitop"            ),
-          ('ST',             "ST_tW_top"                ),
-          ('TT',             "TTTo2L2Nu"                ),
-          ('TT',             "TTToSemiLeptonic"         ),
-          ('TT',             "TTWJetsToLNu"             ),
-          ('TT',             "TTZToLLNuNu"              ),
-          ('VV',             "WWTo1L1Nu2Q"              ),
-          ('VV',             "WWTo2L2Nu"                ),
-          ('VV',             "WWTo4Q"                   ),
-          ('VV',             "WZTo1L1Nu2Q"              ),
-          ('VV',             "WZTo2L2Q"                 ),
-          ('VV',             "ZZTo2L2Q"                 ),
-          ('VV',             "ZZTo2Q2Nu"                ),
-          ('VV',             "ZZTo2L2Nu"                ),
-          ('VV',             "ZZTo4L"                   ),
-          ('VV',             "GluGluHToBB"              ),
-          ('VV',             "ZH_HToBB_ZToNuNu"         ),
-          ('VV',             "ZH_HToBB_ZToLL"           ),
-          ('VV',             "WplusH_HToBB_WToLNu"      ),
-          ('VV',             "WminusH_HToBB_WToLNu"     ),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M600" ),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M800" ),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M1000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M1200"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M1400"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M1600"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M1800"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M2000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M2500"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M3000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M3500"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M4000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M4500"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M5000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M5500"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M6000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M7000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M8000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M600" ),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M800" ),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1200"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1400"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1600"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1800"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M2000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M2500"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M3000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M3500"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M4000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M4500"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M5000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M5500"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M6000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M7000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M8000"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-600"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-800"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1000"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1200"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1400"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1600"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1800"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-2000"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-2500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-3000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-3500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-4000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-4500"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-5000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-5500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-6000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-7000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-8000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-600" ),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-800" ),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1000"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1200"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1400"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1600"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1800"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-2000"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-2500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-3000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-3500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-4000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-4500"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-5000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-5500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-6000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-7000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-8000")
+          ('MC_signal_hists',        "MC_signal_2017_M1800_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2017_M2000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2017_M2500_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2017_M3000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2017_M3500_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2017_M4000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2017_M4500_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2017_M5000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2017_M5500_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2017_M6000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2017_M7000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2017_M8000_btagEff"),
           ]
-
-
 
         elif year==2018:
             samples = [
-          ('DY',             "DYJetsToLL_HT-100to200"),
-          ('DY',             "DYJetsToLL_HT-200to400"),
-          ('DY',             "DYJetsToLL_HT-400to600"),
-          ('DY',             "DYJetsToLL_HT-600to800"),
-          ('DY',             "DYJetsToLL_HT-800to1200"),
-          ('DY',             "DYJetsToLL_HT-1200to2500"),
-          ('DY',             "DYJetsToLL_HT-2500toInf"),
-          ('ZJ',             "ZJetsToNuNu_HT-100to200"),
-          ('ZJ',             "ZJetsToNuNu_HT-200to400"),
-          ('ZJ',             "ZJetsToNuNu_HT-400to600"),
-          ('ZJ',             "ZJetsToNuNu_HT-600to800"),
-          ('ZJ',             "ZJetsToNuNu_HT-800to1200"),
-          ('ZJ',             "ZJetsToNuNu_HT-1200to2500"),
-          ('ZJ',             "ZJetsToNuNu_HT-2500toInf"),
-          ('WJ',             "WJetsToLNu_HT-100to200"),
-          ('WJ',             "WJetsToLNu_HT-200to400"),
-          ('WJ',             "WJetsToLNu_HT-400to600"),
-          ('WJ',             "WJetsToLNu_HT-600to800"),
-          ('WJ',             "WJetsToLNu_HT-800to1200"),
-          ('WJ',             "WJetsToLNu_HT-1200to2500"),
-          ('WJ',             "WJetsToLNu_HT-2500toInf"),
-          ('ST',             "ST_s-channel"),
-          ('ST',             "ST_t-channel_top"),
-          ('ST',             "ST_t-channel_antitop"),
-          ('ST',             "ST_tW_top"),
-          ('ST',             "ST_tW_antitop"),
-          ('TT',             "TTTo2L2Nu"),
-          ('TT',             "TTToSemiLeptonic"),
-          ('TT',             "TTWJetsToLNu"),
-          ('TT',             "TTZToLLNuNu"),
-          ('VV',             "WWTo2L2Nu"),
-          ('VV',             "WWTo4Q"),
-          ('VV',             "WWTo1L1Nu2Q"),
-          ('VV',             "WZTo2L2Q"),
-          ('VV',             "ZZTo2Q2Nu"),
-          ('VV',             "ZZTo2L2Q"),
-          ('VV',             "ZZTo2L2Nu"),
-          ('VV',             "ZZTo4L"),
-          ('VV',             "GluGluHToBB"),
-          ('VV',             "ZH_HToBB_ZToNuNu"),
-          ('VV',             "ZH_HToBB_ZToLL"),
-          ('VV',             "WplusH_HToBB_WToLNu"),
-          ('VV',             "WminusH_HToBB_WToLNu"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M600"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M800"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M1000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M1200"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M1400"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M1600"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M1800"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M2000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M2500"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M3000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M3500"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M4000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M4500"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M5000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M5500"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M6000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M7000"),
-          ('XZH',            "ZprimeToZHToZlepHinc_narrow_M8000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M600" ),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M800"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1200"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1400"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1600"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M1800"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M2000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M2500"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M3000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M3500"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M4000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M4500"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M5000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M5500"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M6000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M7000"),
-          ('XZH',            "ZprimeToZHToZinvHall_narrow_M8000"), 
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-600"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-800"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1200"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1400"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1600"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-1800"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-2000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-2500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-3000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-3500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-4000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-4500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-5000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-5500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-6000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-7000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zlephinc_narrow_M-8000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-600"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-800"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1200"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1400"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1600"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-1800"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-2000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-2500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-3000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-3500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-4000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-4500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-5000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-5500"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-6000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-7000"),
-          ('XZHVBF',        "Zprime_VBF_Zh_Zinvhinc_narrow_M-8000")
+          ('MC_signal_hists',        "MC_signal_2018_M1800_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2018_M2000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2018_M2500_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2018_M3000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2018_M3500_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2018_M4000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2018_M4500_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2018_M5000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2018_M5500_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2018_M6000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2018_M7000_btagEff"),
+          ('MC_signal_hists',        "MC_signal_2018_M8000_btagEff"),
                 ]
                 
-
-        
         for tagger in args.taggers:
-            if tagger in ['CSVv2','DeepCSV']:
-                for jettype in ['AK8','AK4']:
+            if tagger in ['CSVv2','DeepCSV','DeepJet']:
+                #for jettype in ['AK8','AK4']:
+                for jettype in ['AK4']:
                     for wp in args.wps:
-                        filename = "%s_%s_%d_eff.root"%(tagger,jettype,year)
-                        indir    = "/work/pbaertsc/heavy_resonance/%d"%(year)
-                        getBTagEfficiencies(tagger,wp,filename,indir,samples,jettype,plot=args.plot)
+                        indir    = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/btag"
+                        filename = "%s/%s_%s_%d_eff.root"%(indir,tagger,jettype,year)
+                        getBTagEfficiencies(tagger,wp,filename,indir,samples,jettype,plot=args.plot, year=year)
             else:
-                jettype = 'AK8'
-                for wp in args.wps:
-                    filename = "%s_%s_%d_eff.root"%(tagger,jettype,year)
-                    indir    = "/work/pbaertsc/heavy_resonance/%d"%(year)
-                    getBTagEfficiencies(tagger,wp,filename,indir,samples,jettype,plot=args.plot)
-    
+                #jettype = 'AK8'
+                #for wp in args.wps:
+                #    filename = "%s_%s_%d_eff.root"%(tagger,jettype,year)
+                #    indir    = "/work/pbaertsc/heavy_resonance/%d"%(year)
+                #    getBTagEfficiencies(tagger,wp,filename,indir,samples,jettype,plot=args.plot)
+                print "tagger not recognized" 
 
 
 if __name__ == '__main__':

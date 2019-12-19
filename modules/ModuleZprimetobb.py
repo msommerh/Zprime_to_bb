@@ -110,6 +110,11 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         #self.addBranch('eventweightlumi'               , float)
         self.addBranch('isMC'                           , int)
 
+        if 'signal' in self.name.lower():
+            self.addBranch('BTagAK4Weight_deepJet'       , float)
+            self.addBranch('BTagAK4Weight_deepJet_up'    , float)
+            self.addBranch('BTagAK4Weight_deepJet_down'  , float)
+
     def endJob(self):
         self.outputfile.Write()
         self.outputfile.Close()
@@ -125,6 +130,13 @@ class ZprimetobbProducer(Module):
         self.year       = year
         self.out  = TreeProducerZprimetobb(name, isMC=self.isMC, year=self.year)
 #        if self.isMC: self.puTool = PileupWeightTool(year =year)
+
+        if 'signal' in self.name.lower():
+            from BTaggingTool import BTagWeightTool, BTagWPs
+            self.btagToolAK4_deepJet = BTagWeightTool('DeepJet','AK4','medium',sigma='central',channel='bb',year=year) 
+            self.btagToolAK4_deepJet_up = BTagWeightTool('DeepJet','AK4','medium',sigma='up',channel='bb',year=year)
+            self.btagToolAK4_deepJet_down = BTagWeightTool('DeepJet','AK4','medium',sigma='down',channel='bb',year=year)
+
 
         self.lumi       = 1.
         if self.year == 2016:
@@ -229,6 +241,13 @@ class ZprimetobbProducer(Module):
         #if event.Jet_jetId[jetIds[0]] < 2: return False
         #if event.Jet_jetId[jetIds[1]] < 2: return False
         #if event.MET_pt/jetHT > 0.5: return False      
+
+        
+        ## evaluate BTag weights
+        BTagAK4Weight_deepJet       = self.btagToolAK4_deepJet.getWeight(event,jetIds)  
+        BTagAK4Weight_deepJet_up    = self.btagToolAK4_deepJet_up.getWeight(event,jetIds)
+        BTagAK4Weight_deepJet_down  = self.btagToolAK4_deepJet_down.getWeight(event,jetIds)
+
 
         ## Compute dijet quantities
         j1_p4 = TLorentzVector()
@@ -459,7 +478,13 @@ class ZprimetobbProducer(Module):
         else:
                 self.out.GenWeight[0]                   = 1.
                 self.out.PUWeight[0]                    = 1.
+       
         
+        if 'signal' in self.name.lower():
+            self.out.BTagAK4Weight_deepJet[0]           =  BTagAK4Weight_deepJet        
+            self.out.BTagAK4Weight_deepJet_up[0]        =  BTagAK4Weight_deepJet_up  
+            self.out.BTagAK4Weight_deepJet_down[0]      =  BTagAK4Weight_deepJet_down
+ 
         ## event weight lumi
         #eventweightlumi = 1.
 

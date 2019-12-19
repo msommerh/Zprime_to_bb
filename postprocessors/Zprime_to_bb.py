@@ -70,8 +70,8 @@ from modules.ModuleZprimetobb import ZprimetobbProducer
 
 jobs = []
 for n in range(int(ceil(float(len(infiles))/nFiles))):
-        sys.stderr.write("working on file nr "+str(n)+"\n")
         if args.resubmit != -1 and n != args.resubmit: continue
+        sys.stderr.write("working on file nr "+str(n)+"\n")
         subsample = infiles[n*nFiles:(n+1)*nFiles]
         module2run = lambda: ZprimetobbProducer(postfix.replace('.root', '_'+str(n)+'.root'), isMC=args.isMC, year=year)
         

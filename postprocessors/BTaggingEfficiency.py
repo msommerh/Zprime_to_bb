@@ -23,17 +23,15 @@ parser = ArgumentParser()
 parser.add_argument('-mp', '--multiprocessing',  dest='multiprocessing',   action='store_true', default=False)
 args = parser.parse_args()
 
-#mass_points = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
-mass_points = [2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000] #FIXME
-#years = ['2016', '2017', '2018']
-years = ['2017', '2018'] ##FIXME
+mass_points = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+years = ['2016', '2017', '2018']
 
 if args.multiprocessing:
     print "Multiprocessing enabled"
 else:
     print "Multiprocessing not enabled"
 #outdir    = args.outdir
-outdir    = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/btag'
+outdir    = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/btag/MC_signal_hists'
 
 jobs = []
 

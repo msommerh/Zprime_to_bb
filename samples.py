@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+from BTag_uncertainties import BTag_uncertainties
+
 sample = {
     'data_obs' : {
         'files' : ['data_2016_B', 'data_2016_C', 'data_2016_D', 'data_2016_E', 'data_2016_F', 'data_2016_G', 'data_2016_H', 'data_2017_B', 'data_2017_C', 'data_2017_D', 'data_2017_E', 'data_2017_F', 'data_2018_A', 'data_2018_B', 'data_2018_C', 'data_2018_D', ],
@@ -174,6 +176,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
+        'BTag_uncertainties': BTag_uncertainties['ZpBB_M600']
     },
     'ZpBB_M800' : {
         'order' : 1001,
@@ -187,6 +190,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':97200, '2017':97000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M800']
     },
     'ZpBB_M1000' : {
         'order' : 1001,
@@ -200,6 +204,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M1000']
     },
     'ZpBB_M1200' : {
         'order' : 1001,
@@ -213,6 +218,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M1200']
     },
     'ZpBB_M1400' : {
         'order' : 1001,
@@ -226,6 +232,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':96400, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M1400']
     },
     'ZpBB_M1600' : {
         'order' : 1001,
@@ -239,6 +246,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M1600']
     },
     'ZpBB_M1800' : {
         'order' : 1001,
@@ -252,6 +260,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':95600, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M1800']
     },
     'ZpBB_M2000' : {
         'order' : 1001,
@@ -265,6 +274,7 @@ sample = {
         'weight': 1.,
         'plot': True,
         'genEvents' : { '2016':98400, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M2000']
     },
     'ZpBB_M2500' : {
         'order' : 1001,
@@ -278,6 +288,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M2500']
     },
     'ZpBB_M3000' : {
         'order' : 1001,
@@ -291,6 +302,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M3000']
     },
     'ZpBB_M3500' : {
         'order' : 1001,
@@ -304,6 +316,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':95300, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M3500']
     },
     'ZpBB_M4000' : {
         'order' : 1001,
@@ -317,6 +330,7 @@ sample = {
         'weight': 1.,
         'plot': True,
         'genEvents' : { '2016':95500, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M4000']
     },
     'ZpBB_M4500' : {
         'order' : 1001,
@@ -330,6 +344,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M4500']
     },
     'ZpBB_M5000' : {
         'order' : 1001,
@@ -343,6 +358,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':98800, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M5000']
     },
     'ZpBB_M5500' : {
         'order' : 1001,
@@ -356,6 +372,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':100000, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M5500']
     },
     'ZpBB_M6000' : {
         'order' : 1001,
@@ -369,6 +386,7 @@ sample = {
         'weight': 1.,
         'plot': True,
         'genEvents' : { '2016':96800, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M6000']
     },
     'ZpBB_M7000' : {
         'order' : 1001,
@@ -382,6 +400,7 @@ sample = {
         'weight': 1.,
         'plot': False,
         'genEvents' : { '2016':98400, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M7000']
     },
     'ZpBB_M8000' : {
         'order' : 1001,
@@ -395,6 +414,7 @@ sample = {
         'weight': 1.,
         'plot': True,
         'genEvents' : { '2016':99908, '2017':100000, '2018':100000},
+        'BTag_uncertainties' : BTag_uncertainties['ZpBB_M8000']
     },
 
 }

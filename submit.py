@@ -7,6 +7,7 @@ from fnmatch import fnmatch
 import itertools
 from argparse import ArgumentParser
 import json
+from math import ceil
 #import checkFiles
 #from checkFiles import getSampleShortName, matchSampleToPattern, header, ensureDirectory
 
@@ -31,7 +32,8 @@ if __name__ == "__main__":
                                          help="Single dataset to be submitted instead of the standard datasets." )
   parser.add_argument('-c', '--cores',  dest='cores',   action='store', type=int, default=1,
                                          help="Number of cpu cores. A number >1 will enable multiprocessing.")
-
+  parser.add_argument('-mn', '--multinode',   dest='multinode',  action='store_true', default=False,
+                                         help="Select this to parallelize the submission via multiple condor nodes.")
   args = parser.parse_args()
   #checkFiles.args = args
 
@@ -114,7 +116,11 @@ def submitJobs(title, infiles, outdir, jobflavour):
         fout.write("export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh\n")
         fout.write("use_x509userproxy=true\n")
 
-        fout.write("./postprocessors/Zprime_to_bb.py -t {} -i {} -o {} -y {}{} -n {} -r {}{}\n".format(title, infiles, outdir+title, args.year, ' -MC' if args.isMC else '', args.nFiles, args.resubmit_file, " -mp" if args.cores>1 else ""))
+        fout.write("########## input arguments ##########\n")
+        fout.write("file_nr=$1\n")
+        fout.write("#####################################\n")
+
+        fout.write("./postprocessors/Zprime_to_bb.py -t {} -i {} -o {} -y {}{} -n {} -r {}{}\n".format(title, infiles, outdir+title, args.year, ' -MC' if args.isMC else '', args.nFiles, '$file_nr' if args.multinode else args.resubmit_file, " -mp" if args.cores>1 else ""))
         fout.write("echo 'STOP---------------'\n")
         fout.write("echo\n")
         fout.write("echo\n")
@@ -122,22 +128,33 @@ def submitJobs(title, infiles, outdir, jobflavour):
     #submit job
     os.system("chmod 755 job.sh")
     os.system("mv job.sh "+title+".sh")
-    makeSubmitFileCondor(title+".sh", title, jobflavour)
+    makeSubmitFileCondor(title+".sh", title, jobflavour, path+"/"+infiles)
     os.system("condor_submit submit.sub")
     print "job submitted"
     os.chdir(path)
 
-def makeSubmitFileCondor(exe, jobname, jobflavour):
+def makeSubmitFileCondor(exe, jobname, jobflavour, infiles):
     print "make options file for condor job submission"
     submitfile = open("submit.sub", "w")
     submitfile.write("executable            = "+exe+"\n")
-    submitfile.write("arguments             = $(ClusterID) $(ProcId)\n")
+    submitfile.write("arguments             = $(ProcId)\n")
     submitfile.write("output                = "+jobname+".$(ClusterId).$(ProcId).out\n")
     submitfile.write("error                 = "+jobname+".$(ClusterId).$(ProcId).err\n")
     submitfile.write("log                   = "+jobname+".$(ClusterId).log\n")
     submitfile.write('+JobFlavour           = "'+jobflavour+'"\n')
     if args.cores>1: submitfile.write('RequestCpus           = {}\n'.format(args.cores))
-    submitfile.write("queue")
+    if args.multinode:
+        file_list = []
+        file_content = open(infiles, 'r').readlines()
+        for entry in file_content:
+            if not entry.startswith("#"):
+                filepath = entry.replace('\n','')
+                #filepath = filepath.replace('cms-xrd-global.cern.ch', 'xrootd-cms.infn.it')
+                file_list.append(filepath)
+        nJobs = int(ceil(float(len(file_list))/args.nFiles))
+        submitfile.write("queue {}".format(nJobs))
+    else:
+        submitfile.write("queue") 
     submitfile.close()
 
 def main():

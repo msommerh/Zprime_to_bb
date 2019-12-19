@@ -15,5 +15,6 @@ process                          0                        1
 rate                             1                        1                        
 -----------------------------------------------------------------------------------
 lumi                     lnN     1.026                    -                        
+btag_run2_bb_M5400       lnN     1.15438268323            -                        
 CMSrun2sig_bb_p1_jes     param   0.0                      1.0                      
 CMSrun2sig_bb_p2_jer     param   0.0                      1.0                      
