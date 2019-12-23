@@ -1,3 +1,7 @@
+###
+### Collection of auxiliary functions, mainly used for plotting.
+###
+
 import os, multiprocessing
 import copy
 import math

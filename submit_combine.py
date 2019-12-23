@@ -1,5 +1,9 @@
 #! /usr/bin/env python
 
+###
+### Macro for submitting the combine jobs for each mass point to HTCondor.
+###
+
 import sys
 import os, re, glob
 from commands import getoutput
@@ -7,8 +11,6 @@ from fnmatch import fnmatch
 import itertools
 from argparse import ArgumentParser
 import json
-#import checkFiles
-#from checkFiles import getSampleShortName, matchSampleToPattern, header, ensureDirectory
 
 if __name__ == "__main__":
   parser = ArgumentParser()
@@ -23,7 +25,6 @@ if __name__ == "__main__":
                                          help="Choose b-tagging category (bb or bq) if combine should run merely on a single category.")
 
   args = parser.parse_args()
-  #checkFiles.args = args
 
 #jobflavour = 'espresso' #max 30min
 #jobflavour = 'microcentury' #max 1h

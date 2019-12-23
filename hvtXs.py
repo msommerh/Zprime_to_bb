@@ -1,3 +1,7 @@
+###
+### Theoretical cross sections for the HVT model. Used in limit.py
+###
+
 
 HVT = {}
 

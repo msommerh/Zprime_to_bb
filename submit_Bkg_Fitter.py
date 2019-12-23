@@ -1,5 +1,9 @@
 #! /usr/bin/env python
 
+###
+### Macro for submitting the jobs of Bkg_Fitter.py to HTConder. Currently not used often because the fitting is now quick enough to do locally.
+###
+
 import sys
 import os, re, glob
 from commands import getoutput
@@ -32,8 +36,7 @@ if __name__ == "__main__":
 #jobflavour = 'tomorrow' #max 1d
 #jobflavour = 'testmatch' #max 3d
 
-  #categories = ['bb', 'bq', 'qq']
-  categories = ['bb', 'bq']
+  categories = ['bb', 'bq', 'mumu']
     
   ADDSELECTION= args.selection!=""
 

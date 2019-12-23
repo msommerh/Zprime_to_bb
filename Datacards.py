@@ -1,5 +1,9 @@
 #! /usr/bin/env python
 
+###
+### Macro for creating the datacards that are read by the combine tool.
+###
+
 print "starting package import"
 
 import os, sys, getopt, multiprocessing

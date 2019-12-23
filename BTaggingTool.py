@@ -1,5 +1,10 @@
 #! /bin/usr/env python
-# Author: Izaak Neutelings (January 2019)
+
+###
+### Class needed to derive and access the btagging weights.
+###
+
+# Heavily inspired from: Izaak Neutelings (January 2019)
 # https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/BTagCalibration
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation80XReReco

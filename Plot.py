@@ -1,5 +1,9 @@
 #! /usr/bin/env python
 
+###
+### Macro for plotting the distribution of variables in the MC abckground, signal and data, as well as signal efficiency and acceptance.
+###
+
 import os, multiprocessing
 import copy
 import math
@@ -37,10 +41,7 @@ parser.add_option("-a", "--acceptance", action="store_true", default=False, dest
 ########## SETTINGS ##########
 
 gROOT.SetBatch(True)
-#gROOT.ProcessLine("TSystemDirectory::SetDirectory(0)")
-#gROOT.ProcessLine("TH1::AddDirectory(kFALSE);")
 gStyle.SetOptStat(0)
-#TSystemDirectory.SetDirectory(0)
 
 BTAGGING    = options.btagging
 NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"
@@ -52,9 +53,8 @@ PARALLELIZE = False
 BLIND       = False
 LUMI        = {"run2" : 137190, "2016" : 35920, "2017" : 41530, "2018" : 59740}
 ADDSELECTION= options.selection!=""
-#XRANGE      = (1400., 9000.)
 
-color = {'none': 920, 'qq': 1, 'bq': 632, 'bb': 600}
+color = {'none': 920, 'qq': 1, 'bq': 632, 'bb': 600, 'mumu': 418}
 color_shift = {'none': 2, 'qq': 922, 'bq': 2, 'bb': 2}
 if options.selection not in SELECTIONS.keys():
     print "invalid selection!"
@@ -63,9 +63,7 @@ if options.selection not in SELECTIONS.keys():
 ########## SAMPLES ##########
 data = ["data_obs"]
 back = ["TTbar", "QCD"]
-#back = ["VV", "ST", "TTbarSL", "WJetsToLNu_HT", "DYJetsToNuNu_HT", "DYJetsToLL_HT"]
 sign = ['ZpBB_M2000', 'ZpBB_M4000', 'ZpBB_M6000']#, 'ZpBB_M8000']
-#sign = ['ZpBB_M1000', 'ZpBB_M1200', 'ZpBB_M1400', 'ZpBB_M1600', 'ZpBB_M1800', 'ZpBB_M2000', 'ZpBB_M2500', 'ZpBB_M3000', 'ZpBB_M3500', 'ZpBB_M4000', 'ZpBB_M4500', 'ZpBB_M5000', 'ZpBB_M5500', 'ZpBB_M6000', 'ZpBB_M7000', 'ZpBB_M8000']
 ########## ######## ##########
 
 if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
@@ -89,7 +87,6 @@ def plot(var, cut, year, norm=False, nm1=False):
     if treeRead:
         for k in sorted(alias.keys(), key=len, reverse=True):
             if BTAGGING=='semimedium':
-                #if k in cut: cut = cut.replace(k, aliasSM[k].format(b_threshold_medium=deepFlavour['medium'][year], b_threshold_loose=deepFlavour['loose'][year]))              
                 if k in cut: 
                     if ADDSELECTION:
                         cut = cut.replace(k, aliasSM[k]+SELECTIONS[options.selection])
@@ -97,7 +94,6 @@ def plot(var, cut, year, norm=False, nm1=False):
                         cut = cut.replace(k, aliasSM[k])
         
             else:
-                #if k in cut: cut = cut.replace(k, alias[k].format(b_threshold=deepFlavour[BTAGGING][year]))
                 if k in cut: 
                     if ADDSELECTION:
                         cut = cut.replace(k, alias[k].format(WP=working_points[BTAGGING])+SELECTIONS[options.selection])
@@ -149,12 +145,6 @@ def plot(var, cut, year, norm=False, nm1=False):
         hist[s].SetLineColor(sample[s]['linecolor'])
         hist[s].SetLineStyle(sample[s]['linestyle'])
     
-    # X_mass rebin
-#    if var=='X_mass' or var=='X_tmass':
-#        if 'XZhnn' in channel: rebin = 10
-#        elif 'XWh' in channel: rebin = 5
-#        else: rebin = 2
-#        for i, s in enumerate(data+back+sign): hist[s].Rebin(rebin)
     if channel.endswith('TR') and channel.replace('TR', '') in topSF:
         hist['TTbarSL'].Scale(topSF[channel.replace('TR', '')][0])
         hist['ST'].Scale(topSF[channel.replace('TR', '')][0])
@@ -257,17 +247,13 @@ def plot(var, cut, year, norm=False, nm1=False):
     if log:
         bkg.GetYaxis().SetNoExponent(bkg.GetMaximum() < 1.e4)
         #bkg.GetYaxis().SetMoreLogLabels(True)
-    bkg.GetXaxis().SetRangeUser(variable[var]['min'], variable[var]['max'])  ## newly inserted 
+    bkg.GetXaxis().SetRangeUser(variable[var]['min'], variable[var]['max'])  
  
     #if log: bkg.SetMinimum(1)
     leg.Draw()
     drawCMS(LUMI[year], "Preliminary")
     drawRegion('XVH'+channel, True)
     drawAnalysis(channel)
-    
-    #if nm1 and not cutValue is None: drawCut(cutValue, bkg.GetMinimum(), bkg.GetMaximum()) #FIXME
-    #if len(sign) > 0:
-    #    if channel.startswith('X') and len(sign)>0: drawNorm(0.9-0.05*(leg.GetNRows()+1), "#sigma(X) = %.1f pb" % 1.)
     
     setHistStyle(bkg, 1.2 if RATIO else 1.1)
     setHistStyle(hist['BkgSum'], 1.2 if RATIO else 1.1)
@@ -277,7 +263,7 @@ def plot(var, cut, year, norm=False, nm1=False):
         err = hist['BkgSum'].Clone("BkgErr;")
         err.SetTitle("")
         err.GetYaxis().SetTitle("Data / Bkg")
-        err.GetXaxis().SetRangeUser(variable[var]['min'], variable[var]['max'])  ## newly inserted     
+        err.GetXaxis().SetRangeUser(variable[var]['min'], variable[var]['max'])  
         for i in range(1, err.GetNbinsX()+1):
             err.SetBinContent(i, 1)
             if hist['BkgSum'].GetBinContent(i) > 0:
@@ -366,7 +352,7 @@ def efficiency(year):
     eff = {}
     if ADDSELECTION: eff_add = {}
     
-    channels = ['none', 'qq', 'bq', 'bb']
+    channels = ['none', 'qq', 'bq', 'bb', 'mumu']
 
     for channel in channels:
         treeSign = {}
@@ -447,7 +433,7 @@ def efficiency(year):
         tot, mass = 0., 0.
         if ADDSELECTION: tot_add = 0.
         for channel in channels:
-            if channel=='qq' or channel=='none': continue
+            if channel=='qq' or channel=='none' or channel=='mumu': continue #not sure if I should include 2mu category in sum
             if eff[channel].GetN() > i:
                 tot += eff[channel].GetY()[i]
                 if ADDSELECTION: tot_add += eff_add[channel].GetY()[i]
@@ -474,8 +460,8 @@ def efficiency(year):
     legS.SetBorderSize(0)
     legS.SetFillStyle(0) #1001
     legS.SetFillColor(0)
-    legS.AddEntry(eff['sum'], "Total efficiency (1 b tag + 2 b tag)", "pl")
-    if ADDSELECTION: legS.AddEntry(eff_add['sum'], "Total efficiency (1 b tag + 2 b tag) "+options.selection, "pl")
+    legS.AddEntry(eff['sum'], "Total b tag efficiency (1 b tag + 2 b tag)", "pl")
+    if ADDSELECTION: legS.AddEntry(eff_add['sum'], "Total b tag efficiency (1 b tag + 2 b tag) "+options.selection, "pl")
     c1 = TCanvas("c1", "Signal Efficiency", 1200, 800)
     c1.cd(1)
     eff['sum'].Draw("APL")
@@ -639,9 +625,6 @@ def acceptance(year):
     c1.Print("plots/Efficiency/"+year+"_Acceptance.png") 
 
 
-#if options.all: plotAll()
-#elif options.norm: plotNorm(options.variable, options.cut)
-#elif options.top: plotTop()
 if options.efficiency:
     efficiency(options.year)
 elif options.acceptance:

@@ -1,5 +1,9 @@
 #! /usr/bin/env python
 
+###
+### Macro for creating the exclusion limits plots from the combine outputs.
+###
+
 import os, sys, getopt
 import copy
 import time
@@ -35,8 +39,6 @@ parser = optparse.OptionParser(usage)
 parser.add_option("-y", "--year", action="store", type="string", dest="year",default="2017")
 parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
-#parser.add_option("-m", "--method", action="store", type="string", dest="method", default="")
-#parser.add_option("-a", "--all", action="store_true", default=False, dest="all")
 parser.add_option("-B", "--blind", action="store_true", default=False, dest="blind")
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
 (options, args) = parser.parse_args()
@@ -76,8 +78,6 @@ else:
 
 LUMI        = luminosities[YEAR]
 
-#signals = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000]
-#signals = range(800, 4500+1, 100)
 SIGNALS = range(1800, 8000+1, 100)
 
 theoryLabel = {'B3' : "HVT model B (g_{V}=3)", 'A1' : "HVT model A (g_{V}=1)", 'T1' : "2HDM Type-I", 'T2' : "2HDM Type-II"}
@@ -291,94 +291,6 @@ def limit():
     leg2.SetFillColor(0)
     c1.GetPad(0).RedrawAxis()
 
-    #if False and channel.endswith('sl'):
-    #    massAH, valAH = fillValues("./combine/dijet/X"+particle+"Hah_M%d.txt")
-    #    ExpAH, ObsAH = TGraphAsymmErrors(), TGraphAsymmErrors()
-    #    for i, m in enumerate(massAH):
-    #        if not m in val: continue
-    #        ExpAH.SetPoint(ExpAH.GetN(), m, valAH[m][3]*multF)
-    #        ObsAH.SetPoint(ObsAH.GetN(), m, valAH[m][0]*multF)
-    #    ExpAH.SetLineWidth(3)
-    #    ExpAH.SetLineColor(602) #602
-    #    ExpAH.SetLineStyle(5)
-    #    ObsAH.SetLineWidth(3)
-    #    ObsAH.SetLineColor(602)
-    #    ExpAH.Draw("SAME, L")
-    #    #ObsAH.Draw("SAME, L")
-
-    #    mass15, val15 = fillValues("./combine/Vh_2015/X"+particle+"h_M%d.txt")
-    #    Exp15, Obs15 = TGraphAsymmErrors(), TGraphAsymmErrors()
-    #    for i, m in enumerate(mass15):
-    #        if not m in val: continue
-    #        Exp15.SetPoint(Exp15.GetN(), m, val15[m][3]*multF*Theory['B3'].GetY()[i]*(0.625 if particle=='V' and m>3000 else 1.))
-    #        Obs15.SetPoint(Obs15.GetN(), m, val15[m][0]*multF*Theory['B3'].GetY()[i]*(0.625 if particle=='V' and m>3000 else 1.))
-    #    Exp15.SetLineWidth(3)
-    #    Exp15.SetLineColor(856) #602
-    #    Exp15.SetLineStyle(6)
-    #    Obs15.SetLineWidth(3)
-    #    Obs15.SetLineColor(856)
-    #    Exp15.Draw("SAME, L")
-    #    #Obs15.Draw("SAME, L")
-
-    #    leg2.AddEntry(Exp15, "B2G-16-003", "l")
-    #    leg2.AddEntry(ExpAH, "B2G-17-002", "l")
-
-    #if True and channel=='AZh':
-    #    massLL, valLL = fillValues("./combine/AZh/AZhll_M%d.txt")
-    #    ExpLL, ObsLL = TGraphAsymmErrors(), TGraphAsymmErrors()
-    #    for i, m in enumerate(massLL):
-    #        if not m in val: continue
-    #        ExpLL.SetPoint(ExpLL.GetN(), m, valLL[m][3]*multF)
-    #        ObsLL.SetPoint(ObsLL.GetN(), m, valLL[m][0]*multF)
-    #    ExpLL.SetLineWidth(3)
-    #    ExpLL.SetLineColor(833) #602
-    #    ExpLL.SetLineStyle(5)
-    #    ObsLL.SetLineWidth(3)
-    #    ObsLL.SetLineColor(833)
-    #    ExpLL.Draw("SAME, L")
-    #    #ObsLL.Draw("SAME, L")
-
-    #    massNN, valNN = fillValues("./combine/AZh/AZhnn_M%d.txt")
-    #    ExpNN, ObsNN = TGraphAsymmErrors(), TGraphAsymmErrors()
-    #    for i, m in enumerate(massNN):
-    #        if not m in val: continue
-    #        ExpNN.SetPoint(ExpNN.GetN(), m, valNN[m][3]*multF)
-    #        ObsNN.SetPoint(ObsNN.GetN(), m, valNN[m][0]*multF)
-    #    ExpNN.SetLineWidth(3)
-    #    ExpNN.SetLineColor(855) #602
-    #    ExpNN.SetLineStyle(6)
-    #    ObsNN.SetLineWidth(3)
-    #    ObsNN.SetLineColor(855)
-    #    ExpNN.Draw("SAME, L")
-    #    #ObsNN.Draw("SAME, L")
-
-    #    leg2.AddEntry(ExpLL, "Expected, A #rightarrow Zh #rightarrow llb#bar{b}", "l")
-    #    leg2.AddEntry(ExpNN, "Expected, A #rightarrow Zh #rightarrow #nu#nub#bar{b}", "l")
-    #
-    #if method=='combo':
-    #    massAH, valAH = fillValues("./combine/dijet/X"+particle+"Hah_M%d.txt")
-    #    ExpAH = TGraphAsymmErrors()
-    #    for i, m in enumerate(massAH):
-    #        if not m in val: continue
-    #        ExpAH.SetPoint(ExpAH.GetN(), m, valAH[m][3]*multF)
-    #    ExpAH.SetLineWidth(2)
-    #    ExpAH.SetLineColor(602) #602
-    #    ExpAH.SetLineStyle(4)
-    #    ExpAH.Draw("SAME, L")
-
-    #    massSL, valSL = fillValues("./combine/alpha/X"+particle+"Hsl_M%d.txt")
-    #    ExpSL = TGraphAsymmErrors()
-    #    for i, m in enumerate(massSL):
-    #        if not m in val: continue
-    #        ExpSL.SetPoint(ExpSL.GetN(), m, valSL[m][3]*multF)
-    #    ExpSL.SetLineWidth(3)
-    #    ExpSL.SetLineColor(860-9) #602
-    #    ExpSL.SetLineStyle(7)
-    #    ExpSL.Draw("SAME, L")
-
-    #    leg2.AddEntry(ExpAH, "B2G-17-002", "l")
-    #    leg2.AddEntry(ExpSL, "B2G-17-004", "l")
-
     leg2.Draw()
     if not options.blind: Obs0s.Draw("SAME, L")
     c1.GetPad(0).Update()
@@ -397,21 +309,6 @@ def limit():
             if not (Theory[t].Eval(m) > Obs0s.Eval(m)) == (Theory[t].Eval(m+1) > Obs0s.Eval(m+1)): print m,
         print ""
 
-    #print "p1s[",
-    #for i in range(Exp0s.GetN()):
-    #    print Exp0s.GetY()[i]+Exp1s.GetErrorYhigh(i), ",",
-    #print "],"
-    #print "m1s[",
-    #for i in range(Exp0s.GetN()):
-    #    print Exp0s.GetY()[i]-Exp1s.GetErrorYlow(i), ",",
-    #print "],"
-    #print "[",
-    #for i in range(Exp0s.GetN()):
-    #    print Exp0s.GetY()[i], ",",
-    #print "]"
-
-    #if not 'ah' in channel and not 'sl' in channel: return
-    
     return ##FIXME
 
 
@@ -730,14 +627,3 @@ def limitCompare(method):
 
 if __name__ == "__main__":
     limit()
-
-#if options.all:
-#    limit("hvt", "XVh")
-#    limit("alpha", "XZH")
-#    limit("alpha", "XWH")
-#    for c in ["XZH", "XZHnn", "XZHnnb", "XZHnnbb", "XZHee", "XZHeeb", "XZHeebb", "XZHmm", "XZHmmb", "XZHmmbb", "XWH", "XWHen", "XWHenb", "XWHenbb", "XWHmn", "XWHmnb", "XWHmnbb"]:
-#        limit(options.method, c)
-#else:
-#    if not options.method=="2HDM": limit(options.method, options.category)
-#    else: limit2HDM()
-#    limitCompare(options.method)

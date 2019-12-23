@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+###
+### Macro used for fitting the MC signal and saving the fits as a rooWorkspace for use by combine.
+###
+
 import os, sys, getopt, multiprocessing
 import copy, math, pickle
 from array import array
@@ -9,7 +13,7 @@ from ROOT import TMath, TFile, TChain, TTree, TCut, TH1F, TH2F, THStack, TGraph,
 from ROOT import TStyle, TCanvas, TPad, TLegend, TLatex, TText, TColor
 from ROOT import TH1, TF1, TGraph, TGraphErrors, TGraphAsymmErrors, TVirtualFitter
 
-gSystem.Load("PDFs/HWWLVJRooPdfs_cxx.so")
+gSystem.Load("PDFs/HWWLVJRooPdfs_cxx.so") #needed to get the DoubleCrytalBall pdf
 from ROOT import RooFit, RooRealVar, RooDataHist, RooDataSet, RooAbsData, RooAbsReal, RooAbsPdf, RooPlot, RooBinning, RooCategory, RooSimultaneous, RooArgList, RooArgSet, RooWorkspace, RooMsgService
 from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooPolynomial, RooChebychev, RooBreitWigner, RooCBShape, RooExtendPdf, RooAddPdf, RooDoubleCrystalBall
 
@@ -47,7 +51,6 @@ colour = [
 
 channel = 'bb'
 stype = 'Zprime' 
-#genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 massPoints = [x for x in range(1200, 8000+1, 100)]
 
@@ -96,7 +99,6 @@ channelList = ['bb']
 signalList = ['Zprbb']
 color = {'bb' : 4, 'bq': 2, 'qq': 8, 'mumu': 6}
 channel = 'bb'
-#categories = ['bb', 'bq', 'qq'] ## don't really need the qq category
 categories = ['bb', 'bq', 'mumu']
 stype = 'Zprime' 
 signalType = 'Zprime'
@@ -110,7 +112,7 @@ def signal(category):
     
     cColor = color[category] if category in color else 4
     nBtag = category.count('b')
-    isAH = False #not entirely sure what it does   
+    isAH = False #relict from using Alberto's more complex script 
  
     if not os.path.exists(PLOTDIR+"MC_signal_"+YEAR): os.makedirs(PLOTDIR+"MC_signal_"+YEAR)
 
@@ -121,21 +123,13 @@ def signal(category):
     #*******************************************************#
 
     X_mass  = RooRealVar (      "jj_mass_widejet",              "m_{jj}",       1800.,     9000.,  "GeV")
-    #j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
-    #j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
     j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     13000.,  "GeV")
     jj_deltaEta = RooRealVar(    "jj_deltaEta",                "",      0.,     5.)
-    #j2_pt = RooRealVar(         "jpt_2",                "jet2 pt",      0.,     4500.,  "GeV")
-    #jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",             -2.,   1.       )
-    #jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",             -2.,   1.       )
-    #jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",       "",             -1.,   2.        )
-    #jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             -1.,   2.        )
     jbtag_WP_1 = RooRealVar("jbtag_WP_1",       "",             -1.,   4.        )
     jbtag_WP_2 = RooRealVar("jbtag_WP_2",       "",             -1.,   4.        )
     fatjetmass_1 = RooRealVar("fatjetmass_1",   "",             -1.,   2500.     )
     jnmuons_1 = RooRealVar(   "jnmuons_1",      "j1 n_{#mu}",    -1.,   8.)
     jnmuons_2 = RooRealVar(   "jnmuons_2",      "j2 n_{#mu}",    -1.,   8.)
-    #MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
     HLT_PFJet500            = RooRealVar("HLT_PFJet500"            , "" , -1., 1.    ) 
     HLT_CaloJet500_NoJetID  = RooRealVar("HLT_CaloJet500_NoJetID"  , "" , -1., 1.    ) 
@@ -152,15 +146,12 @@ def signal(category):
     HLT_DoublePFJets40_CaloBTagDeepCSV_p71                  =RooRealVar("HLT_DoublePFJets40_CaloBTagDeepCSV_p71"                 , "", -1., 1. )
 
     weight = RooRealVar(        "eventWeightLumi",      "",             -1.e9,  1.e9    )
-
-    #X_mass.setMin(Xmin)
-    #X_mass.setMax(Xmax)
+    btag_weight = RooRealVar(   "BTagAK4Weight_deepJet", "",            -1.e9,  1.e9    )
 
     # Define the RooArgSet which will include all the variables defined before
     # there is a maximum of 9 variables in the declaration, so the others need to be added with 'add'
     variables = RooArgSet(X_mass)
-    #variables.add(RooArgSet(j1_pt, jj_deltaEta, jdeepFlavour_1, jdeepFlavour_2, weight))
-    variables.add(RooArgSet(j1_pt, jj_deltaEta, jbtag_WP_1, jbtag_WP_2, fatjetmass_1, jnmuons_1, jnmuons_2, weight))
+    variables.add(RooArgSet(j1_pt, jj_deltaEta, jbtag_WP_1, jbtag_WP_2, fatjetmass_1, jnmuons_1, jnmuons_2, weight, btag_weight))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     variables.add(RooArgSet(HLT_DoublePFJets100_CaloBTagDeepCSV_p71, HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets200_CaloBTagDeepCSV_p71, HLT_DoublePFJets350_CaloBTagDeepCSV_p71, HLT_DoublePFJets40_CaloBTagDeepCSV_p71))
     X_mass.setRange("X_reasonable_range", X_mass.getMin(), X_mass.getMax())
@@ -216,71 +207,19 @@ def signal(category):
     frSignal2 = {}
     frSignal3 = {}
 
-    # Signal shape uncertainties (common amongst all mass points) ## no idea how to put these yet FIXME
-    #xmean_fit = RooRealVar("sig_p1_fit", "Variation of the resonance position with the fit uncertainty", 0.005, -1., 1.)
-    #smean_fit = RooRealVar("CMS"+YEAR+"_sig_p1_fit", "Change of the resonance position with the fit uncertainty", 0., -10, 10)
+    # Signal shape uncertainties (common amongst all mass points) 
     xmean_jes = RooRealVar("sig_"+category+"_p1_scale_jes", "Variation of the resonance position with the jet energy scale", 0.020 if isAH else 0.010, -1., 1.) #0.001
     smean_jes = RooRealVar("CMS"+YEAR+"_sig_"+category+"_p1_jes", "Change of the resonance position with the jet energy scale", 0., -10, 10)
-    #xmean_e = RooRealVar("sig_p1_scale_e", "Variation of the resonance position with the electron energy scale", 0.001, -1., 1.)
-    #smean_e = RooRealVar("CMS"+YEAR+"_sig_p1_scale_e", "Change of the resonance position with the electron energy scale", 0., -10, 10)
-    #xmean_m = RooRealVar("sig_p1_scale_m", "Variation of the resonance position with the muon energy scale", 0.001, -1., 1.)
-    #smean_m = RooRealVar("CMS"+YEAR+"_sig_p1_scale_m", "Change of the resonance position with the muon energy scale", 0., -10, 10)
 
-    #xsigma_fit = RooRealVar("sig_p2_fit", "Variation of the resonance width with the fit uncertainty", 0.02, -1., 1.)
-    #ssigma_fit = RooRealVar("CMS"+YEAR+"_sig_p2_fit", "Change of the resonance width with the fit uncertainty", 0., -10, 10)
-    #xsigma_jes = RooRealVar("sig_p2_scale_jes", "Variation of the resonance width with the jet energy scale", 0.010, -1., 1.) #0.001
-    #ssigma_jes = RooRealVar("CMS"+YEAR+"_sig_p2_jes", "Change of the resonance width with the jet energy scale", 0., -10, 10)
     xsigma_jer = RooRealVar("sig_"+category+"_p2_scale_jer", "Variation of the resonance width with the jet energy resolution", 0.020, -1., 1.)
     ssigma_jer = RooRealVar("CMS"+YEAR+"_sig_"+category+"_p2_jer", "Change of the resonance width with the jet energy resolution", 0., -10, 10)
-    #xsigma_e = RooRealVar("sig_p2_scale_e", "Variation of the resonance width with the electron energy scale", 0.001, -1., 1.)
-    #ssigma_e = RooRealVar("CMS"+YEAR+"_sig_p2_scale_e", "Change of the resonance width with the electron energy scale", 0., -10, 10)
-    #xsigma_m = RooRealVar("sig_p2_scale_m", "Variation of the resonance width with the muon energy scale", 0.040, -1., 1.)
-    #ssigma_m = RooRealVar("CMS"+YEAR+"_sig_p2_scale_m", "Change of the resonance width with the muon energy scale", 0., -10, 10)
     
-    #xalpha1_fit = RooRealVar("sig_p3_fit", "Variation of the resonance alpha1 with the fit uncertainty", 0.03, -1., 1.)
-    #salpha1_fit = RooRealVar("CMS"+YEAR+"_sig_p3_fit", "Change of the resonance alpha1 with the fit uncertainty", 0., -10, 10)
-    #
-    #xslope1_fit = RooRealVar("sig_p4_fit", "Variation of the resonance slope1 with the fit uncertainty", 0.10, -1., 1.)
-    #sslope1_fit = RooRealVar("CMS"+YEAR+"_sig_p4_fit", "Change of the resonance slope1 with the fit uncertainty", 0., -10, 10)
-
-    #xalpha2_fit = RooRealVar("sig_p5_fit", "Variation of the resonance alpha2 with the fit uncertainty", 0.03, -1., 1.)
-    #salpha2_fit = RooRealVar("CMS"+YEAR+"_sig_p5_fit", "Change of the resonance alpha2 with the fit uncertainty", 0., -10, 10)
-    #
-    #xslope2_fit = RooRealVar("sig_p6_fit", "Variation of the resonance slope2 with the fit uncertainty", 0.10, -1., 1.)
-    #sslope2_fit = RooRealVar("CMS"+YEAR+"_sig_p6_fit", "Change of the resonance slope2 with the fit uncertainty", 0., -10, 10)
-
-    #xmean_fit.setConstant(True)
-    #smean_fit.setConstant(True)
     xmean_jes.setConstant(True)
     smean_jes.setConstant(True)
-    #xmean_e.setConstant(True)
-    #smean_e.setConstant(True)
-    #xmean_m.setConstant(True)
-    #smean_m.setConstant(True)
     
-    #xsigma_fit.setConstant(True)
-    #ssigma_fit.setConstant(True)
-    #xsigma_jes.setConstant(True)
-    #ssigma_jes.setConstant(True)
     xsigma_jer.setConstant(True)
     ssigma_jer.setConstant(True)
-    #xsigma_e.setConstant(True)
-    #ssigma_e.setConstant(True)
-    #xsigma_m.setConstant(True)
-    #ssigma_m.setConstant(True)
     
-    #xalpha1_fit.setConstant(True)
-    #salpha1_fit.setConstant(True)
-    #xslope1_fit.setConstant(True)
-    #sslope1_fit.setConstant(True)
-
-    #xalpha2_fit.setConstant(True)
-    #salpha2_fit.setConstant(True)
-    #xslope2_fit.setConstant(True)
-    #sslope2_fit.setConstant(True)
-
-
-    # the alpha method is now done.
     for m in massPoints:
 
         signalMass = "%s_M%d" % (stype, m)
@@ -288,45 +227,27 @@ def signal(category):
         sampleName = "ZpBB_M{}".format(m)
  
         signalColor = sample[sampleName]['linecolor'] if signalName in sample else 1
-        # fit the shape of the signal and put everything together in the datacard and workspace
-        # for the time being the signal is fitted using 1 Gaussian in a range defined below (hardcoded)
 
         # define the signal PDF
         vmean[m] = RooRealVar(signalName + "_vmean", "Crystal Ball mean", m, m*0.96, m*1.05)
-        #smean[m] = RooFormulaVar(signalName + "_mean", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)", RooArgList(vmean[m], xmean_e, smean_e, xmean_m, smean_m, xmean_jes, smean_jes, xmean_fit, smean_fit))
         smean[m] = RooFormulaVar(signalName + "_mean", "@0*(1+@1*@2)", RooArgList(vmean[m], xmean_jes, smean_jes))
 
-        #vsigma[m] = RooRealVar(signalName + "_vsigma", "Crystal Ball sigma", m*0.07, m*0.05, m*0.9)
         vsigma[m] = RooRealVar(signalName + "_vsigma", "Crystal Ball sigma", m*0.02, m*0.0005, m*0.025)
-        #sigmaList = RooArgList(vsigma[m], xsigma_e, ssigma_e, xsigma_m, ssigma_m, xsigma_jes, ssigma_jes, xsigma_jer, ssigma_jer)
-        #sigmaList.add(RooArgList(xsigma_fit, ssigma_fit))
-        #ssigma[m] = RooFormulaVar(signalName + "_sigma", "@0*(1+@1*@2)*(1+@3*@4)*(1+@5*@6)*(1+@7*@8)*(1+@9*@10)", sigmaList)
         ssigma[m] = RooFormulaVar(signalName + "_sigma", "@0*(1+@1*@2)", RooArgList(vsigma[m], xsigma_jer, ssigma_jer))
  
-        #valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha 1", 0.2,  0., 15.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
         valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha 1", 0.2,  0.05, 0.28) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
-        #valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha 1", 0.19)
-        #valpha1[m].setConstant(True)
-
-        #salpha1[m] = RooFormulaVar(signalName + "_alpha1", "@0*(1+@1*@2)", RooArgList(valpha1[m], xalpha1_fit, salpha1_fit))
         salpha1[m] = RooFormulaVar(signalName + "_alpha1", "@0", RooArgList(valpha1[m]))
 
-        #vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 10., 0.1, 120.) # slope of the power tail
         vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 10., 0.1, 20.) # slope of the power tail
-        #sslope1[m] = RooFormulaVar(signalName + "_slope1", "@0*(1+@1*@2)", RooArgList(vslope1[m], xslope1_fit, sslope1_fit))
         sslope1[m] = RooFormulaVar(signalName + "_slope1", "@0", RooArgList(vslope1[m]))
 
-        #valpha2[m] = RooRealVar(signalName + "_valpha2", "Crystal Ball alpha 2", 0.2,  0., 1.) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
         valpha2[m] = RooRealVar(signalName + "_valpha2", "Crystal Ball alpha 2", 1.)
         valpha2[m].setConstant(True)
-        #salpha2[m] = RooFormulaVar(signalName + "_alpha2", "@0*(1+@1*@2)", RooArgList(valpha2[m], xalpha2_fit, salpha2_fit))
         salpha2[m] = RooFormulaVar(signalName + "_alpha2", "@0", RooArgList(valpha2[m]))
 
         vslope2[m] = RooRealVar(signalName + "_vslope2", "Crystal Ball slope 2", 6., 2.5, 15.) # slope of the higher power tail
-        #sslope2[m] = RooFormulaVar(signalName + "_slope2", "@0*(1+@1*@2)", RooArgList(vslope2[m], xslope2_fit, sslope2_fit)) # slope of the higher power tail
         sslope2[m] = RooFormulaVar(signalName + "_slope2", "@0", RooArgList(vslope2[m])) # slope of the higher power tail
 
-        #signal[m] = RooCBShape(signalName, "m_{%s'} = %d GeV" % ('X', m), X_mass, smean[m], ssigma[m], salpha1[m], sslope1[m]) # Signal name does not have the channel
         signal[m] = RooDoubleCrystalBall(signalName, "m_{%s'} = %d GeV" % ('X', m), X_mass, smean[m], ssigma[m], salpha1[m], sslope1[m], salpha2[m], sslope2[m])
 
         # extend the PDF with the yield to perform an extended likelihood fit
@@ -335,17 +256,6 @@ def signal(category):
         signalXS[m] = RooRealVar(signalName+"_xs", "signalXS", 1., 0., 1.e15)
         signalExt[m] = RooExtendPdf(signalName+"_ext", "extended p.d.f", signal[m], signalYield[m])
 
-        #vslope1[m].setMax(40.) #deactivated to let the peacock fly FIXME
-
-        if m < 1000: vsigma[m].setVal(m*0.06)
-
-        # If it's not the proper channel, make it a gaussian
-        #valpha1[m].setVal(5)           ##not sure if this is needed or not FIXME
-        #valpha1[m].setConstant(True)
-        #vslope1[m].setConstant(True)
-        #vslope2[m].setConstant(True)
-        #valpha2[m].setConstant(True)
-        
         # ---------- if there is no simulated signal, skip this mass point ----------
         if m in genPoints:
             if VERBOSE: print " - Mass point", m
@@ -398,12 +308,10 @@ def signal(category):
                 signalXS[m].setConstant(True)
                 continue
             
+            #setSignal[m] = RooDataSet("setSignal_"+signalName, "setSignal", variables, RooFit.Cut(SRcut), RooFit.WeightVar("eventWeightLumi*BTagAK4Weight_deepJet"), RooFit.Import(treeSign[m]))
             setSignal[m] = RooDataSet("setSignal_"+signalName, "setSignal", variables, RooFit.Cut(SRcut), RooFit.WeightVar(weight), RooFit.Import(treeSign[m]))
-            #setSignal[m] = RooDataSet("setSignal_"+signalName, "setSignal", variables, RooFit.Cut(SRcut), RooFit.Import(treeSign[m]))
             if VERBOSE: print " - Dataset with", setSignal[m].sumEntries(), "events loaded"
            
-            #valpha1[m].setConstant(True) #FIXME
-            
             # FIT
             entries = setSignal[m].sumEntries()
             if entries < 0. or entries != entries: entries = 0
@@ -417,7 +325,6 @@ def signal(category):
                 if VERBOSE: print "********** Fit result [", m, "] **", category, "*"*40, "\n", frSignal[m].Print(), "\n", "*"*80
                 if VERBOSE: frSignal[m].correlationMatrix().Print()
                 drawPlot(signalMass+"_"+category, stype+category, X_mass, signal[m], setSignal[m], frSignal[m])
-                #drawPlot(signalMass+"_"+category, "M = "+str(m), X_mass, signal[m], setSignal[m], frSignal[m])           
  
             else:
                 print "  WARNING: signal", stype, "and mass point", m, "in category", category, "has 0 entries or does not exist"
@@ -431,7 +338,7 @@ def signal(category):
             boundaryFactor = signalIntegral[m].getVal()
             if boundaryFactor < 0. or boundaryFactor != boundaryFactor: boundaryFactor = 0
             if VERBOSE: print " - Fit normalization vs integral:", signalYield[m].getVal(), "/", boundaryFactor, "events"
-            signalNorm[m].setVal( boundaryFactor * signalYield[m].getVal() / signalXS[m].getVal()) # here normalize to sigma(X) x Br(X->VH) = 1 [fb]
+            signalNorm[m].setVal( boundaryFactor * signalYield[m].getVal() / signalXS[m].getVal()) # here normalize to sigma(X) x Br = 1 [fb]
             
         vmean[m].setConstant(True)
         vsigma[m].setConstant(True)
@@ -442,14 +349,6 @@ def signal(category):
         signalNorm[m].setConstant(True)
         signalXS[m].setConstant(True)
         
-        ## Fast dump if interpolation is not needed
-        #w = RooWorkspace("VH_2016", "workspace")
-        #getattr(w, "import")(signal[m], RooFit.Rename(signal[m].GetName()))
-        #getattr(w, "import")(signalNorm[m], RooFit.Rename(signalNorm[m].GetName()))
-        #getattr(w, "import")(signalXS[m], RooFit.Rename(signalXS[m].GetName()))
-        #w.writeToFile("%s%s.root" % (WORKDIR, signalName), True)
-        #print "Workspace", "%s%s.root" % (WORKDIR, signalName), "saved successfully"
-
 
     #*******************************************************#
     #                                                       #
@@ -470,7 +369,7 @@ def signal(category):
             signal[m].plotOn(frame_signal, RooFit.LineColor((j%9)+1), RooFit.Normalization(signalNorm[m].getVal(), RooAbsReal.NumEvent), RooFit.Range("X_reasonable_range"))
     frame_signal.GetXaxis().SetRangeUser(0, 10000)
     frame_signal.Draw()
-    drawCMS(-1, "Simulation Preliminary")
+    drawCMS(-1, "Simulation Preliminary", year=YEAR)
     drawAnalysis(category)
     drawRegion(category)
 
@@ -487,17 +386,7 @@ def signal(category):
     gnorm.SetMaximum(0)
     inorm = TGraphErrors()
     inorm.SetMarkerStyle(24)
-    fnorm = TF1("fnorm", "pol9", 700, 3000) #"pol5" if not channel=="XZHnnbb" else "pol6" #pol5*TMath::Floor(x-1800) + ([5]*x + [6]*x*x)*(1-TMath::Floor(x-1800))
-#    else:
-#        fnorm = TF1("fnorm", "(%e + %e*x + %e*x*x + %e*x*x*x + %e*x*x*x*x + %e*x*x*x*x*x)*[0]*exp(x*[1] + [2]/x)" % (param[channel]['norm'][0], param[channel]['norm'][1], param[channel]['norm'][2], param[channel]['norm'][3], param[channel]['norm'][4], param[channel]['norm'][5]), 750, 5000)
-##        fnorm = TF1("fnorm", "pol5 * expo", 750, 4000)
-#        fnorm.SetParameter(0, 0.55)
-#        #fnorm.FixParameter(0, 1)
-#        fnorm.SetParameter(1, -2.2e-3)
-#        fnorm.SetParameter(2, 1200)
-#        fnorm.SetParLimits(2, 800, 2000)
-#        #fnorm.FixParameter(2, 1200)
-#        #fnorm.FixParameter(3, 8000)
+    fnorm = TF1("fnorm", "pol9", 700, 3000) 
     fnorm.SetLineColor(920)
     fnorm.SetLineStyle(7)
     fnorm.SetFillColor(2)
@@ -579,10 +468,7 @@ def signal(category):
     n = 0
     for i, m in enumerate(genPoints):
         if not m in signalNorm.keys(): continue
-        #if not signalNorm[m].getVal() > 1.: continue
         if signalNorm[m].getVal() < 1.e-6: continue
-        #signalString = "M%d" % m
-        #signalName = "%s_M%d" % (stype, m)
 
         if gnorm.GetMaximum() < signalNorm[m].getVal(): gnorm.SetMaximum(signalNorm[m].getVal())
         gnorm.SetPoint(n, m, signalNorm[m].getVal())
@@ -615,16 +501,6 @@ def signal(category):
     gnorm.Fit(fnorm, "Q", "SAME", 1800, 8000) ## adjusted recently
 
     for m in massPoints:
-        #signalName = "%s_M%d" % (stype, m)
-
-        # set parameters
-        # Fit method
-#        vmean[m].setVal(fmean.GetParameter(0) + fmean.GetParameter(1)*m + fmean.GetParameter(2)*m*m)
-#        vsigma[m].setVal(fsigma.GetParameter(0) + fsigma.GetParameter(1)*m + fsigma.GetParameter(2)*m*m)
-#        valpha1[m].setVal(falpha1.GetParameter(0) + falpha1.GetParameter(1)*m + falpha1.GetParameter(2)*m*m)
-#        vslope1[m].setVal(fslope1.GetParameter(0) + fslope1.GetParameter(1)*m + fslope1.GetParameter(2)*m*m)
-#        salpha2[m].setVal(falpha2.GetParameter(0) + falpha2.GetParameter(1)*m + falpha2.GetParameter(2)*m*m)
-#        sslope2[m].setVal(fslope2.GetParameter(0) + fslope2.GetParameter(1)*m + fslope2.GetParameter(2)*m*m)
 
         if vsigma[m].getVal() < 10.: vsigma[m].setVal(10.)
 
@@ -674,7 +550,7 @@ def signal(category):
         if jslope2 > 0: vslope2[m].setVal(jslope2)
 
 
-        #### newly introduced: FIXME FIXME FIXME
+        #### newly introduced, not yet sure if helpful: 
         vmean[m].removeError()
         vsigma[m].removeError()
         valpha1[m].removeError()
@@ -682,9 +558,6 @@ def signal(category):
         vslope1[m].removeError()
         vslope2[m].removeError()
  
-
-    #c1 = TCanvas("c1", "Crystal Ball", 1200, 800) #if not isAH else 1200
-    #c1.Divide(2, 2) # if not isAH else 3
     c1 = TCanvas("c1", "Crystal Ball", 1200, 1200) #if not isAH else 1200
     c1.Divide(2, 3)
     c1.cd(1)
@@ -692,69 +565,35 @@ def signal(category):
     gmean.Draw("APL")
     imean.Draw("P, SAME")
     drawRegion(category)
-#    emean = TGraphErrors(gmean)
-#    emean.SetFillStyle(3003)
-#    emean.SetFillColor(1)
-#    if emean.GetN() > 0: TVirtualFitter.GetFitter().GetConfidenceIntervals(emean, 0.683)
-#    emean.Draw("3, SAME")
     c1.cd(2)
     gsigma.SetMinimum(0.)
     gsigma.Draw("APL")
     isigma.Draw("P, SAME")
     drawRegion(category)
-#    esigma = TGraphErrors(gsigma)
-#    esigma.SetFillStyle(3003)
-#    esigma.SetFillColor(1)
-#    if esigma.GetN() > 0: TVirtualFitter.GetFitter().GetConfidenceIntervals(esigma, 0.683)
-#    esigma.Draw("3, SAME")
     c1.cd(3)
     galpha1.Draw("APL")
     ialpha1.Draw("P, SAME")
     drawRegion(category)
     galpha1.GetYaxis().SetRangeUser(0., 1.1) #adjusted upper limit from 5 to 2
-    #falpha1.FixParameter(0, 0.)
-#    ealpha1 = TGraphErrors(galpha1)
-#    ealpha1.SetFillStyle(3003)
-#    ealpha1.SetFillColor(1)
-#    if ealpha1.GetN() > 0: TVirtualFitter.GetFitter().GetConfidenceIntervals(ealpha1, 0.683)
-#    ealpha1.Draw("3, SAME")
     c1.cd(4)
     gslope1.Draw("APL")
     islope1.Draw("P, SAME")
     drawRegion(category)
     gslope1.GetYaxis().SetRangeUser(0., 150.) #adjusted upper limit from 125 to 60
-#    eslope1 = TGraphErrors(gslope1)
-#    eslope1.SetFillStyle(3003)
-#    eslope1.SetFillColor(1)
-#    if eslope1.GetN() > 0: TVirtualFitter.GetFitter().GetConfidenceIntervals(eslope1, 0.683)
-#    eslope1.Draw("3, SAME")
     if True: #isAH:
         c1.cd(5)
         galpha2.Draw("APL")
         ialpha2.Draw("P, SAME")
         drawRegion(category)
-        #falpha2.FixParameter(0, 0.)
         galpha2.GetYaxis().SetRangeUser(0., 2.)
-#        ealpha2 = TGraphErrors(galpha2)
-#        ealpha2.SetFillStyle(3003)
-#        ealpha2.SetFillColor(1)
-#        if ealpha2.GetN() > 0: TVirtualFitter.GetFitter().GetConfidenceIntervals(ealpha2, 0.683)
-#        ealpha2.Draw("3, SAME")
         c1.cd(6)
         gslope2.Draw("APL")
         islope2.Draw("P, SAME")
         drawRegion(category)
         gslope2.GetYaxis().SetRangeUser(0., 20.)
-#        eslope2 = TGraphErrors(gslope2)
-#        eslope2.SetFillStyle(3003)
-#        eslope2.SetFillColor(1)
-#        if eslope2.GetN() > 0: TVirtualFitter.GetFitter().GetConfidenceIntervals(eslope2, 0.683)
-#        eslope2.Draw("3, SAME")
-
 
     c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.pdf")
     c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.png")
-
 
     c2 = TCanvas("c2", "Signal Efficiency", 800, 600)
     c2.cd(1)
@@ -766,23 +605,11 @@ def signal(category):
     inorm.Draw("P, SAME")
     gnorm.GetXaxis().SetRangeUser(genPoints[0]-100, genPoints[-1]+100)
     gnorm.GetYaxis().SetRangeUser(0., gnorm.GetMaximum()*1.25)
-    drawCMS(-1, "Simulation Preliminary")
+    drawCMS(-1, "Simulation Preliminary", year=YEAR)
     drawAnalysis(category)
     drawRegion(category)
     c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.pdf")
     c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.png")
-
-
-    #*******************************************************#
-    #                                                       #
-    #                       Signal pdf                      #
-    #                                                       #
-    #*******************************************************#
-
-#    X_mass.setMin(Xmin)
-#    X_mass.setMax(Xmax)
-
-
 
 
     #*******************************************************#
@@ -886,7 +713,6 @@ def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=No
     drawCMS(LUMI, cmsLabel)
     drawAnalysis(channel)
     drawRegion(channel + ("" if isData and not isCategory else ('SR' if 'SR' in name else ('SB' if 'SB' in name else ""))), True)
-    #if isSignal: drawMass(name)
     if isSignal: drawMass("M_{Z'} = "+mass+" GeV")
 
     if isBottomPanel:

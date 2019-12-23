@@ -1,5 +1,9 @@
 #! /usr/bin/env python
 
+###
+### contains the selections for each b-tagging category, as well as the pre-selection
+###
+
 working_points = {'loose': 1, 'medium': 2, 'tight': 3}
 
 #triggers = "(HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550)"

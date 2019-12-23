@@ -1,5 +1,9 @@
 #! /usr/bin/env python
 
+###
+### Collection of auxiliary functions.
+###
+
 import os, sys, getopt, multiprocessing
 import copy, math, pickle
 from array import array

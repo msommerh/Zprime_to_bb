@@ -1,5 +1,9 @@
 #! /usr/bin/env python
 
+###
+### Macro for fetching the number of generated events for each signal sample from DAS.
+###
+
 import sys
 from argparse import ArgumentParser
 from commands import getoutput

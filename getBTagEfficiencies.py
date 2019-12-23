@@ -1,4 +1,10 @@
 #! /usr/bin/env python
+
+###
+### Macro that derives the BTagEfficiencies from pre-made histograms (by postprocessors/BTaggingEfficiency.py).
+### The efficiencies will be accessed by the BTaggingTool class in BTaggingTool.py when creating the ntuples.
+###
+
 # Author: Izaak Neutelings (January 2019)
 
 import os, sys

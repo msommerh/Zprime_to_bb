@@ -1,5 +1,9 @@
 #! /usr/bin/env python
 
+###
+### Macro used for fitting the background and saving the fits as a rooWorkspace for use by combine.
+###
+
 print "starting package import"
 
 import os, sys, getopt, multiprocessing
@@ -35,7 +39,6 @@ parser.add_option("-c", "--category", action="store", type="string", dest="categ
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
 parser.add_option("-u", "--unskimmed", action="store_true", default=False, dest="unskimmed")
 parser.add_option("-s", "--selection", action="store", type="string", dest="selection", default="")
-#parser.add_option("-S", "--submitted", action="store_true", default=False, dest="submitted")
 (options, args) = parser.parse_args()
 gROOT.SetBatch(True) #suppress immediate graphic output
 if options.test: print "performing test run on small QCD MC sample"
@@ -60,7 +63,6 @@ gStyle.SetErrorX(0.)
 
 BTAGGING    = options.btagging
 NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"
-#CARDDIR     = "datacards/"+BTAGGING+"/"
 WORKDIR     = "workspace/"+BTAGGING+"/"
 RATIO       = 4
 SHOWERR     = True
@@ -90,7 +92,6 @@ if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
     sys.exit()
 
 if ISMC:
-    #DATA_TYPE = "MC_QCD"
     DATA_TYPE = "MC_QCD_TTbar"
 else:
     DATA_TYPE = "data"
@@ -103,11 +104,6 @@ if options.unskimmed or options.test:
 if options.selection not in SELECTIONS.keys():
     print "invalid selection!"
     sys.exit()
-
-#if options.submitted:
-#    CARDDIR +="submitted/"
-#    WORKDIR +="submitted/"
-#    PLOTDIR +="submitted/"
 
 signalList = ['Zprime_to_bb']
 categories = ['bb', 'bq', 'qq', 'mumu']
@@ -125,7 +121,7 @@ def dijet(category):
 
     channel = 'bb'
     stype = channel
-    isSB = True  # apparently stands for side bands
+    isSB = True  # relict from using Alberto's more complex script
     isData = not ISMC 
     nTupleDir = NTUPLEDIR
  
@@ -152,20 +148,12 @@ def dijet(category):
     RSS = {}
 
     X_mass = RooRealVar(        "jj_mass_widejet",              "m_{jj}",       1800.,  9000.,  "GeV") 
-    #j1_mass = RooRealVar(       "jmass_1",              "jet1 mass",    0.,     700.,   "GeV")
-    #j2_mass = RooRealVar(       "jmass_2",              "jet2 mass",    0.,     700.,   "GeV")
     j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     13000.,  "GeV")
-    #j2_pt = RooRealVar(         "jpt_2",                "jet2 pt",      0.,     4500.,  "GeV")
-    #jdeepCSV_1 = RooRealVar(    "jdeepCSV_1",           "",             -2.,   1.       )
-    #jdeepCSV_2 = RooRealVar(    "jdeepCSV_2",           "",             -2.,   1.       )
-    #jdeepFlavour_1 = RooRealVar("jdeepFlavour_1",       "",             0.,   1.        )
-    #jdeepFlavour_2 = RooRealVar("jdeepFlavour_2",       "",             0.,   1.        )
     jbtag_WP_1 = RooRealVar("jbtag_WP_1",       "",             -1.,   4.        )
     jbtag_WP_2 = RooRealVar("jbtag_WP_2",       "",             -1.,   4.        )
     fatjetmass_1 = RooRealVar("fatjetmass_1",   "",             -1.,   2500.     )
     jnmuons_1 = RooRealVar("jnmuons_1",   "j1 n_{#mu}",         -1.,   8.     )
     jnmuons_2 = RooRealVar("jnmuons_2",   "j2 n_{#mu}",         -1.,   8.     )
-    #MET_over_sumEt = RooRealVar("MET_over_SumEt",       "",             0.,     1.      )
     jj_deltaEta = RooRealVar(    "jj_deltaEta",                "",      0.,     5.)
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
     HLT_PFJet500            = RooRealVar("HLT_PFJet500"            , "" , -1., 1.    )
@@ -186,14 +174,12 @@ def dijet(category):
     weight = RooRealVar(        "eventWeightLumi",      "",             -1.e9,  1.e9    )
 
     variables = RooArgSet(X_mass)
-    #variables.add(RooArgSet(jdeepFlavour_1, jdeepFlavour_2, weight))
     variables.add(RooArgSet(jbtag_WP_1, jbtag_WP_2, fatjetmass_1, jnmuons_1, jnmuons_2, weight))
     variables.add(RooArgSet(j1_pt, jj_deltaEta))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     variables.add(RooArgSet(HLT_DoublePFJets100_CaloBTagDeepCSV_p71, HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets200_CaloBTagDeepCSV_p71, HLT_DoublePFJets350_CaloBTagDeepCSV_p71, HLT_DoublePFJets40_CaloBTagDeepCSV_p71))
 
     X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))
-    #X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/100))
 
     binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
  
@@ -253,10 +239,8 @@ def dijet(category):
     modelBkg1 = RooGenericPdf("Bkg1", "Bkg. fit (2 par.)", "1./pow(@0/13000, @1)", RooArgList(X_mass, p1_1))
     normzBkg1 = RooRealVar(modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents) #range dependent of actual number of events!
     modelExt1 = RooExtendPdf(modelBkg1.GetName()+"_ext", modelBkg1.GetTitle(), modelBkg1, normzBkg1)
-    print "starting actual fit"
     fitRes1 = modelExt1.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
     fitRes1.Print()
-    print "drawFit function"
     RSS[1] = drawFit("Bkg1", category, X_mass, modelBkg1, setData, binsXmass, [fitRes1], normzBkg1.getVal())
     
     
@@ -267,10 +251,8 @@ def dijet(category):
     modelBkg2 = RooGenericPdf("Bkg2", "Bkg. fit (3 par.)", "pow(1-@0/13000, @1) / pow(@0/13000, @2)", RooArgList(X_mass, p2_1, p2_2))
     normzBkg2 = RooRealVar(modelBkg2.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
     modelExt2 = RooExtendPdf(modelBkg2.GetName()+"_ext", modelBkg2.GetTitle(), modelBkg2, normzBkg2)
-    print "starting actual fit"
     fitRes2 = modelExt2.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
     fitRes2.Print()
-    print "drawFit function"
     RSS[2] = drawFit("Bkg2", category, X_mass, modelBkg2, setData, binsXmass, [fitRes2], normzBkg2.getVal())
     
     # 3 parameters
@@ -281,10 +263,8 @@ def dijet(category):
     modelBkg3 = RooGenericPdf("Bkg3", "Bkg. fit (4 par.)", "pow(1-@0/13000, @1) / pow(@0/13000, @2+@3*log(@0/13000))", RooArgList(X_mass, p3_1, p3_2, p3_3))
     normzBkg3 = RooRealVar(modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
     modelExt3 = RooExtendPdf(modelBkg3.GetName()+"_ext", modelBkg3.GetTitle(), modelBkg3, normzBkg3)
-    print "starting actual fit"
     fitRes3 = modelExt3.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
     fitRes3.Print()
-    print "drawFit function"
     RSS[3] = drawFit("Bkg3", category, X_mass, modelBkg3, setData, binsXmass, [fitRes3], normzBkg3.getVal())
     
     # 4 parameters
@@ -296,10 +276,8 @@ def dijet(category):
     modelBkg4 = RooGenericPdf("Bkg4", "Bkg. fit (5 par.)", "pow(1 - @0/13000, @1) / pow(@0/13000, @2+@3*log(@0/13000)+@4*pow(log(@0/13000), 2))", RooArgList(X_mass, p4_1, p4_2, p4_3, p4_4))
     normzBkg4 = RooRealVar(modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
     modelExt4 = RooExtendPdf(modelBkg4.GetName()+"_ext", modelBkg4.GetTitle(), modelBkg4, normzBkg4)
-    print "starting actual fit"
     fitRes4 = modelExt4.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
     fitRes4.Print()
-    print "drawFit function"
     RSS[4] = drawFit("Bkg4", category, X_mass, modelBkg4, setData, binsXmass, [fitRes4], normzBkg4.getVal())
     
     # Normalization parameters are should be set constant, but shape ones should not
@@ -391,7 +369,7 @@ def dijet(category):
     setToys.SetTitle("Data (toys)")
     if not isData:
         print " - Generating", nevents, "events for toy data"
-        setToys = modelAlt.generate(RooArgSet(X_mass), nevents) #why is it modelAlt and not modelBkg?? FIXME
+        setToys = modelAlt.generate(RooArgSet(X_mass), nevents) #why is it modelAlt and not modelBkg? FIXME
         print "toy data generated"
 
     if VERBOSE: raw_input("Press Enter to continue...")
@@ -412,7 +390,7 @@ def dijet(category):
     frame = X_mass.frame()
     setPadStyle(frame, 1.25, True)
     if VARBINS: frame.GetXaxis().SetRangeUser(X_mass.getMin(), lastBin)
-    signal = getSignal(category, stype, 2000)  #replacing Alberto's getSignal by own function FIXME
+    signal = getSignal(category, stype, 2000)  #replacing Alberto's getSignal by own dummy function
 
     graphData = setData.plotOn(frame, RooFit.Binning(binsXmass), RooFit.Scaling(False), RooFit.Invisible())
     modelBkg.plotOn(frame, RooFit.VisualizeError(fitRes, 1, False), RooFit.LineColor(602), RooFit.FillColor(590), RooFit.FillStyle(1001), RooFit.DrawOption("FL"), RooFit.Name("1sigma"))
@@ -501,7 +479,7 @@ def dijet(category):
     # Dataset
     #if isData: getattr(w, "import")(setData, RooFit.Rename("data_obs"))
     #else: getattr(w, "import")(setToys, RooFit.Rename("data_obs"))
-    getattr(w, "import")(setToys, RooFit.Rename("data_obs")) ## the original lines above set a newly generated toy dataset as data_obs if MC is chosen. I don't see why this should be done and thus use the setData as data_obs for both FIXME
+    getattr(w, "import")(setData, RooFit.Rename("data_obs")) ## the original lines above set a newly generated toy dataset as data_obs if MC is chosen. I don't see why this should be done and thus use the setData as data_obs for both FIXME
     if BIAS:
         getattr(w, "import")(cat, RooFit.Rename(cat.GetName()))
         getattr(w, "import")(normulti, RooFit.Rename(normulti.GetName()))
@@ -509,11 +487,6 @@ def dijet(category):
     getattr(w, "import")(modelBkg, RooFit.Rename(modelBkg.GetName()))
     getattr(w, "import")(modelAlt, RooFit.Rename(modelAlt.GetName()))
     getattr(w, "import")(normzBkg, RooFit.Rename(normzBkg.GetName()))
-    #getattr(w, "import")(roomultipdf, RooFit.Rename(roomultipdf.GetName()))
-    #for m in signal.keys():
-    #    getattr(w, "import")(signal[m], RooFit.Rename(signal[m].GetName()))
-    #    getattr(w, "import")(signalYield[m], RooFit.Rename(signalYield[m].GetName()))
-    #w.Print()
     w.writeToFile(WORKDIR+"%s_%s%s.root" % (DATA_TYPE+"_"+YEAR, category, "_test" if options.test else ""), True)
     print "Workspace", WORKDIR+"%s_%s%s.root" % (DATA_TYPE+"_"+YEAR, category, "_test" if options.test else ""), "saved successfully"
     
@@ -556,17 +529,11 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     c.cd(1)
     frame = variable.frame()
     setPadStyle(frame, 1.25, True)
-    print "dataset.plotOn(frame, RooFit.Binning(binning), RooFit.Invisible())"
     dataset.plotOn(frame, RooFit.Binning(binning), RooFit.Invisible())
-    print "."
     if len(fitRes) > 0: model.plotOn(frame, RooFit.VisualizeError(fitRes[0], 1, False), RooFit.Normalization(norm if norm>0 else dataset.sumEntries(), RooAbsReal.NumEvent), RooFit.LineColor(getColor(order, category)[0]), RooFit.FillColor(getColor(order, category)[1]), RooFit.FillStyle(1001), RooFit.DrawOption("FL"))
-    print "model.plotOn(frame, RooFit.Normalization(norm if norm>0 else dataset.sumEntries(), RooAbsReal.NumEvent), RooFit.LineColor(getColor(order, category)[0]), RooFit.FillColor(getColor(order, category)[1]), RooFit.FillStyle(1001), RooFit.DrawOption('L'), RooFit.Name(model.GetName()))"
     model.plotOn(frame, RooFit.Normalization(norm if norm>0 else dataset.sumEntries(), RooAbsReal.NumEvent), RooFit.LineColor(getColor(order, category)[0]), RooFit.FillColor(getColor(order, category)[1]), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(model.GetName()))
-    print "."
     model.paramOn(frame, RooFit.Label(model.GetTitle()), RooFit.Layout(0.45, 0.95, 0.94), RooFit.Format("NEAU"))
-    print "graphData = dataset.plotOn(frame, RooFit.Binning(binning), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.DrawOption('PE0'), RooFit.Name(dataset.GetName()))"
     graphData = dataset.plotOn(frame, RooFit.Binning(binning), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.DrawOption("PE0"), RooFit.Name(dataset.GetName()))
-    print "."
     fixData(graphData.getHist(), True, True, not isData)
     pulls = frame.pullHist(dataset.GetName(), model.GetName(), True)
     residuals = frame.residHist(dataset.GetName(), model.GetName(), False, True) # this is y_i - f(x_i)
@@ -659,28 +626,6 @@ def getSignal(cat, sig, mass):
     #    print "WARNING: failed to get signal pdf"
     #    return [None, 0., 0.]
     return [None, 0., 0. ]
-
-def generate_datacard(year, category, masspoint, outname):
-    card  = "imax 1\n"
-    card += "jmax 1\n"
-    card += "kmax *\n"
-    card += "-----------------------------------------------------------------------------------\n"
-    card += "shapes            sig  *    signal_workspace/MC_signal_{year}_{category}.root     Zprime_{year}:Zprimebb_{masspoint}\n".format(year=year, category=category, masspoint=masspoint)
-    card += "shapes            bkg  *    bkg_workspace/data_{year}_{category}.root    Zprime_{year}:Bkg_{category}\n".format(year=year, category=category)
-    card += "shapes            data_obs  *    bkg_workspace/data_{year}_{category}.root    Zprime_{year}:data_obs\n".format(year=year, category=category)
-    card += "-----------------------------------------------------------------------------------\n"
-    card += "bin               {}\n".format(category)
-    card += "observation       -1\n"
-    card += "-----------------------------------------------------------------------------------\n"
-    card += "bin                                     {:20}{:20}\n".format(category, category)
-    card += "process                                 {:20}{:20}\n".format("sig", "bkg") 
-    card += "process                                 {:20}{:20}\n".format("0", "1")
-    card += "rate                                    {:20}{:20}\n".format(1, 1) 
-    card += "-----------------------------------------------------------------------------------\n"
-    cardfile = open(outname, 'w')
-    cardfile.write(card)
-    cardfile.close()
-    print "Datacards for mass", masspoint, "in category", ccategory, "saved in", outname
 
 
 if __name__ == "__main__":
