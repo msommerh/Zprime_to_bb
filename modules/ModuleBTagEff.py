@@ -1,3 +1,7 @@
+###
+### Module to be used by postprocessors/BTaggingEfficiency.py.
+###
+
 import ROOT
 from ROOT import TFile, TTree, TLorentzVector, TObject, TH1, TH1D, TF1, TH1F
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection 

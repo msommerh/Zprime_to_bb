@@ -40,9 +40,9 @@ BTAGGING    = options.btagging
 CARDDIR     = "datacards/"+BTAGGING+"/"
 YEAR        = options.year
 ISMC        = options.isMC
-#ABSOLUTEPATH= "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
 ABSOLUTEPATH= "."
-PLOTDIR     = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/plots/datacards/"
+#PLOTDIR     = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/plots/datacards/"         ## REMOVE when tested FIXME
+PLOTDIR     = "plots/datacards/"
 LUMI        = {'2016': 35920. , '2017': 41530., '2018': 59740., 'run2': 137190.}
 if YEAR not in ['2016', '2017', '2018', 'run2']:
     print "unknown year:",YEAR
@@ -59,6 +59,8 @@ categories = ['bb', 'bq', 'mumu']
 massPoints = [x for x in range(1200, 8000+1, 100)]
 genPoints = [1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 
+if not os.path.exists(PLOTDIR):
+    os.makedirs(PLOTDIR)
 
 def uncertainty_interpolation(year, category):
 

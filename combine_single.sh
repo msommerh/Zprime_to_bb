@@ -1,15 +1,29 @@
 #!/bin/bash
 
+###
+### Macro for running the combine tool locally for each mass point, merely on a single category.
+###
+
+## fetiching global variables
+combine_dir=$(./global_paths.py -g COMBINEDIR)
+echo "combine_dir = ${combine_dir}"
+main_dir=$(./global_paths.py -g MAINDIR)
+echo "main_dir = ${main_dir}"
+grid_cert=$(./global_paths.py -g GRIDCERT)
+echo "grid_cert = ${grid_cert}"
+
 echo
 echo
 echo 'START---------------'
 workdir=$(pwd)
 echo "workdir = $workdir"
-cd /afs/cern.ch/user/m/msommerh/CMSSW_10_2_13/src/HiggsAnalysis/CombinedLimit
+#cd /afs/cern.ch/user/m/msommerh/CMSSW_10_2_13/src/HiggsAnalysis/CombinedLimit
+cd $combine_dir
 eval `scram runtime -sh`
 cd $workdir
 
-export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh
+#export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh
+export X509_USER_PROXY=$grid_cert
 use_x509userproxy=true
 
 
@@ -49,9 +63,12 @@ mkdir datacards/${btagging}
 mkdir workspace
 mkdir workspace/${btagging}
 
-cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/${category}_${year}_M${mass}${suffix} datacards/${btagging}/
-cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/MC_signal_${year}* workspace/${btagging}/
-cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/${prefix}_${year}* workspace/${btagging}/
+#cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/${category}_${year}_M${mass}${suffix} datacards/${btagging}/
+#cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/MC_signal_${year}* workspace/${btagging}/
+#cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/${prefix}_${year}* workspace/${btagging}/
+cp ${main_dir}datacards/${btagging}/${category}_${year}_M${mass}${suffix} datacards/${btagging}/
+cp ${main_dir}workspace/${btagging}/MC_signal_${year}* workspace/${btagging}/
+cp ${main_dir}workspace/${btagging}/${prefix}_${year}* workspace/${btagging}/
 
 echo "ls datacards/${btagging}/"
 ls datacards/${btagging}/
@@ -59,10 +76,11 @@ echo "ls workspace/${btagging}/"
 ls workspace/${btagging}/
 
 
-#inputfile=/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/${category}_${year}_M${mass}${suffix}
 inputfile=datacards/${btagging}/${category}_${year}_M${mass}${suffix}
-outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/single_category/"
-tempfile=$(echo $inputfile | sed s:/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/:${workdir}/:g)
+#outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/single_category/"
+outputfile="${main_dir}combine/limits/${btagging}/single_category/"
+#tempfile=$(echo $inputfile | sed s:/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/:${workdir}/:g)
+tempfile=$(echo $inputfile | sed s:${main_dir}datacards/${btagging}/:${workdir}/:g)
 echo "inputfile = ${inputfile}"
 echo "outputfile = ${outputfile}"
 echo "tempfile = ${tempfile}"

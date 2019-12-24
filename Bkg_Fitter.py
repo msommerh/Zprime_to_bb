@@ -6,6 +6,7 @@
 
 print "starting package import"
 
+import global_paths
 import os, sys, getopt, multiprocessing
 import copy, math, pickle
 from array import array
@@ -62,7 +63,8 @@ gStyle.SetPadRightMargin(0.05)
 gStyle.SetErrorX(0.)
 
 BTAGGING    = options.btagging
-NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"
+#NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"        ## REMOVE when tested FIXME
+NTUPLEDIR   = global_paths.SKIMMEDDIR
 WORKDIR     = "workspace/"+BTAGGING+"/"
 RATIO       = 4
 SHOWERR     = True
@@ -99,7 +101,8 @@ PLOTDIR     = "plots/"+BTAGGING+"/{}_{}".format(DATA_TYPE, YEAR)
 if options.test: PLOTDIR += "_test"
 
 if options.unskimmed or options.test:
-    NTUPLEDIR="/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/" 
+    #NTUPLEDIR="/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"         ## REMOVE when tested FIXME
+    NTUPLEDIR=global_paths.WEIGHTEDDIR
 
 if options.selection not in SELECTIONS.keys():
     print "invalid selection!"
@@ -473,7 +476,9 @@ def dijet(category):
         pdfs = RooArgList(modelBkg, modelAlt)
         roomultipdf = RooMultiPdf("roomultipdf", "All Pdfs", cat, pdfs)
         normulti = RooRealVar("roomultipdf_norm", "Number of background events", nevents, 0., 1.e6)
-    
+   
+    normzBkg.setConstant(False)  ## newly put here to ensure it's freely floating in the combine fit
+
     # create workspace
     w = RooWorkspace("Zprime_"+YEAR, "workspace")
     # Dataset

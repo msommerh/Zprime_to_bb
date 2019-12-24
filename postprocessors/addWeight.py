@@ -1,5 +1,10 @@
 #! /usr/bin/env python
 
+###
+### Macro for adding the correct weights to the primary ntuples.
+###
+
+import global_paths
 import os, multiprocessing, math
 import numpy as np
 from array import array
@@ -159,17 +164,17 @@ def processFile(sample, origin, target, verbose=False):
     print "XS = ", XS
 
     Leq = LUMI*XS/totalEntries if totalEntries > 0 else 0.
-    if isSignal: 
-        signName = sample.replace('MC_signal_', 'ZpBB')
-        if '2016' in signName:
-            yr = '2016'
-        elif '2017' in signName:
-            yr = '2017'
-        elif '2018' in signName:
-            yr = '2018'
-        signName = signName.replace(yr,'')
-        print "number of generated events:", SAMPLE[signName]['genEvents'][yr]
-        Leq = LUMI*XS/SAMPLE[signName]['genEvents'][yr]
+    #if isSignal:                                                               ## commented out since totalEntries now takes care of btagging weights in case of signal 
+    #    signName = sample.replace('MC_signal_', 'ZpBB')
+    #    if '2016' in signName:
+    #        yr = '2016'
+    #    elif '2017' in signName:
+    #        yr = '2017'
+    #    elif '2018' in signName:
+    #        yr = '2018'
+    #    signName = signName.replace(yr,'')
+    #    print "number of generated events:", SAMPLE[signName]['genEvents'][yr]
+    #    Leq = LUMI*XS/SAMPLE[signName]['genEvents'][yr]
     print sample, ": Leq =", (Leq if isMC else "Data")
 
 
@@ -276,12 +281,10 @@ else:
 
 jobs = []
 for d in sample_names:
-    origin = '/eos/user/m/msommerh/Zprime_to_bb_analysis/'+d
-    target = '/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/'+d
-    #origin = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/MC_signal/'+d
-    #target = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/MC_signal_weighted/'+d
-    #origin = 'test_outfiles'
-    #target = 'test_outfiles/weighted'
+    #origin = '/eos/user/m/msommerh/Zprime_to_bb_analysis/'+d                # REMOVE when tested FIXME
+    #target = '/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/'+d
+    origin = global_paths.PRODUCTIONDIR+d         
+    target = global_paths.WEIGHTEDDIR+d
 
     print "working on",origin
     print "output will be stored in", target

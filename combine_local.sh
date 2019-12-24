@@ -1,15 +1,10 @@
 #!/bin/bash
 
-# How to run:
-#  source combine.sh -m alpha
-# To filter jobs:
-#  source combine.sh -m alpha XZhnnb_M
+###
+### Macro for running the combine tool locally for each mass point.
+###
 
 option=""
-# option="--freezeNuisanceGroups=theory --run=blind"
-#option="--freezeNuisanceGroups=theory"
-#option="-H ProfileLikelihood"
-
 
 higgsCombine() {
     inputfile=$1

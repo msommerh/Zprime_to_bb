@@ -1,3 +1,7 @@
+###
+### Module to be used by postprocessors/Acceptance.py.
+###
+
 from ROOT import TFile, TTree, TLorentzVector, TObject, TH1, TH1D, TF1, TH1F
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module

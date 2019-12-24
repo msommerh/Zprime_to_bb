@@ -4,6 +4,7 @@
 ### Macro for submitting the jobs of Bkg_Fitter.py to HTConder. Currently not used often because the fitting is now quick enough to do locally.
 ###
 
+import global_paths
 import sys
 import os, re, glob
 from commands import getoutput
@@ -45,8 +46,10 @@ else:
 
 def submitJobs(title, category):
     #path = os.getcwd()
-    path = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
-    workdir = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/submission_files/tmp_fitting_"+title
+    #path = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"                                    ## REMOVE when tested FIXME
+    #workdir = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/submission_files/tmp_fitting_"+title
+    path = global_paths.MAINDIR[:-1]
+    workdir = global_paths.SUBMISSIONLOGS+"tmp_fitting_"+title
     if not os.path.exists(workdir):
         os.makedirs(workdir)
         print "Directory "+workdir+" created."
@@ -73,9 +76,11 @@ def submitJobs(title, category):
         fout.write("eval `scram runtime -sh`\n")
         fout.write("cd -\n" )
         fout.write("echo 'cmssw release = ' $CMSSW_BASE\n")
-        fout.write("source /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/setupEnv.sh\n")
+        #fout.write("source /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/setupEnv.sh\n")  ## REMOVE when tested FIXME
+        fout.write("source "+global_paths.MAINDIR+"setupEnv.sh\n")
 
-        fout.write("export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh\n")
+        #fout.write("export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh\n")        ## REMOVE when tested FIXME
+        fout.write("export "+global_paths.GRIDCERTIFICATE+"\n")
         fout.write("use_x509userproxy=true\n")
 
         fout.write("./Bkg_Fitter.py {}{}{}{}{}\n".format('-M ' if args.isMC else '', '-y '+args.year, ' -c '+category, ' -b '+args.btagging, ' -s '+args.selection if ADDSELECTION else ''))

@@ -4,6 +4,7 @@
 ### Macro for plotting the distribution of variables in the MC abckground, signal and data, as well as signal efficiency and acceptance.
 ###
 
+import global_paths
 import os, multiprocessing
 import copy
 import math
@@ -44,8 +45,10 @@ gROOT.SetBatch(True)
 gStyle.SetOptStat(0)
 
 BTAGGING    = options.btagging
-NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"
-ACCEPTANCEDIR = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/acceptance/"
+#NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"               #REMOVE when tested FIXME
+#ACCEPTANCEDIR = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/acceptance/"
+NTUPLEDIR   = global_paths.SKIMMEDDIR
+ACCEPTANCEDIR = global_paths.ACCEPTANCEDIR
 SIGNAL      = 1 # Signal magnification factor
 RATIO       = 4 # 0: No ratio plot; !=0: ratio between the top and bottom pads
 NORM        = options.norm

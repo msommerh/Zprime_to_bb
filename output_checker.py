@@ -1,5 +1,9 @@
 #! /usr/bin/env python
 
+###
+### Auxiliary file used by check_submission.sh to scan stderr and stdout files from HTCondor submissions for errors/anomalies.
+###
+
 from argparse import ArgumentParser
 import sys
 

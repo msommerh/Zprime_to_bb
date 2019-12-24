@@ -1,5 +1,11 @@
 #! /bin/bash
 
+###
+### Macro to check the stderr and stderr files of the ntuple submission on HTCondor to see if errors have occurred.
+###
+
+Errors=0
+
 function clusternumber {
     n_size=7
     end_size=6
@@ -19,7 +25,30 @@ function err_to_out {
     echo "${1:0:$n}out"
     }
 
-Errors=0
+function remove_procId {
+    let n=${#1}-5
+    echo "${1:0:$n}"
+    }
+
+function err_checker {
+    err_check=$(./output_checker.py -i $1 -e)
+    if [[ $(join $err_check) != $(join c l e a n) ]]; then  #not proud of this, but it works
+        echo "An unknown error has been detected in ${1}:"
+        echo $err_check
+        let Errors=$Errors+1
+    fi
+    }
+
+function out_checker {
+    high_out=$(err_to_out $1)
+    out_check=$(./output_checker.py -i $high_out -o)
+     if [[ $(join $out_check) != $(join c l e a n) ]]; then  #stil not proud of this, but it works
+        echo "Unexpected behavior has been detected in ${high_out}:"
+        echo $out_check
+        let Errors=$Errors+1
+    fi
+    }
+
 echo "checking status of submitted files"
 read -p "year: " year
 read -p "isMC [y/n]: " isMC
@@ -40,8 +69,8 @@ else
 fi
 echo "sample = ${sample}"
 
-#p="submission_files/"
-p="/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/submission_files/"
+p=$(./global_paths.py -g SUBMISSIONLOGS) ## get location of submission logs via global_paths.py
+
 dirs=$(ls -d  "${p}tmp_${sample}_"*)
 
 for dir in $dirs; do
@@ -49,7 +78,8 @@ for dir in $dirs; do
     echo "checking sample: ${dir}"
 
     let n=${#dir}
-    errs=$(ls ${dir}"/"*".err")
+    #errs=$(ls ${dir}"/"*".err")
+    errs=$(ls ${dir}"/"*".0.err")
     max=-1
     high_err=""
 
@@ -65,22 +95,14 @@ for dir in $dirs; do
         echo "no maximal cluster number could be deduced!"
         exit 1
     fi
-    
-    err_check=$(./output_checker.py -i $high_err -e)
-    if [[ $(join $err_check) != $(join c l e a n) ]]; then  #not proud of this, but it works
-        echo "An unknown error has been detected in ${high_err}:"
-        echo $err_check
-        let Errors=$Errors+1
-    fi
-    
-    high_out=$(err_to_out $high_err)
-    out_check=$(./output_checker.py -i $high_out -o)
-     if [[ $(join $out_check) != $(join c l e a n) ]]; then  #stil not proud of this, but it works
-        echo "Unexpected behavior has been detected in ${high_out}:"
-        echo $out_check
-        let Errors=$Errors+1
-    fi
    
+    err_files=$(ls $(remove_procId ${high_err})*.err)
+
+    for errf in $err_files; do
+        err_checker $errf
+        out_checker $errf
+    done  
+ 
     echo
 done
 

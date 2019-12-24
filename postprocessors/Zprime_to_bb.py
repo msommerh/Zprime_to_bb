@@ -2,12 +2,18 @@
 # Author: Manuel Sommerhalder (September 2019)
 # Inspiration:
 #       https://github.com/IzaakWN/NanoTreeProducer
+import global_paths
 import sys
 for n, i in enumerate(sys.path):
-        if i == '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/CMSSW_10_3_3/lib/slc6_amd64_gcc700':
-                sys.path[n] = '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/lib/slc6_amd64_gcc700'
-        if i == '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/CMSSW_10_3_3/python':
-                sys.path[n] = '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/python'
+        #if i == '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/CMSSW_10_3_3/lib/slc6_amd64_gcc700':       # REMOVE when tested FIXME
+        #        sys.path[n] = '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/lib/slc6_amd64_gcc700'
+        #if i == '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/CMSSW_10_3_3/python':
+        #        sys.path[n] = '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/python'
+        if i == global_paths.MAINDIR+'CMSSW_10_3_3/lib/slc6_amd64_gcc700':
+                sys.path[n] = global_paths.CMSSWDIR+'lib/slc6_amd64_gcc700'
+        if i == global_paths.MAINDIR+'CMSSW_10_3_3/python':
+                sys.path[n] = global_paths.CMSSWDIR+'python'
+
 from postprocessors import modulepath
 from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import *
 from argparse import ArgumentParser
@@ -44,7 +50,8 @@ outdir    = args.outdir
 postfix   = outdir+"/"+args.title+'_flatTuple.root'
 nFiles    = args.nFiles
 branchsel = "%s/keep_and_drop.txt"%modulepath
-json = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/json/"
+#json = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/json/"      # REMOVE when tested FIXME
+json = global_paths.MAINDIR+"json/"
 if year == 2016:
         json += "Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt"   
 elif year == 2017:
@@ -60,6 +67,7 @@ for entry in filelist:
         if not entry.startswith("#"): 
                 filepath = entry.replace('\n','')
                 #filepath = filepath.replace('cms-xrd-global.cern.ch', 'xrootd-cms.infn.it')
+                filepath = filepath.replace('cms-xrd-global.cern.ch', 'cmsxrootd.fnal.gov')
                 infiles.append(filepath)
 
 print ">>> %-10s = %s"%('output file',postfix)

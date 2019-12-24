@@ -11,6 +11,8 @@
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation2016Legacy
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation94X
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X
+
+import global_paths
 from array import array
 import ROOT
 from ROOT import TH2F, BTagCalibration, BTagCalibrationReader, TFile
@@ -18,8 +20,9 @@ from ROOT.BTagEntry import OP_LOOSE, OP_MEDIUM, OP_TIGHT, OP_RESHAPING
 from ROOT.BTagEntry import FLAV_B, FLAV_C, FLAV_UDSG
 import os
 import sys
-#path = 'CorrectionTools/btag/'
-path = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/btag/"
+
+#path = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/btag/"        # REMOVE when tested FIXME
+path = global_paths.BTAGGINGDIR
 
 class BTagWPs:
   """Contain b tagging working points."""

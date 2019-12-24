@@ -1,3 +1,7 @@
+###
+### Module to be used by postprocessors/Zprime_to_bb.py.
+###
+
 from ROOT import TFile, TTree, TLorentzVector, TObject, TH1, TH1D, TF1, TH1F
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
@@ -189,7 +193,21 @@ class ZprimetobbProducer(Module):
         if self.isMC:
                 GenWeight = -1. if event.genWeight<0 else 1.
                 PUWeight = 1. #self.puTool.getWeight(event.Pileup_nTrueInt)
-                self.out.events.Fill(0., GenWeight)
+                if 'signal' in self.name.lower():                                              ## new for a test FIXME FIXME
+
+                    jetIds = [ ]
+                    for ijet in range(event.nJet):
+                        if event.Jet_pt[ijet] < 30: continue
+                        if abs(event.Jet_eta[ijet]) > 2.5: continue
+                        jetIds.append(ijet)
+
+                    BTagAK4Weight_deepJet       = self.btagToolAK4_deepJet.getWeight(event,jetIds)  
+                    BTagAK4Weight_deepJet_up    = self.btagToolAK4_deepJet_up.getWeight(event,jetIds)
+                    BTagAK4Weight_deepJet_down  = self.btagToolAK4_deepJet_down.getWeight(event,jetIds)
+
+                    self.out.events.Fill(0., BTagAK4Weight_deepJet) 
+                else:
+                    self.out.events.Fill(0., GenWeight)
                 try:
                     LHEWeight = event.LHEWeight_originalXWGTUP
                     self.out.original.Fill(0.,LHEWeight)
@@ -243,10 +261,11 @@ class ZprimetobbProducer(Module):
         #if event.MET_pt/jetHT > 0.5: return False      
 
         
-        ## evaluate BTag weights
-        BTagAK4Weight_deepJet       = self.btagToolAK4_deepJet.getWeight(event,jetIds)  
-        BTagAK4Weight_deepJet_up    = self.btagToolAK4_deepJet_up.getWeight(event,jetIds)
-        BTagAK4Weight_deepJet_down  = self.btagToolAK4_deepJet_down.getWeight(event,jetIds)
+        ### evaluate BTag weights   ## put in beginning of analyze in order to get the weight into the normalization
+        #if 'signal' in self.name.lower(): 
+        #    BTagAK4Weight_deepJet       = self.btagToolAK4_deepJet.getWeight(event,jetIds)  
+        #    BTagAK4Weight_deepJet_up    = self.btagToolAK4_deepJet_up.getWeight(event,jetIds)
+        #    BTagAK4Weight_deepJet_down  = self.btagToolAK4_deepJet_down.getWeight(event,jetIds)
 
 
         ## Compute dijet quantities

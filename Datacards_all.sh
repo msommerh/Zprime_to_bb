@@ -17,12 +17,12 @@
 ./Datacards.py -M -y run2 -b medium
 #./Datacards.py -M -y run2 -b tight
 
-#./combineCards_mumu.sh semimedium
-#./combineCards_mumu.sh loose
-./combineCards_mumu.sh medium
-#./combineCards_mumu.sh tight
+#./combineCards.sh semimedium
+#./combineCards.sh loose
+./combineCards.sh medium
+#./combineCards.sh tight
 #
-#./combineCards_run2_mumu.sh semimedium
-#./combineCards_run2_mumu.sh loose
-./combineCards_run2_mumu.sh medium
-#./combineCards_run2_mumu.sh tight
+#./combineCards_run2.sh semimedium
+#./combineCards_run2.sh loose
+./combineCards_run2.sh medium
+#./combineCards_run2.sh tight

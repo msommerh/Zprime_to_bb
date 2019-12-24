@@ -1,15 +1,29 @@
 #!/bin/bash
 
+###
+### Macro to be used as executable in the HTCondor submission by submit_combine.py.
+###
+
+## fetiching global variables
+combine_dir=$(./global_paths.py -g COMBINEDIR)
+echo "combine_dir = ${combine_dir}"
+main_dir=$(./global_paths.py -g MAINDIR)
+echo "main_dir = ${main_dir}"
+grid_cert=$(./global_paths.py -g GRIDCERT)
+echo "grid_cert = ${grid_cert}"
+
 echo
 echo
 echo 'START---------------'
 workdir=$(pwd)
 echo "workdir = $workdir"
-cd /afs/cern.ch/user/m/msommerh/CMSSW_10_2_13/src/HiggsAnalysis/CombinedLimit
+#cd /afs/cern.ch/user/m/msommerh/CMSSW_10_2_13/src/HiggsAnalysis/CombinedLimit
+cd $combine_dir
 eval `scram runtime -sh`
 cd $workdir
 
-export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh
+#export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh
+export X509_USER_PROXY=$grid_cert
 use_x509userproxy=true
 
 #option=""
@@ -59,15 +73,25 @@ mkdir datacards/${btagging}/combined
 mkdir workspace
 mkdir workspace/${btagging}
 
+#if [[ $combined -eq 1 ]]; then
+#    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/fully_combined_run2_M${mass}${suffix} datacards/${btagging}/combined/
+#    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/MC_signal_201* workspace/${btagging}/
+#    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/${prefix}_201* workspace/${btagging}/
+#else
+#    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/combined_${year}_M${mass}${suffix} datacards/${btagging}/combined/
+#    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/MC_signal_${year}* workspace/${btagging}/
+#    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/${prefix}_${year}* workspace/${btagging}/
+#fi
 if [[ $combined -eq 1 ]]; then
-    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/fully_combined_run2_M${mass}${suffix} datacards/${btagging}/combined/
-    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/MC_signal_201* workspace/${btagging}/
-    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/${prefix}_201* workspace/${btagging}/
+    cp ${main_dir}datacards/${btagging}/combined/fully_combined_run2_M${mass}${suffix} datacards/${btagging}/combined/
+    cp ${main_dir}workspace/${btagging}/MC_signal_201* workspace/${btagging}/
+    cp ${main_dir}workspace/${btagging}/${prefix}_201* workspace/${btagging}/
 else
-    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/combined_${year}_M${mass}${suffix} datacards/${btagging}/combined/
-    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/MC_signal_${year}* workspace/${btagging}/
-    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/${prefix}_${year}* workspace/${btagging}/
+    cp ${main_dir}datacards/${btagging}/combined/combined_${year}_M${mass}${suffix} datacards/${btagging}/combined/
+    cp ${main_dir}workspace/${btagging}/MC_signal_${year}* workspace/${btagging}/
+    cp ${main_dir}workspace/${btagging}/${prefix}_${year}* workspace/${btagging}/
 fi
+
 
 echo "ls datacards/${btagging}/combined/"
 ls datacards/${btagging}/combined/
@@ -77,11 +101,13 @@ ls workspace/${btagging}/
 
 if [[ $combined -eq 1 ]]; then
     inputfile="datacards/${btagging}/combined/fully_combined_${year}_M${mass}${suffix}"
-    outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/combined_run2/"
+    #outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/combined_run2/"
+    outputfile="${main_dir}combine/limits/${btagging}/combined_run2/"
     tempfile=$(echo $inputfile | sed s:datacards/${btagging}/combined/fully_combined_:${workdir}/:g)
 else
     inputfile="datacards/${btagging}/combined/combined_${year}_M${mass}${suffix}"
-    outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/"
+    #outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/"
+    outputfile="${main_dir}combine/limits/${btagging}/"
     tempfile=$(echo $inputfile | sed s:datacards/${btagging}/combined/combined_:${workdir}/:g)
 fi
 

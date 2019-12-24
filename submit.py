@@ -1,5 +1,10 @@
 #! /usr/bin/env python
 
+###
+### Macro for submitting ntuple production to HTCondor.
+###
+
+import global_paths
 import sys
 import os, re, glob
 from commands import getoutput
@@ -47,16 +52,6 @@ if __name__ == "__main__":
 else:
   args = None
 
-#class bcolors:
-#    HEADER = '\033[95m'
-#    OKBLUE = '\033[94m'
-#    OKGREEN = '\033[92m'
-#    WARNING = '\033[93m'
-#    FAIL = '\033[91m'
-#    ENDC = '\033[0m'
-#    BOLD = '\033[1m'
-#    UNDERLINE = '\033[4m'
-
 def getFileListDAS(dataset):
         """Get list of files from DAS."""
         dataset  = dataset.replace('__','/')
@@ -77,14 +72,15 @@ def getFileListDAS(dataset):
 
 
 def submitJobs(title, infiles, outdir, jobflavour):
-    #path = os.getcwd()
-    path = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"
+    #path = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"                # REMOVE when tested FIXME
+    path = global_paths.MAINDIR
     if not os.path.exists(outdir+title):
         os.makedirs(outdir+title)
         print "Directory "+outdir+title+" created."
     else:
         print "Directory "+outdir+title+" already exists."
-    workdir = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/submission_files/tmp_"+title
+    #workdir = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/submission_files/tmp_"+title      # REMOVE when tested FIXME
+    workdir = global_paths.SUBMISSIONLOGS+"tmp_"+title
     if not os.path.exists(workdir):
         os.makedirs(workdir)
         print "Directory "+workdir+" created."
@@ -111,9 +107,11 @@ def submitJobs(title, infiles, outdir, jobflavour):
         fout.write("eval `scram runtime -sh`\n")
         fout.write("cd -\n" )
         fout.write("echo 'cmssw release = ' $CMSSW_BASE\n")
-        fout.write("source /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/setupEnv.sh\n")
+        #fout.write("source /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/setupEnv.sh\n")      # REMOVE when tested FIXME
+        fout.write("source "+global_paths.MAINDIR+"setupEnv.sh\n")
 
-        fout.write("export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh\n")
+        #fout.write("export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh\n")                # REMOVE when tested FIXME
+        fout.write("export X509_USER_PROXY="+global_paths.GRIDCERTIFICATE+"\n")
         fout.write("use_x509userproxy=true\n")
 
         fout.write("########## input arguments ##########\n")
@@ -159,8 +157,8 @@ def makeSubmitFileCondor(exe, jobname, jobflavour, infiles):
 
 def main():
 
-        outdir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"
-        #outdir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/parallel_execution/"
+        #outdir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"             # REMOVE when tested FIXME
+        outdir = global_paths.PRODUCTIONDIR
         
         #infiles = "filelists/default.txt"
         #title = "test_QCD"
@@ -223,6 +221,8 @@ def main():
     
                     ## create filelist from DAS
                     print os.getcwd() 
+                    if not os.path.exists("filelists"):
+                        os.makedirs("filelists")                    
                     txtfile = open(infiles, "w")
                     txtfile.write("# created from {}\n".format(data_set))
                     filelist = getFileListDAS(data_set)

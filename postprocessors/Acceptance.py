@@ -1,13 +1,21 @@
 #! /usr/bin/env python
-# Author: Manuel Sommerhalder (September 2019)
-# Inspiration:
-#       https://github.com/IzaakWN/NanoTreeProducer
+
+###
+### Macro needed to find the acceptance from generated objects by directly running on NanoAOD.
+###
+
+import global_paths
 import sys
 for n, i in enumerate(sys.path):
-        if i == '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/CMSSW_10_3_3/lib/slc6_amd64_gcc700':
-                sys.path[n] = '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/lib/slc6_amd64_gcc700'
-        if i == '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/CMSSW_10_3_3/python':
-                sys.path[n] = '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/python'
+        #if i == '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/CMSSW_10_3_3/lib/slc6_amd64_gcc700':       # REMOVE when tested FIXME
+        #        sys.path[n] = '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/lib/slc6_amd64_gcc700'
+        #if i == '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/CMSSW_10_3_3/python':
+        #        sys.path[n] = '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/python'
+        if i == global_paths.MAINDIR+'CMSSW_10_3_3/lib/slc6_amd64_gcc700':
+                sys.path[n] = global_paths.CMSSWDIR+'lib/slc6_amd64_gcc700'
+        if i == global_paths.MAINDIR+'CMSSW_10_3_3/python':
+                sys.path[n] = global_paths.CMSSWDIR+'python'
+
 from postprocessors import modulepath
 from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import *
 from argparse import ArgumentParser
@@ -20,14 +28,8 @@ def Run(subsample, module2run, postfix):
     p.run()
 
 parser = ArgumentParser()
-#parser.add_argument('-t', '--title',  dest='title',   action='store', type=str, default='test')
-#parser.add_argument('-i', '--infiles',  dest='infiles',   action='store', type=str, default='filelists/default.txt')
-#parser.add_argument('-o', '--outdir',   dest='outdir',    action='store', type=str, default='test_outfiles')
-#parser.add_argument('-n', '--nFiles',  dest='nFiles',   action='store', type=int, default=10)
 parser.add_argument('-y', '--year',  dest='year',   action='store', type=int, default=2016)
 parser.add_argument('-M', '--mass',  dest='mass',   action='store', type=str, default='all')
-#parser.add_argument('-MC', '--isMC',   dest='isMC',  action='store_true', default=False)
-#parser.add_argument('-r', '--resubmit',  dest='resubmit',   action='store', type=int, default=-1)
 parser.add_argument('-mp', '--multiprocessing',  dest='multiprocessing',   action='store_true', default=False)
 args = parser.parse_args()
 
@@ -40,8 +42,8 @@ if args.multiprocessing:
     print "Multiprocessing enabled"
 else:
     print "Multiprocessing not enabled"
-#outdir    = args.outdir
-outdir    = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/acceptance'
+#outdir    = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/acceptance'     ## REMOVE when tested FIXME
+outdir    = global_paths.ACCEPTANCEDIR[:-1]
 
 jobs = []
 
