@@ -20,7 +20,6 @@ from ROOT.BTagEntry import FLAV_B, FLAV_C, FLAV_UDSG
 import os
 import sys
 
-#path = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/btag/"        # REMOVE when tested FIXME
 path = "btag/"
 
 class BTagWPs:

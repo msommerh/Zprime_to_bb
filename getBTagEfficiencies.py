@@ -243,7 +243,6 @@ def main():
                 #for jettype in ['AK8','AK4']:
                 for jettype in ['AK4']:
                     for wp in args.wps:
-                        #indir    = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/btag"  ## REMOVE after testing FIXME
                         indir    ="btag" 
                         filename = "%s/%s_%s_%d_eff.root"%(indir,tagger,jettype,year)
                         getBTagEfficiencies(tagger,wp,filename,indir,samples,jettype,plot=args.plot, year=year)

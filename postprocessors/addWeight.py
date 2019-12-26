@@ -281,8 +281,6 @@ else:
 
 jobs = []
 for d in sample_names:
-    #origin = '/eos/user/m/msommerh/Zprime_to_bb_analysis/'+d                # REMOVE when tested FIXME
-    #target = '/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/'+d
     origin = global_paths.PRODUCTIONDIR+d         
     target = global_paths.WEIGHTEDDIR+d
 

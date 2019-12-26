@@ -73,15 +73,6 @@ mkdir datacards/${btagging}/combined
 mkdir workspace
 mkdir workspace/${btagging}
 
-#if [[ $combined -eq 1 ]]; then
-#    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/fully_combined_run2_M${mass}${suffix} datacards/${btagging}/combined/
-#    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/MC_signal_201* workspace/${btagging}/
-#    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/${prefix}_201* workspace/${btagging}/
-#else
-#    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/combined/combined_${year}_M${mass}${suffix} datacards/${btagging}/combined/
-#    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/MC_signal_${year}* workspace/${btagging}/
-#    cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/${prefix}_${year}* workspace/${btagging}/
-#fi
 if [[ $combined -eq 1 ]]; then
     cp ${main_dir}datacards/${btagging}/combined/fully_combined_run2_M${mass}${suffix} datacards/${btagging}/combined/
     cp ${main_dir}workspace/${btagging}/MC_signal_201* workspace/${btagging}/
@@ -101,12 +92,10 @@ ls workspace/${btagging}/
 
 if [[ $combined -eq 1 ]]; then
     inputfile="datacards/${btagging}/combined/fully_combined_${year}_M${mass}${suffix}"
-    #outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/combined_run2/"
     outputfile="${main_dir}combine/limits/${btagging}/combined_run2/"
     tempfile=$(echo $inputfile | sed s:datacards/${btagging}/combined/fully_combined_:${workdir}/:g)
 else
     inputfile="datacards/${btagging}/combined/combined_${year}_M${mass}${suffix}"
-    #outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/"
     outputfile="${main_dir}combine/limits/${btagging}/"
     tempfile=$(echo $inputfile | sed s:datacards/${btagging}/combined/combined_:${workdir}/:g)
 fi
@@ -117,8 +106,6 @@ echo "tempfile = ${tempfile}"
 
 > $tempfile
 
-#echo "combine -M AsymptoticLimits -d ${inputfile} -m ${mass} | grep -e Observed -e Expected | awk '{print ${NF}}' >> ${tempfile}"
-#combine -M AsymptoticLimits -d $inputfile -m $mass | grep -e Observed -e Expected | awk '{print $NF}' >> $tempfile
 echo "combine -M AsymptoticLimits -d $inputfile -m $mass > tmp_stdout.txt"
 combine -M AsymptoticLimits -d $inputfile -m $mass > tmp_stdout.txt
 echo

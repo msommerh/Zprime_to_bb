@@ -17,12 +17,10 @@ echo
 echo 'START---------------'
 workdir=$(pwd)
 echo "workdir = $workdir"
-#cd /afs/cern.ch/user/m/msommerh/CMSSW_10_2_13/src/HiggsAnalysis/CombinedLimit
 cd $combine_dir
 eval `scram runtime -sh`
 cd $workdir
 
-#export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh
 export X509_USER_PROXY=$grid_cert
 use_x509userproxy=true
 
@@ -50,9 +48,11 @@ echo "mass = ${mass}"
 if [[ $isMC -eq 1 ]]; then
     echo "running purely on MC..."
     suffix="_MC.txt"
+    prefix="MC_QCD_TTbar"
 else
     echo "running on real data..."
     suffix=".txt"
+    prefix="data"
 fi
 
 
@@ -63,9 +63,6 @@ mkdir datacards/${btagging}
 mkdir workspace
 mkdir workspace/${btagging}
 
-#cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/${category}_${year}_M${mass}${suffix} datacards/${btagging}/
-#cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/MC_signal_${year}* workspace/${btagging}/
-#cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/workspace/${btagging}/${prefix}_${year}* workspace/${btagging}/
 cp ${main_dir}datacards/${btagging}/${category}_${year}_M${mass}${suffix} datacards/${btagging}/
 cp ${main_dir}workspace/${btagging}/MC_signal_${year}* workspace/${btagging}/
 cp ${main_dir}workspace/${btagging}/${prefix}_${year}* workspace/${btagging}/
@@ -77,9 +74,7 @@ ls workspace/${btagging}/
 
 
 inputfile=datacards/${btagging}/${category}_${year}_M${mass}${suffix}
-#outputfile="/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine/limits/${btagging}/single_category/"
 outputfile="${main_dir}combine/limits/${btagging}/single_category/"
-#tempfile=$(echo $inputfile | sed s:/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/datacards/${btagging}/:${workdir}/:g)
 tempfile=$(echo $inputfile | sed s:${main_dir}datacards/${btagging}/:${workdir}/:g)
 echo "inputfile = ${inputfile}"
 echo "outputfile = ${outputfile}"
@@ -87,8 +82,6 @@ echo "tempfile = ${tempfile}"
 
 > $tempfile
 
-#echo "combine -M AsymptoticLimits -d ${inputfile} -m ${mass} | grep -e Observed -e Expected | awk '{print ${NF}}' >> ${tempfile}"
-#combine -M AsymptoticLimits -d $inputfile -m $mass | grep -e Observed -e Expected | awk '{print $NF}' >> $tempfile
 echo "combine -M AsymptoticLimits -d $inputfile -m $mass > tmp_stdout.txt"
 combine -M AsymptoticLimits -d $inputfile -m $mass > tmp_stdout.txt
 echo

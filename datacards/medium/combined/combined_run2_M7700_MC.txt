@@ -21,9 +21,9 @@ process                                 ZpBB_run2_bb_M7700    Bkg_run2_bb       
 process                                 -2                    1                     -1                    2                     0                     3                   
 rate                                    1                     1                     1                     1                     1                     1                   
 ----------------------------------------------------------------------------------------------------------------------------------
-btag_run2_bb_M7700      lnN             1.15539634003         -                     -                     -                     -                     -                   
-btag_run2_bq_M7700      lnN             -                     -                     0.961788127997        -                     -                     -                   
-btag_run2_mumu_M7700    lnN             -                     -                     -                     -                     0.76256494997         -                   
+btag_run2_bb_M7700      lnN             1.15539632622         -                     -                     -                     -                     -                   
+btag_run2_bq_M7700      lnN             -                     -                     0.96178833843         -                     -                     -                   
+btag_run2_mumu_M7700    lnN             -                     -                     -                     -                     0.762564686798        -                   
 lumi                    lnN             1.026                 -                     1.026                 -                     1.026                 -                   
 CMSrun2sig_bb_p1_jes  param  0.0 1.0
 CMSrun2sig_bq_p2_jer  param  0.0 1.0

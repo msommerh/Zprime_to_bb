@@ -53,8 +53,6 @@ if separate_years and not YEAR=='run2':
     sys.exit()
 
 def submitJobs():
-    #path = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"            ## REMOVE when tested FIXME
-    #workdir = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/submission_files/tmp_combine{category}_{year}_{btagging}{suffix}".format(category="_"+args.category if args.category!="" else "", year=YEAR+'c' if separate_years else YEAR, btagging=args.btagging, suffix="_MC" if args.isMC else "")
     path = global_paths.MAINDIR[:-1]
     workdir = global_paths.SUBMISSIONLOGS+"tmp_combine{category}_{year}_{btagging}{suffix}".format(category="_"+args.category if args.category!="" else "", year=YEAR+'c' if separate_years else YEAR, btagging=args.btagging, suffix="_MC" if args.isMC else "")
     if not os.path.exists(workdir):
@@ -65,8 +63,6 @@ def submitJobs():
     os.chdir(workdir)
 
     #submit job
-    #os.system("cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine{}.sh ./combine_{}_{}{}.sh".format("_single" if args.category!="" else "", YEAR, args.btagging, "_"+args.category if args.category != "" else ""))             ## REMOVE when tested FIXME
-    #os.system("cp "+global_paths.MAINDIR+"combine{}.sh ./combine_{}_{}{}.sh".format("_single" if args.category!="" else "", YEAR, args.btagging, "_"+args.category if args.category != "" else ""))
 
     exefile = open(global_paths.MAINDIR+"combine{}.sh".format("_single" if args.category!="" else ""), "r")
     execontents = exefile.readlines()

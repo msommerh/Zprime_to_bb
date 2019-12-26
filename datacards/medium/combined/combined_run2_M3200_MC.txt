@@ -21,9 +21,9 @@ process                                 ZpBB_run2_bb_M3200    Bkg_run2_bb       
 process                                 -2                    1                     -1                    2                     0                     3                   
 rate                                    1                     1                     1                     1                     1                     1                   
 ----------------------------------------------------------------------------------------------------------------------------------
-btag_run2_bb_M3200      lnN             1.15303668958         -                     -                     -                     -                     -                   
-btag_run2_bq_M3200      lnN             -                     -                     0.962795166905        -                     -                     -                   
-btag_run2_mumu_M3200    lnN             -                     -                     -                     -                     0.766625195673        -                   
+btag_run2_bb_M3200      lnN             1.15303689963         -                     -                     -                     -                     -                   
+btag_run2_bq_M3200      lnN             -                     -                     0.962795675633        -                     -                     -                   
+btag_run2_mumu_M3200    lnN             -                     -                     -                     -                     0.766625345514        -                   
 lumi                    lnN             1.026                 -                     1.026                 -                     1.026                 -                   
 CMSrun2sig_bb_p1_jes  param  0.0 1.0
 CMSrun2sig_bq_p2_jer  param  0.0 1.0

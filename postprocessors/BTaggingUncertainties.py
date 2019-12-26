@@ -25,7 +25,6 @@ mass_points = [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4
 BRANCHES = ['BTagAK4Weight_deepJet', 'BTagAK4Weight_deepJet_up', 'BTagAK4Weight_deepJet_down']
 categories = ['bb', 'bq', 'mumu']
 
-#NTUPLEDIR = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"        ## REMOVE when tested FIXME
 NTUPLEDIR = global_paths.SKIMMEDDIR
 
 def BTagUncertainties(year, mass):
@@ -44,11 +43,6 @@ def BTagUncertainties(year, mass):
         for j, category in enumerate(categories):
             for weight in weights[category][branch]:
                 histograms[branch].Fill(j, weight)
-
-    #outfile = TFile("testfile.root", "RECREATE")
-    #for branch in BRANCHES:
-    #    histograms[branch].Write()
-    #outfile.Close()
 
     uncertainties = {"up":{}, "down":{}}
 
@@ -75,18 +69,6 @@ if __name__ == "__main__":
             uncertainties[m] = {}
             for year in YEARS:
                 uncertainties[m][year] = BTagUncertainties(year, m)
-            #print
-            #print "ZpBB_M{}:".format(m)
-            #print
-            #print "'BTag_uncertainties' : {"
-            #print "\t'2016': { 'up':", uncertainties[m]['2016']["up"],","
-            #print "\t\t'down':", uncertainties[m]['2016']["down"],"},"
-            #print "\t'2017': { 'up':", uncertainties[m]['2017']["up"],","
-            #print "\t\t'down':", uncertainties[m]['2017']["down"],"},"
-            #print "\t'2018': { 'up':", uncertainties[m]['2018']["up"],","
-            #print "\t\t'down':", uncertainties[m]['2018']["down"],"},"
-            #print "\t}"
-            #print
             
             fout.write("\t'ZpBB_M"+str(m)+"' : {\n")
             fout.write("\t\t'2016': { 'up':")

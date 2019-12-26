@@ -72,14 +72,12 @@ def getFileListDAS(dataset):
 
 
 def submitJobs(title, infiles, outdir, jobflavour):
-    #path = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer"                # REMOVE when tested FIXME
     path = global_paths.MAINDIR
     if not os.path.exists(outdir+title):
         os.makedirs(outdir+title)
         print "Directory "+outdir+title+" created."
     else:
         print "Directory "+outdir+title+" already exists."
-    #workdir = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/submission_files/tmp_"+title      # REMOVE when tested FIXME
     workdir = global_paths.SUBMISSIONLOGS+"tmp_"+title
     if not os.path.exists(workdir):
         os.makedirs(workdir)
@@ -107,10 +105,8 @@ def submitJobs(title, infiles, outdir, jobflavour):
         fout.write("eval `scram runtime -sh`\n")
         fout.write("cd -\n" )
         fout.write("echo 'cmssw release = ' $CMSSW_BASE\n")
-        #fout.write("source /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/setupEnv.sh\n")      # REMOVE when tested FIXME
         fout.write("source "+global_paths.MAINDIR+"setupEnv.sh\n")
 
-        #fout.write("export X509_USER_PROXY=/afs/cern.ch/user/m/msommerh/x509up_msommerh\n")                # REMOVE when tested FIXME
         fout.write("export X509_USER_PROXY="+global_paths.GRIDCERTIFICATE+"\n")
         fout.write("use_x509userproxy=true\n")
 
@@ -157,7 +153,6 @@ def makeSubmitFileCondor(exe, jobname, jobflavour, infiles):
 
 def main():
 
-        #outdir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/"             # REMOVE when tested FIXME
         outdir = global_paths.PRODUCTIONDIR
         
         #infiles = "filelists/default.txt"

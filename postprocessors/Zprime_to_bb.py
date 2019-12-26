@@ -1,14 +1,15 @@
 #! /usr/bin/env python
+
+###
+### Main macro for producing ntuples.
+###
+
 # Author: Manuel Sommerhalder (September 2019)
 # Inspiration:
 #       https://github.com/IzaakWN/NanoTreeProducer
 import global_paths
 import sys
 for n, i in enumerate(sys.path):
-        #if i == '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/CMSSW_10_3_3/lib/slc6_amd64_gcc700':       # REMOVE when tested FIXME
-        #        sys.path[n] = '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/lib/slc6_amd64_gcc700'
-        #if i == '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/CMSSW_10_3_3/python':
-        #        sys.path[n] = '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/python'
         if i == global_paths.MAINDIR+'CMSSW_10_3_3/lib/slc6_amd64_gcc700':
                 sys.path[n] = global_paths.CMSSWDIR+'lib/slc6_amd64_gcc700'
         if i == global_paths.MAINDIR+'CMSSW_10_3_3/python':
@@ -50,7 +51,6 @@ outdir    = args.outdir
 postfix   = outdir+"/"+args.title+'_flatTuple.root'
 nFiles    = args.nFiles
 branchsel = "%s/keep_and_drop.txt"%modulepath
-#json = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/json/"      # REMOVE when tested FIXME
 json = global_paths.MAINDIR+"json/"
 if year == 2016:
         json += "Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt"   

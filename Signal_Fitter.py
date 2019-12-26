@@ -64,7 +64,6 @@ gStyle.SetPadRightMargin(0.05)
 gStyle.SetErrorX(0.)
 
 BTAGGING    = options.btagging
-#NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"        ## REMOVE when tested FIXME
 NTUPLEDIR   = global_paths.SKIMMEDDIR
 PLOTDIR     = "plots/"+BTAGGING+"/"
 WORKDIR     = "workspace/"+BTAGGING+"/"
@@ -91,7 +90,6 @@ if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
     sys.exit()
 
 if options.unskimmed:
-    #NTUPLEDIR="/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"     ## REMOVE when tested FIXME
     NTUPLEDIR=global_paths.WEIGHTEDDIR
 
 if options.selection not in SELECTIONS.keys():

@@ -15,6 +15,6 @@ process                          0                        1
 rate                             1                        1                        
 -----------------------------------------------------------------------------------
 lumi                     lnN     1.026                    -                        
-btag_run2_mumu_M5900     lnN     0.763686390733           -                        
+btag_run2_mumu_M5900     lnN     0.76368640352            -                        
 CMSrun2sig_mumu_p1_jes   param   0.0                      1.0                      
 CMSrun2sig_mumu_p2_jer   param   0.0                      1.0                      

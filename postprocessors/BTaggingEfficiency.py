@@ -9,10 +9,6 @@ import global_paths
 import os
 import sys
 for n, i in enumerate(sys.path):
-        #if i == '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/CMSSW_10_3_3/lib/slc6_amd64_gcc700':       # REMOVE when tested FIXME
-        #        sys.path[n] = '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/lib/slc6_amd64_gcc700'
-        #if i == '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/CMSSW_10_3_3/python':
-        #        sys.path[n] = '/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/python'
         if i == global_paths.MAINDIR+'CMSSW_10_3_3/lib/slc6_amd64_gcc700':
                 sys.path[n] = global_paths.CMSSWDIR+'lib/slc6_amd64_gcc700'
         if i == global_paths.MAINDIR+'CMSSW_10_3_3/python':
@@ -39,8 +35,6 @@ if args.multiprocessing:
     print "Multiprocessing enabled"
 else:
     print "Multiprocessing not enabled"
-#outdir    = args.outdir
-#outdir    = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/btag/MC_signal_hists'    # REMOVE when tested FIXME
 outdir    = 'btag/MC_signal_hists' 
 
 if not os.path.exists(outdir):

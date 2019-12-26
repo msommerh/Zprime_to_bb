@@ -41,7 +41,6 @@ CARDDIR     = "datacards/"+BTAGGING+"/"
 YEAR        = options.year
 ISMC        = options.isMC
 ABSOLUTEPATH= "."
-#PLOTDIR     = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/plots/datacards/"         ## REMOVE when tested FIXME
 PLOTDIR     = "plots/datacards/"
 LUMI        = {'2016': 35920. , '2017': 41530., '2018': 59740., 'run2': 137190.}
 if YEAR not in ['2016', '2017', '2018', 'run2']:

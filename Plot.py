@@ -45,8 +45,6 @@ gROOT.SetBatch(True)
 gStyle.SetOptStat(0)
 
 BTAGGING    = options.btagging
-#NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"               #REMOVE when tested FIXME
-#ACCEPTANCEDIR = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/acceptance/"
 NTUPLEDIR   = global_paths.SKIMMEDDIR
 ACCEPTANCEDIR = "acceptance/"
 SIGNAL      = 1 # Signal magnification factor
