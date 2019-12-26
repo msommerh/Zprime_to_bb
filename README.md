@@ -1,8 +1,59 @@
-# Z' to bb analysis
+# Installation
 
-## Process samples from DAS
+First, install the NanoAOD tools:
+```
+export SCRAM_ARCH=slc6_amd64_gcc700
+cmsrel CMSSW_10_3_3
+cd CMSSW_10_3_3/src
+cmsenv
+git clone https://github.com/cms-nanoAOD/nanoAOD-tools.git PhysicsTools/NanoAODTools
+scram b
+```
+Then clone this repository:
+```
+git clone https://github.com/msommerh/Zprime_to_bb Zprime_to_bb
+cd Zprime_to_bb
+source setupEnv.sh
+```
 
-### submit the samples:   
+Install combine according to the manual:
+http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/#cc7-release-cmssw_10_2_x-recommended-version
+
+Set the desired paths in global_paths.py
+
+For every new shell session, do
+```
+cd CMSSW_10_3_3/src
+cmsenv
+cd Zprime_to_bb
+source setupEnv.sh
+```
+
+for HTCondor submission, get the GRID certificate, find its location and put the path into global_paths.py:
+```
+voms-proxy-init --voms cms --valid 200:00
+echo $(voms-proxy-info -path)
+```
+
+# Ntuple production
+
+## deduce b-tagging weights for the signal:
+
+[year]: 2016, 2017, 2018;   [btagging]: tight, medium, loose
+
+create histograms for each year/masspoint of tagged and untagged jets directly fron the NanoAOD signal files:
+```
+./postprocessors/BTaggingEfficiency.py -mp
+```
+output in *btag/MC_signal_histst/*
+
+evaluate the btagging efficiency in each year:
+```
+./getBTagEfficiencies.py -y 2016 2017 2018 -w [btagging] -p
+```
+output in *btag/*
+
+## submit the samples:   
 
 [year]: 2016, 2017, 2018
 
@@ -12,14 +63,14 @@ MC signal:
 ```
 MC background:     [MC_type]: QCD, TTbar
 ```
-./submit.py -q tomorrow -y [year] -MC -MT [MC_type] -n 5 -c 4
+./submit.py -q longlunch -y [year] -MC -MT [MC_type] -n 1 -mn
 ```
 data:
 ```
-./submit.py -q tomorrow -y [year] -n 1 -c 16
+./submit.py -q longlunch -y [year] -n 1 -mn
 ```
 
-### check if samples have finished correctly:
+## check if samples have finished correctly:
 ```
 ./check_submission.sh
 ```
@@ -32,7 +83,7 @@ if the submission only crashes on a single file, identify the file nr from the s
 ./submit.py [same options as original submission] -rs resubmission/[sample_name] -rf [file_nr]
 ```
 
-output in: */eos/user/m/msommerh/Zprime_to_bb_analysis/*
+output in: *global_paths.PRODUCTIONDIR*
 
 
 ## Postprocess samples
@@ -44,27 +95,55 @@ output in: */eos/user/m/msommerh/Zprime_to_bb_analysis/*
 ./postprocessors/addWeights.py -y [year] -MC -MT [MC_type]
 ./postprocessors/addWeights.py -y [year] 
 ```
-output in /eos/user/m/msommerh/Zprime_to_bb_analysis/weighted
+output in *global_paths.WEIGHTEDDIR*
 
 ### skim the samples:
 ```
 ./postprocessors/skim.py
 ```
-output in */afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim*
+output in *global_paths.SKIMMEDDIR*
 
+### deduce btagging uncertainty
+```
+./postprocessors/BTaggingUncertainties.py -b [btagging]
+```
+output directly written into *BTag_uncertainties.py*, which is imported by *samples.py*
+
+
+# Various plots
 
 ## plot MC/data comparison
 
-[year] = 2016, 2017, 2018, run2;   [btagging]: tight, medium, loose
-
+plot all relevant variable distributions:
 ```
-./Plot.py -v jj_mass -c "preselection" -y [year] -b [btagging]
-./Plot.py -B -v jj_mass -c "1b" -y [year] -b [btagging]
-./Plot.py -B -v jj_mass -c "2b" -y [year] -b [btagging]
+Plot_all.sh all
 ```
-
 output in: *plots/[preselection, 1b, 2b]/*
 
+## signal acceptance and efficiency
+
+[year]: 2016, 2017, 2018, run2
+
+extract genParticle information from NanoAOD by running:
+```
+postprocessors/Acceptance.py -y [year] -mp
+```
+output in *acceptance/*
+
+then plot acceptance as a function of mass points:
+```
+Plot_all.sh acc
+```
+
+and plot the efficiency:
+```
+Plot_all.sh eff
+```
+
+output in: *plots/Efficiency*
+
+
+# Fits and limits extraction
 
 ## apply fit on QCD_TTbar/data and signal
 
@@ -77,12 +156,12 @@ fit on the MC signal:
 
 fit on MC background:
 ```
-./submit_Bkg_Fitter.py -q tomorrow -y [year] -MC -b [btagging]
+./Bkg_Fitter.py -y [year] -M -b [btagging]
 ```
 
 fit on data: (currently not advised until blinding implemented or explicitly allowed)
 
-~~`./submit_Bkg_Fitter.py -q tomorrow -y [year] -b [btagging]`~~
+~~`./Bkg_Fitter.py -y [year] -b [btagging]`~~
 
 
 output in:
@@ -109,26 +188,30 @@ data:
 output in: *datacards/[btagging]/*
 
 ### combine cards of different btagging categories: 
-(needs to be run with the CC7 setup)
+(for this step, you first need to go to the combine tool directory and do *cmsenv*)
 ```
 ./combineCards.sh [btagging]
+```
+for running combine on run2 with fits in separate years:
+```
+./combineCards_run2.sh [btagging]
 ```
 output in: *datacards/[btagging]/combined/*
 
 
 ## limits plots
 
-[year]: 2016, 2017, 2018, run2;   [btagging]: tight, medium, loose
+[year]: 2016, 2017, 2018, run2, run2c (combining the fits of the three years separately);   [btagging]: tight, medium, loose
 
 ### run combine:
 
 MC:
 ```
-./submit_combine.py -MC -q workday -y [year] -b [btagging]
+./submit_combine.py -MC -q longlunch -y [year] -b [btagging]
 ```
 data: (currently not advised until blinding implemented or explicitly allowed)
 
-~~`./submit_combine.py -q workday -y [year] -b [btagging]`~~
+~~`./submit_combine.py -q longlunch -y [year] -b [btagging]`~~
 
 output in: *combine/limits/[btagging]/*
 
