@@ -19,7 +19,7 @@ source setupEnv.sh
 Install combine according to the manual:
 http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/#cc7-release-cmssw_10_2_x-recommended-version
 
-Set the desired paths in global_paths.py
+Set the desired paths in *global_paths.py*
 
 For every new shell session, do
 ```
@@ -29,11 +29,13 @@ cd Zprime_to_bb
 source setupEnv.sh
 ```
 
-for HTCondor submission, get the GRID certificate, find its location and put the path into global_paths.py:
+for HTCondor submission, get the GRID certificate, find its location and put the path into *global_paths.py*:
 ```
 voms-proxy-init --voms cms --valid 200:00
 echo $(voms-proxy-info -path)
 ```
+
+
 
 # Ntuple production
 
@@ -70,17 +72,17 @@ data:
 ./submit.py -q longlunch -y [year] -n 1 -mn
 ```
 
-## check if samples have finished correctly:
+## check if the samples have finished correctly:
 ```
 ./check_submission.sh
 ```
-resubmit erroneous samples by putting the sample name in the corresponding file in *resubmission/[sample_name]* and run:
+resubmit erroneous samples by putting the sample name in the corresponding file in *resubmission/resubmit_[sample_name]* and run:
 ```
-./submit.py [same options as original submission (or slightly adjusted)] -rs resubmission/[sample_name]
+./submit.py [same options as original submission (or slightly adjusted)] -rs resubmission/resubmit_[sample_name]
 ```
 if the submission only crashes on a single file, identify the file nr from the stdout and resubmit via:
 ```
-./submit.py [same options as original submission] -rs resubmission/[sample_name] -rf [file_nr]
+./submit.py [same options as original submission] -rs resubmission/resubmit_[sample_name] -rf [file_nr]
 ```
 
 output in: *global_paths.PRODUCTIONDIR*
@@ -108,6 +110,7 @@ output in *global_paths.SKIMMEDDIR*
 ./postprocessors/BTaggingUncertainties.py -b [btagging]
 ```
 output directly written into *BTag_uncertainties.py*, which is imported by *samples.py*
+
 
 
 # Various plots
@@ -141,6 +144,7 @@ Plot_all.sh eff
 ```
 
 output in: *plots/Efficiency*
+
 
 
 # Fits and limits extraction

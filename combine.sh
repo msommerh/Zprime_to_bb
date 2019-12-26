@@ -5,11 +5,11 @@
 ###
 
 ## fetiching global variables
-combine_dir=$(./global_paths.py -g COMBINEDIR)
-echo "combine_dir = ${combine_dir}"
-main_dir=$(./global_paths.py -g MAINDIR)
+main_dir='./'        #to be replaced when submitted to HTCondor. Currently has to be on line 8 to be correctly replaced in submit_combine.py!
 echo "main_dir = ${main_dir}"
-grid_cert=$(./global_paths.py -g GRIDCERT)
+combine_dir=$(${main_dir}global_paths.py -g COMBINEDIR)
+echo "combine_dir = ${combine_dir}"
+grid_cert=$(${main_dir}global_paths.py -g GRIDCERT)
 echo "grid_cert = ${grid_cert}"
 
 echo

@@ -41,7 +41,7 @@ else:
     print "Multiprocessing not enabled"
 #outdir    = args.outdir
 #outdir    = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/btag/MC_signal_hists'    # REMOVE when tested FIXME
-outdir    = global_paths.BTAGGINGDIR+'MC_signal_hists' 
+outdir    = 'btag/MC_signal_hists' 
 
 if not os.path.exists(outdir):
     os.makedirs(outdir)

@@ -109,7 +109,7 @@ if options.selection not in SELECTIONS.keys():
     sys.exit()
 
 signalList = ['Zprime_to_bb']
-categories = ['bb', 'bq', 'qq', 'mumu']
+categories = ['bb', 'bq', 'mumu']
 
 dijet_bins = [955, 1000, 1058, 1118, 1181, 1246, 1313, 1383, 1455, 1530, 1607, 1687, 1770, 1856, 1945, 2037, 2132, 2231, 2332, 2438, 2546, 2659, 2775, 2895, 3019, 3147, 3279, 3416, 3558, 3704, 3854, 4010, 4171, 4337, 4509, 4686, 4869, 5058, 5253, 5455, 5663, 5877, 6099, 6328, 6564, 6808]
 bins = [x+30 for x in dijet_bins]
@@ -482,9 +482,9 @@ def dijet(category):
     # create workspace
     w = RooWorkspace("Zprime_"+YEAR, "workspace")
     # Dataset
-    #if isData: getattr(w, "import")(setData, RooFit.Rename("data_obs"))
-    #else: getattr(w, "import")(setToys, RooFit.Rename("data_obs"))
-    getattr(w, "import")(setData, RooFit.Rename("data_obs")) ## the original lines above set a newly generated toy dataset as data_obs if MC is chosen. I don't see why this should be done and thus use the setData as data_obs for both FIXME
+    if isData: getattr(w, "import")(setData, RooFit.Rename("data_obs"))
+    else: getattr(w, "import")(setToys, RooFit.Rename("data_obs"))
+    #getattr(w, "import")(setData, RooFit.Rename("data_obs")) ## the original lines above set a newly generated toy dataset as data_obs if MC is chosen. I don't see why this should be done and thus use the setData as data_obs for both FIXME
     if BIAS:
         getattr(w, "import")(cat, RooFit.Rename(cat.GetName()))
         getattr(w, "import")(normulti, RooFit.Rename(normulti.GetName()))

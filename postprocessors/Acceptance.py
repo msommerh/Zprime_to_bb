@@ -43,7 +43,7 @@ if args.multiprocessing:
 else:
     print "Multiprocessing not enabled"
 #outdir    = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/acceptance'     ## REMOVE when tested FIXME
-outdir    = global_paths.ACCEPTANCEDIR[:-1]
+outdir    = 'acceptance'
 
 jobs = []
 

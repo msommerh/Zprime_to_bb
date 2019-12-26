@@ -16,12 +16,6 @@ WEIGHTEDDIR = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted/"
 ## space to store the significantly smaller skimmed ntuples that are used for the main analysis
 SKIMMEDDIR = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"
 
-## location where the btagging efficiency histograms should be stored. This should currently also contain DeepJet_102XSF_V1.csv, DeepFlavour_94XSF_V4_B_F.csv, DeepJet_2016LegacySF_V1.csv from https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
-BTAGGINGDIR = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/btag/"
-
-## location where information on the genParticles for each signal sample is stored to calculate the acceptance
-ACCEPTANCEDIR = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/acceptance/"
-
 ## location where the combine tool is installed
 COMBINEDIR = "/afs/cern.ch/user/m/msommerh/CMSSW_10_2_13/src/HiggsAnalysis/CombinedLimit/"
 

@@ -48,7 +48,7 @@ BTAGGING    = options.btagging
 #NTUPLEDIR   = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/Skim/"               #REMOVE when tested FIXME
 #ACCEPTANCEDIR = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/acceptance/"
 NTUPLEDIR   = global_paths.SKIMMEDDIR
-ACCEPTANCEDIR = global_paths.ACCEPTANCEDIR
+ACCEPTANCEDIR = "acceptance/"
 SIGNAL      = 1 # Signal magnification factor
 RATIO       = 4 # 0: No ratio plot; !=0: ratio between the top and bottom pads
 NORM        = options.norm

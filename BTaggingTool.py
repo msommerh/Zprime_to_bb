@@ -12,7 +12,6 @@
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation94X
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X
 
-import global_paths
 from array import array
 import ROOT
 from ROOT import TH2F, BTagCalibration, BTagCalibrationReader, TFile
@@ -22,7 +21,7 @@ import os
 import sys
 
 #path = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/btag/"        # REMOVE when tested FIXME
-path = global_paths.BTAGGINGDIR
+path = "btag/"
 
 class BTagWPs:
   """Contain b tagging working points."""

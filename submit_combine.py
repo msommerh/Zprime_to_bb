@@ -57,7 +57,7 @@ def submitJobs():
     #workdir = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/submission_files/tmp_combine{category}_{year}_{btagging}{suffix}".format(category="_"+args.category if args.category!="" else "", year=YEAR+'c' if separate_years else YEAR, btagging=args.btagging, suffix="_MC" if args.isMC else "")
     path = global_paths.MAINDIR[:-1]
     workdir = global_paths.SUBMISSIONLOGS+"tmp_combine{category}_{year}_{btagging}{suffix}".format(category="_"+args.category if args.category!="" else "", year=YEAR+'c' if separate_years else YEAR, btagging=args.btagging, suffix="_MC" if args.isMC else "")
-   if not os.path.exists(workdir):
+    if not os.path.exists(workdir):
         os.makedirs(workdir)
         print "Directory "+workdir+" created."
     else:
@@ -66,8 +66,17 @@ def submitJobs():
 
     #submit job
     #os.system("cp /afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/src/NanoTreeProducer/combine{}.sh ./combine_{}_{}{}.sh".format("_single" if args.category!="" else "", YEAR, args.btagging, "_"+args.category if args.category != "" else ""))             ## REMOVE when tested FIXME
-    os.system("cp "+global_paths.MAINDIR+"combine{}.sh ./combine_{}_{}{}.sh".format("_single" if args.category!="" else "", YEAR, args.btagging, "_"+args.category if args.category != "" else ""))
-os.system("chmod 755 combine_{}_{}{}.sh".format(YEAR, args.btagging, "_"+args.category if args.category != "" else ""))
+    #os.system("cp "+global_paths.MAINDIR+"combine{}.sh ./combine_{}_{}{}.sh".format("_single" if args.category!="" else "", YEAR, args.btagging, "_"+args.category if args.category != "" else ""))
+
+    exefile = open(global_paths.MAINDIR+"combine{}.sh".format("_single" if args.category!="" else ""), "r")
+    execontents = exefile.readlines()
+    exefile.close()
+    execontents[7] = "main_dir='"+global_paths.MAINDIR+"'\n"
+    exefile = open("./combine_{}_{}{}.sh".format(YEAR, args.btagging, "_"+args.category if args.category != "" else ""), 'w')
+    exefile.writelines(execontents)
+    exefile.close
+
+    os.system("chmod 755 combine_{}_{}{}.sh".format(YEAR, args.btagging, "_"+args.category if args.category != "" else ""))
     makeSubmitFileCondor(args.queue, nJobs)
     os.system("condor_submit submit.sub")
     print "jobs submitted"

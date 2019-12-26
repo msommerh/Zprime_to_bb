@@ -8,6 +8,7 @@ import global_paths
 import os
 from array import array
 from ROOT import TFile, TChain, TTree, TH1
+from aliases import triggers
 
 #inDir = "/eos/user/z/zucchett/ZBB/"
 #inDir = "/eos/user/m/msommerh/Zprime_to_bb_analysis/weighted"               # REMOVE when tested FIXME
@@ -16,8 +17,8 @@ inDir = global_paths.WEIGHTEDDIR[:-1]
 outDir = global_paths.SKIMMEDDIR[:-1]
 
 blacklist = ["backup"]
-cutstring = "jpt_1>550 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550)"
-
+#cutstring = "jpt_1>550 && (HLT_PFHT1050 || HLT_PFHT900 || HLT_PFJet500 || HLT_PFJet550 || HLT_CaloJet500_NoJetID || HLT_CaloJet550_NoJetID || HLT_AK8PFJet500 || HLT_AK8PFJet550)"
+cutstring = "jpt_1>550 && "+triggers
 
 def skim(sample):
     print sample
@@ -43,6 +44,6 @@ def skim(sample):
 
 
 #dirList = [x for x in os.listdir(inDir) if not x in blacklist]
-dirList = [x for x in os.listdir(inDir) if not x in blacklist and 'signal' in x]  ## FIXME FIXME
+dirList = [x for x in os.listdir(inDir) if not x in blacklist and 'data' in x]  ## FIXME FIXME
 for d in dirList:
     skim(d)

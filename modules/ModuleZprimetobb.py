@@ -29,8 +29,8 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('jeta_1'         , float)
         self.addBranch('jphi_1'         , float)
         self.addBranch('jmass_1'        , float)
-        self.addBranch('jCSV_1'         , float)
-        self.addBranch('jdeepCSV_1'     , float)
+        #self.addBranch('jCSV_1'         , float)
+        #self.addBranch('jdeepCSV_1'     , float)
         self.addBranch('jdeepFlavour_1' , float)
         self.addBranch('jchf_1'         , float)
         self.addBranch('jnhf_1'         , float)
@@ -50,8 +50,8 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('jeta_2'         , float)
         self.addBranch('jphi_2'         , float)
         self.addBranch('jmass_2'        , float)
-        self.addBranch('jCSV_2'         , float)
-        self.addBranch('jdeepCSV_2'     , float)
+        #self.addBranch('jCSV_2'         , float)
+        #self.addBranch('jdeepCSV_2'     , float)
         self.addBranch('jdeepFlavour_2' , float)
         self.addBranch('jchf_2'         , float)
         self.addBranch('jnhf_2'         , float)
@@ -84,6 +84,7 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('HT'             , float)
         self.addBranch('MET'            , float)
         self.addBranch('fatjetmass_1'   , float)
+        self.addBranch('fatjetmass_2'   , float)
 #        self.addBranch('MET_over_SumEt' , float)
 #        self.addBranch('jjetsId_1'      , int)
 #        self.addBranch('jjetsId_2'      , int)
@@ -307,6 +308,7 @@ class ZprimetobbProducer(Module):
         
         fatjetMass = 0.
         if event.nFatJet > 0: fatjetMass = event.FatJet_msoftdrop[0]
+        if event.nFatJet > 1: secondaryFatjetMass = event.FatJet_msoftdrop[1]
         
         nIsoElectrons = 0.
         for iel in range(event.nElectron):
@@ -333,8 +335,8 @@ class ZprimetobbProducer(Module):
         self.out.jeta_1[0]      = event.Jet_eta[jetIds[0]]
         self.out.jphi_1[0]      = event.Jet_phi[jetIds[0]]
         self.out.jmass_1[0]     = event.Jet_mass[jetIds[0]]
-        self.out.jCSV_1[0]      = event.Jet_btagCSVV2[jetIds[0]]
-        self.out.jdeepCSV_1[0]  = event.Jet_btagDeepB[jetIds[0]]
+        #self.out.jCSV_1[0]      = event.Jet_btagCSVV2[jetIds[0]]
+        #self.out.jdeepCSV_1[0]  = event.Jet_btagDeepB[jetIds[0]]
         self.out.jdeepFlavour_1[0]  = event.Jet_btagDeepFlavB[jetIds[0]]
         self.out.jchf_1[0] = event.Jet_chHEF[jetIds[0]]
         self.out.jnhf_1[0] = event.Jet_neHEF[jetIds[0]]
@@ -356,8 +358,8 @@ class ZprimetobbProducer(Module):
         self.out.jeta_2[0]      = event.Jet_eta[jetIds[1]]
         self.out.jphi_2[0]      = event.Jet_phi[jetIds[1]]
         self.out.jmass_2[0]     = event.Jet_mass[jetIds[1]]
-        self.out.jCSV_2[0]      = event.Jet_btagCSVV2[jetIds[1]]
-        self.out.jdeepCSV_2[0]  = event.Jet_btagDeepB[jetIds[1]]
+        #self.out.jCSV_2[0]      = event.Jet_btagCSVV2[jetIds[1]]
+        #self.out.jdeepCSV_2[0]  = event.Jet_btagDeepB[jetIds[1]]
         self.out.jdeepFlavour_2[0]  = event.Jet_btagDeepFlavB[jetIds[1]]
         self.out.jchf_2[0] = event.Jet_chHEF[jetIds[1]]
         self.out.jnhf_2[0] = event.Jet_neHEF[jetIds[1]]
@@ -380,6 +382,7 @@ class ZprimetobbProducer(Module):
 
         #self.out.MET_over_SumEt[0] = event.MET_pt/jetHT
         self.out.fatjetmass_1[0] = fatjetMass
+        if event.nFatJet > 1: self.out.fatjetmass_2[0] = secondaryFatjetMass
         self.out.ptBalance[0] = (event.Jet_pt[jetIds[0]] - event.Jet_pt[jetIds[1]])/(event.Jet_pt[jetIds[0]] + event.Jet_pt[jetIds[1]])
         self.out.HT[0] = jetHT
         self.out.MET[0] = event.MET_pt
