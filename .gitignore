@@ -5,8 +5,6 @@ filelists/*.txt
 submission_files/
 test_outfiles/
 CMSSW_10_3_3/
-*.pdf
-*.png
 ._*
 obsolete/
 *.swo
