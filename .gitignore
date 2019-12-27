@@ -8,5 +8,8 @@ CMSSW_10_3_3/
 ._*
 obsolete/
 *.swo
-btag/
-acceptance/
+*.root
+*.png
+*.pdf
+datacards/*.txt
+combine/*.txt
