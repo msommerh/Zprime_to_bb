@@ -370,7 +370,8 @@ def dijet(category):
     setToys.SetTitle("Data (toys)")
     if not isData:
         print " - Generating", nevents, "events for toy data"
-        setToys = modelAlt.generate(RooArgSet(X_mass), nevents) #why is it modelAlt and not modelBkg? FIXME
+        setToys = modelBkg.generate(RooArgSet(X_mass), nevents) 
+        #setToys = modelAlt.generate(RooArgSet(X_mass), nevents) 
         print "toy data generated"
 
     if VERBOSE: raw_input("Press Enter to continue...")
@@ -482,7 +483,7 @@ def dijet(category):
     # Dataset
     if isData: getattr(w, "import")(setData, RooFit.Rename("data_obs"))
     else: getattr(w, "import")(setToys, RooFit.Rename("data_obs"))
-    #getattr(w, "import")(setData, RooFit.Rename("data_obs")) ## the original lines above set a newly generated toy dataset as data_obs if MC is chosen. I don't see why this should be done and thus use the setData as data_obs for both FIXME
+    #getattr(w, "import")(setData, RooFit.Rename("data_obs")) 
     if BIAS:
         getattr(w, "import")(cat, RooFit.Rename(cat.GetName()))
         getattr(w, "import")(normulti, RooFit.Rename(normulti.GetName()))
