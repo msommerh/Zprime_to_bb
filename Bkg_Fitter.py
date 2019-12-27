@@ -370,8 +370,8 @@ def dijet(category):
     setToys.SetTitle("Data (toys)")
     if not isData:
         print " - Generating", nevents, "events for toy data"
-        setToys = modelBkg.generate(RooArgSet(X_mass), nevents) 
-        #setToys = modelAlt.generate(RooArgSet(X_mass), nevents) 
+        #setToys = modelBkg.generate(RooArgSet(X_mass), nevents) 
+        setToys = modelAlt.generate(RooArgSet(X_mass), nevents) 
         print "toy data generated"
 
     if VERBOSE: raw_input("Press Enter to continue...")
