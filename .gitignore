@@ -10,4 +10,5 @@ CMSSW_10_3_3/
 ._*
 obsolete/
 *.swo
-*.root
+btag/
+acceptance/
