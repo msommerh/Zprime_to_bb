@@ -9,7 +9,7 @@ main_dir='./'        #to be replaced when submitted to HTCondor. Currently has t
 echo "main_dir = ${main_dir}"
 combine_dir=$(${main_dir}global_paths.py -g COMBINEDIR)
 echo "combine_dir = ${combine_dir}"
-grid_cert=$(${main_dir}global_paths.py -g GRIDCERT)
+grid_cert=$(${main_dir}global_paths.py -g GRIDCERTIFICATE)
 echo "grid_cert = ${grid_cert}"
 
 echo
