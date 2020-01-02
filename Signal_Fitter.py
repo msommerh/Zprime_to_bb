@@ -619,7 +619,7 @@ def signal(category):
     #                                                       #
     #*******************************************************#
 
-    signalNorm[m].setConstant(False)  ## newly put here to ensure it's freely floating in the combine fit 
+    signalNorm[m].setConstant(False)  ## newly put here to ensure it's freely floating in the combine fit
 
     # create workspace
     w = RooWorkspace("Zprime_"+YEAR, "workspace")

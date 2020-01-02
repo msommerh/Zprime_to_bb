@@ -65,7 +65,7 @@ if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
     print "unknown btagging requirement:", BTAGGING
     sys.exit()
 
-if CATEGORY not in ['', 'bb', 'bq']:
+if CATEGORY not in ['', 'bb', 'bq', 'mumu']:
     print "unknown btagging category"
     sys.exit()
 

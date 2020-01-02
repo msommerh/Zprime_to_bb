@@ -481,9 +481,9 @@ def dijet(category):
     # create workspace
     w = RooWorkspace("Zprime_"+YEAR, "workspace")
     # Dataset
-    if isData: getattr(w, "import")(setData, RooFit.Rename("data_obs"))
-    else: getattr(w, "import")(setToys, RooFit.Rename("data_obs"))
-    #getattr(w, "import")(setData, RooFit.Rename("data_obs")) 
+    #if isData: getattr(w, "import")(setData, RooFit.Rename("data_obs"))
+    #else: getattr(w, "import")(setToys, RooFit.Rename("data_obs"))
+    getattr(w, "import")(setData, RooFit.Rename("data_obs")) 
     if BIAS:
         getattr(w, "import")(cat, RooFit.Rename(cat.GetName()))
         getattr(w, "import")(normulti, RooFit.Rename(normulti.GetName()))
