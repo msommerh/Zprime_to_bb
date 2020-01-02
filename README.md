@@ -61,15 +61,15 @@ output in *btag/*
 
 MC signal:
 ```
-./submit.py -q longlunch -y [year] -MC -MT signal
+./submit.py -q workday -y [year] -MC -MT signal
 ```
 MC background:     [MC_type]: QCD, TTbar
 ```
-./submit.py -q longlunch -y [year] -MC -MT [MC_type] -n 1 -mn
+./submit.py -q workday -y [year] -MC -MT [MC_type] -n 1 -mn
 ```
 data:
 ```
-./submit.py -q longlunch -y [year] -n 1 -mn
+./submit.py -q workday -y [year] -n 1 -mn
 ```
 
 ## check if the samples have finished correctly:

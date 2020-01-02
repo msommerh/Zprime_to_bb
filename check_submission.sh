@@ -49,6 +49,17 @@ function out_checker {
     fi
     }
 
+function log_checker {
+    log_file=$1
+    log_check=$(./output_checker.py -i $log_file -l)
+     if [[ $(join $log_check) != $(join c l e a n) ]]; then  #stil not proud of this, but it works
+        echo "Unexpected behavior has been detected in ${log_file}:"
+        echo $log_check
+        let Errors=$Errors+1
+    fi
+    }
+
+
 echo "checking status of submitted files"
 read -p "year: " year
 read -p "isMC [y/n]: " isMC
@@ -98,11 +109,26 @@ for dir in $dirs; do
    
     err_files=$(ls $(remove_procId ${high_err})*.err)
 
+    n_errs=0
     for errf in $err_files; do
-        err_checker $errf
-        out_checker $errf
+        err_checker $errf  ## check stderr
+        out_checker $errf  ## check stdout
+        let n_errs=$n_errs+1
     done  
- 
+
+    logf=$(remove_procId ${high_err})log
+    log_checker $logf      ## check log
+   
+    n_files=$(./output_checker.py -i ${dir}/submit.sub -n)
+
+    if [ $n_errs -ne $n_files ]; then
+        echo
+        echo "----------------------------------------------------------------------"
+        echo "WARNING!! The number of foreseen output files (${n_files}) is different that the number of stderr/stdout files (${n_errs}) !!"
+        echo "----------------------------------------------------------------------"
+        echo
+    fi
+
     echo
 done
 

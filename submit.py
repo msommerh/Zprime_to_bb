@@ -52,6 +52,10 @@ if __name__ == "__main__":
 else:
   args = None
 
+if args.multinode and resubmit_file!=-1:
+    print "Cannot use multinode mode with distinct file submission! Aborting..."
+    sys.exit()
+
 def getFileListDAS(dataset):
         """Get list of files from DAS."""
         dataset  = dataset.replace('__','/')
@@ -137,7 +141,7 @@ def makeSubmitFileCondor(exe, jobname, jobflavour, infiles):
     submitfile.write("log                   = "+jobname+".$(ClusterId).log\n")
     submitfile.write('+JobFlavour           = "'+jobflavour+'"\n')
     if args.cores>1: submitfile.write('RequestCpus           = {}\n'.format(args.cores))
-    if args.multinode:
+    if args.multinode and args.resubmit_file==-1:
         file_list = []
         file_content = open(infiles, 'r').readlines()
         for entry in file_content:

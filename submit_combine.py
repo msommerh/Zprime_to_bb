@@ -23,7 +23,7 @@ if __name__ == "__main__":
                                          help="Select this if the sample is MC, otherwise it is flagged as data.")
   parser.add_argument("-b", "--btagging", action="store", type=str, dest="btagging", default="tight", choices=['tight', 'medium', 'loose', 'semimedium'])
   parser.add_argument("-c", "--category", action="store", type=str, dest="category", default="", choices=['', 'bb', 'bq', 'mumu'],
-                                         help="Choose b-tagging category (bb or bq) if combine should run merely on a single category.")
+                                         help="Choose b-tagging category (bb, bq or mumu) if combine should run merely on a single category.")
 
   args = parser.parse_args()
 
@@ -70,7 +70,7 @@ def submitJobs():
     execontents[7] = "main_dir='"+global_paths.MAINDIR+"'\n"
     exefile = open("./combine_{}_{}{}.sh".format(YEAR, args.btagging, "_"+args.category if args.category != "" else ""), 'w')
     exefile.writelines(execontents)
-    exefile.close
+    exefile.close()
 
     os.system("chmod 755 combine_{}_{}{}.sh".format(YEAR, args.btagging, "_"+args.category if args.category != "" else ""))
     makeSubmitFileCondor(args.queue, nJobs)

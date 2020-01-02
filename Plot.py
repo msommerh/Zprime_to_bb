@@ -434,7 +434,7 @@ def efficiency(year):
         tot, mass = 0., 0.
         if ADDSELECTION: tot_add = 0.
         for channel in channels:
-            if channel=='qq' or channel=='none' or channel=='mumu': continue #not sure if I should include 2mu category in sum
+            if channel=='qq' or channel=='none': continue #not sure if I should include 2mu category in sum
             if eff[channel].GetN() > i:
                 tot += eff[channel].GetY()[i]
                 if ADDSELECTION: tot_add += eff_add[channel].GetY()[i]
@@ -461,8 +461,8 @@ def efficiency(year):
     legS.SetBorderSize(0)
     legS.SetFillStyle(0) #1001
     legS.SetFillColor(0)
-    legS.AddEntry(eff['sum'], "Total b tag efficiency (1 b tag + 2 b tag)", "pl")
-    if ADDSELECTION: legS.AddEntry(eff_add['sum'], "Total b tag efficiency (1 b tag + 2 b tag) "+options.selection, "pl")
+    legS.AddEntry(eff['sum'], "Total b tag efficiency (1 b tag + 2 b tag + 2 #mu)", "pl")
+    if ADDSELECTION: legS.AddEntry(eff_add['sum'], "Total b tag efficiency (1 b tag + 2 b tag + 2 #mu) "+options.selection, "pl")
     c1 = TCanvas("c1", "Signal Efficiency", 1200, 800)
     c1.cd(1)
     eff['sum'].Draw("APL")
