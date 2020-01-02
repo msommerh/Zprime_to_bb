@@ -52,7 +52,7 @@ if __name__ == "__main__":
 else:
   args = None
 
-if args.multinode and resubmit_file!=-1:
+if args.multinode and args.resubmit_file!=-1:
     print "Cannot use multinode mode with distinct file submission! Aborting..."
     sys.exit()
 
