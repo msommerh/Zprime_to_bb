@@ -125,8 +125,12 @@ def submitJobs(title, infiles, outdir, jobflavour):
 
     #submit job
     os.system("chmod 755 job.sh")
-    os.system("mv job.sh "+title+".sh")
-    makeSubmitFileCondor(title+".sh", title, jobflavour, path+"/"+infiles)
+    if args.resubmit_file==-1:
+        os.system("mv job.sh "+title+".sh")
+        makeSubmitFileCondor(title+".sh", title, jobflavour, path+"/"+infiles)
+    else:
+        os.system("mv job.sh "+title+"_"+str(args.resubmit_file)+".sh")
+        makeSubmitFileCondor(title+"_"+str(args.resubmit_file)+".sh", title, jobflavour, path+"/"+infiles)
     os.system("condor_submit submit.sub")
     print "job submitted"
     os.chdir(path)

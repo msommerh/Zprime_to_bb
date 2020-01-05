@@ -129,6 +129,7 @@ def signal(category):
     jbtag_WP_1 = RooRealVar("jbtag_WP_1",       "",             -1.,   4.        )
     jbtag_WP_2 = RooRealVar("jbtag_WP_2",       "",             -1.,   4.        )
     fatjetmass_1 = RooRealVar("fatjetmass_1",   "",             -1.,   2500.     )
+    fatjetmass_2 = RooRealVar("fatjetmass_2",   "",             -1.,   2500.     )
     jnmuons_1 = RooRealVar(   "jnmuons_1",      "j1 n_{#mu}",    -1.,   8.)
     jnmuons_2 = RooRealVar(   "jnmuons_2",      "j2 n_{#mu}",    -1.,   8.)
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
@@ -147,12 +148,11 @@ def signal(category):
     HLT_DoublePFJets40_CaloBTagDeepCSV_p71                  =RooRealVar("HLT_DoublePFJets40_CaloBTagDeepCSV_p71"                 , "", -1., 1. )
 
     weight = RooRealVar(        "eventWeightLumi",      "",             -1.e9,  1.e9    )
-    btag_weight = RooRealVar(   "BTagAK4Weight_deepJet", "",            -1.e9,  1.e9    )
 
     # Define the RooArgSet which will include all the variables defined before
     # there is a maximum of 9 variables in the declaration, so the others need to be added with 'add'
     variables = RooArgSet(X_mass)
-    variables.add(RooArgSet(j1_pt, jj_deltaEta, jbtag_WP_1, jbtag_WP_2, fatjetmass_1, jnmuons_1, jnmuons_2, weight, btag_weight))
+    variables.add(RooArgSet(j1_pt, jj_deltaEta, jbtag_WP_1, jbtag_WP_2, fatjetmass_1, fatjetmass_2, jnmuons_1, jnmuons_2, weight))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     variables.add(RooArgSet(HLT_DoublePFJets100_CaloBTagDeepCSV_p71, HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets200_CaloBTagDeepCSV_p71, HLT_DoublePFJets350_CaloBTagDeepCSV_p71, HLT_DoublePFJets40_CaloBTagDeepCSV_p71))
     X_mass.setRange("X_reasonable_range", X_mass.getMin(), X_mass.getMax())
@@ -209,10 +209,10 @@ def signal(category):
     frSignal3 = {}
 
     # Signal shape uncertainties (common amongst all mass points) 
-    xmean_jes = RooRealVar("sig_"+category+"_p1_scale_jes", "Variation of the resonance position with the jet energy scale", 0.020 if isAH else 0.010, -1., 1.) #0.001
+    xmean_jes = RooRealVar("CMS"+YEAR+"_sig_"+category+"_p1_scale_jes", "Variation of the resonance position with the jet energy scale", 0.02, -1., 1.) #0.001
     smean_jes = RooRealVar("CMS"+YEAR+"_sig_"+category+"_p1_jes", "Change of the resonance position with the jet energy scale", 0., -10, 10)
 
-    xsigma_jer = RooRealVar("sig_"+category+"_p2_scale_jer", "Variation of the resonance width with the jet energy resolution", 0.020, -1., 1.)
+    xsigma_jer = RooRealVar("CMS"+YEAR+"_sig_"+category+"_p2_scale_jer", "Variation of the resonance width with the jet energy resolution", 0.10, -1., 1.)
     ssigma_jer = RooRealVar("CMS"+YEAR+"_sig_"+category+"_p2_jer", "Change of the resonance width with the jet energy resolution", 0., -10, 10)
     
     xmean_jes.setConstant(True)
@@ -233,20 +233,26 @@ def signal(category):
         vmean[m] = RooRealVar(signalName + "_vmean", "Crystal Ball mean", m, m*0.96, m*1.05)
         smean[m] = RooFormulaVar(signalName + "_mean", "@0*(1+@1*@2)", RooArgList(vmean[m], xmean_jes, smean_jes))
 
-        vsigma[m] = RooRealVar(signalName + "_vsigma", "Crystal Ball sigma", m*0.02, m*0.0005, m*0.025)
+        vsigma[m] = RooRealVar(signalName + "_vsigma", "Crystal Ball sigma", m*0.0233, m*0.019, m*0.025)
         ssigma[m] = RooFormulaVar(signalName + "_sigma", "@0*(1+@1*@2)", RooArgList(vsigma[m], xsigma_jer, ssigma_jer))
  
         valpha1[m] = RooRealVar(signalName + "_valpha1", "Crystal Ball alpha 1", 0.2,  0.05, 0.28) # number of sigmas where the exp is attached to the gaussian core. >0 left, <0 right
         salpha1[m] = RooFormulaVar(signalName + "_alpha1", "@0", RooArgList(valpha1[m]))
 
-        vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 10., 0.1, 20.) # slope of the power tail
+        #vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 10., 0.1, 20.) # slope of the power tail
+        vslope1[m] = RooRealVar(signalName + "_vslope1", "Crystal Ball slope 1", 13., 10., 20.) # slope of the power tail
         sslope1[m] = RooFormulaVar(signalName + "_slope1", "@0", RooArgList(vslope1[m]))
+        
 
         valpha2[m] = RooRealVar(signalName + "_valpha2", "Crystal Ball alpha 2", 1.)
         valpha2[m].setConstant(True)
         salpha2[m] = RooFormulaVar(signalName + "_alpha2", "@0", RooArgList(valpha2[m]))
 
-        vslope2[m] = RooRealVar(signalName + "_vslope2", "Crystal Ball slope 2", 6., 2.5, 15.) # slope of the higher power tail
+        #vslope2[m] = RooRealVar(signalName + "_vslope2", "Crystal Ball slope 2", 6., 2.5, 15.) # slope of the higher power tail
+        ## FIXME test FIXME
+        vslope2_estimation = -5.88111436852 + m*0.00728809389442 + m*m*(-1.65059568762e-06) + m*m*m*(1.25128996309e-10)
+        vslope2[m] = RooRealVar(signalName + "_vslope2", "Crystal Ball slope 2", vslope2_estimation, vslope2_estimation*0.9, vslope2_estimation*1.1) # slope of the higher power tail
+        ## FIXME end FIXME
         sslope2[m] = RooFormulaVar(signalName + "_slope2", "@0", RooArgList(vslope2[m])) # slope of the higher power tail
 
         signal[m] = RooDoubleCrystalBall(signalName, "m_{%s'} = %d GeV" % ('X', m), X_mass, smean[m], ssigma[m], salpha1[m], sslope1[m], salpha2[m], sslope2[m])
@@ -357,6 +363,21 @@ def signal(category):
     #                                                       #
     #*******************************************************#
 
+    ### FIXME FIXME just for a test FIXME FIXME
+
+    #print
+    #print
+    #print "slope2 fit results:"
+    #print 
+    #y_vals = []
+    #for m in genPoints:
+    #    y_vals.append(vslope2[m].getVal())
+    #print "m =", genPoints
+    #print "y =", y_vals
+    #sys.exit()
+
+    ### FIXME FIXME test end FIXME FIXME
+
 
     # ====== CONTROL PLOT ======
     c_signal = TCanvas("c_signal", "c_signal", 800, 600)
@@ -425,7 +446,7 @@ def signal(category):
     galpha1.SetLineColor(cColor)
     ialpha1 = TGraphErrors()
     ialpha1.SetMarkerStyle(24)
-    falpha1 = TF1("falpha", "pol0", 0, 10000)
+    falpha1 = TF1("falpha", "pol1", 0, 10000) #pol0
     falpha1.SetLineColor(2)
     falpha1.SetFillColor(2)
 
@@ -437,7 +458,7 @@ def signal(category):
     gslope1.SetLineColor(cColor)
     islope1 = TGraphErrors()
     islope1.SetMarkerStyle(24)
-    fslope1 = TF1("fslope", "pol0", 0, 10000)
+    fslope1 = TF1("fslope", "pol1", 0, 10000) #pol0
     fslope1.SetLineColor(2)
     fslope1.SetFillColor(2)
 
@@ -449,7 +470,7 @@ def signal(category):
     galpha2.SetLineColor(cColor)
     ialpha2 = TGraphErrors()
     ialpha2.SetMarkerStyle(24)
-    falpha2 = TF1("falpha", "pol0", 0, 10000)
+    falpha2 = TF1("falpha", "pol1", 0, 10000) #pol0
     falpha2.SetLineColor(2)
     falpha2.SetFillColor(2)
 
@@ -461,7 +482,7 @@ def signal(category):
     gslope2.SetLineColor(cColor)
     islope2 = TGraphErrors()
     islope2.SetMarkerStyle(24)
-    fslope2 = TF1("fslope", "pol0", 0, 10000)
+    fslope2 = TF1("fslope", "pol1", 0, 10000) #pol0
     fslope2.SetLineColor(2)
     fslope2.SetFillColor(2)
 
@@ -515,12 +536,19 @@ def signal(category):
         syield = spline
         
         if interPar:
-            jmean = gmean.Eval(m)
-            jsigma = gsigma.Eval(m)
-            jalpha1 = galpha1.Eval(m)
-            jslope1 = gslope1.Eval(m)
-            jalpha2 = galpha2.Eval(m)
-            jslope2 = gslope2.Eval(m)
+            #jmean = gmean.Eval(m)
+            #jsigma = gsigma.Eval(m)
+            #jalpha1 = galpha1.Eval(m)
+            #jslope1 = gslope1.Eval(m)
+            #jalpha2 = galpha2.Eval(m)
+            #jslope2 = gslope2.Eval(m)
+            jmean = gmean.Eval(m, 0, "S")   ## checking if a spline yields nicer fits FIXME
+            jsigma = gsigma.Eval(m, 0, "S")
+            jalpha1 = galpha1.Eval(m, 0, "S")
+            jslope1 = gslope1.Eval(m, 0, "S")
+            jalpha2 = galpha2.Eval(m, 0, "S")
+            jslope2 = gslope2.Eval(m, 0, "S")
+
         else:
             jmean = fmean.GetParameter(0) + fmean.GetParameter(1)*m + fmean.GetParameter(2)*m*m
             jsigma = fsigma.GetParameter(0) + fsigma.GetParameter(1)*m + fsigma.GetParameter(2)*m*m
@@ -558,6 +586,8 @@ def signal(category):
         valpha2[m].removeError()
         vslope1[m].removeError()
         vslope2[m].removeError()
+
+        #signalNorm[m].setConstant(False)  ## newly put here to ensure it's freely floating in the combine fit
  
     c1 = TCanvas("c1", "Crystal Ball", 1200, 1200) #if not isAH else 1200
     c1.Divide(2, 3)
@@ -619,8 +649,6 @@ def signal(category):
     #                                                       #
     #*******************************************************#
 
-    signalNorm[m].setConstant(False)  ## newly put here to ensure it's freely floating in the combine fit
-
     # create workspace
     w = RooWorkspace("Zprime_"+YEAR, "workspace")
     for m in massPoints:
@@ -629,7 +657,6 @@ def signal(category):
         getattr(w, "import")(signalXS[m], RooFit.Rename(signalXS[m].GetName()))
     w.writeToFile(WORKDIR+"MC_signal_%s_%s.root" % (YEAR, category), True)  
     print "Workspace", WORKDIR+"MC_signal_%s_%s.root" % (YEAR, category), "saved successfully"
-    sys.exit()
 
 
 def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=None, cat="", alt=None, anorm=-1, signal=None, snorm=-1):

@@ -30,27 +30,13 @@ alias["mumu"] = alias["2mu"]
 alias["qq"] = alias["preselection"]
 alias['none'] = 'jj_deltaEta<1.1'
 
-alias["2b_vetoAK8"] = alias["2b"]+" && fatjetmass_1<65" 
-alias["1b_vetoAK8"] = alias["1b"]+" && fatjetmass_1<65" 
-alias["preselection_vetoAK8"] = alias["preselection"]+" && fatjetmass_1<65" 
-alias["bb_vetoAK8"] = alias["2b_vetoAK8"]
-alias["bq_vetoAK8"] = alias["1b_vetoAK8"]
-alias["qq_vetoAK8"] = alias["preselection_vetoAK8"]
-
 aliasSM["bb"] = aliasSM["2b"]
 aliasSM["bq"] = aliasSM["1b"]
 aliasSM["mumu"] = aliasSM["2mu"]
 aliasSM["qq"] = aliasSM["preselection"]
 aliasSM['none'] = 'jj_deltaEta<1.1'
 
-aliasSM["2b_vetoAK8"] = aliasSM["2b"]+" && fatjetmass_1<65" 
-aliasSM["1b_vetoAK8"] = aliasSM["1b"]+" && fatjetmass_1<65" 
-aliasSM["preselection_vetoAK8"] = aliasSM["preselection"]+" && fatjetmass_1<65" 
-aliasSM["bb_vetoAK8"] = aliasSM["2b_vetoAK8"]
-aliasSM["bq_vetoAK8"] = aliasSM["1b_vetoAK8"]
-aliasSM["qq_vetoAK8"] = aliasSM["preselection_vetoAK8"]
-
-additional_selections = {"": "", "AK8veto": " && fatjetmass_1<65", "electronVeto": " && jnelectrons_1<1 && jnelectrons_2<1", "muonVeto": " && jnmuons_1<1 && jnmuons_2<1"}
+additional_selections = {"": "", "AK8veto": " && !(fatjetmass_1>65 && fatjetmass_2>65)", "electronVeto": " && jnelectrons_1<1 && jnelectrons_2<1", "muonVeto": " && !(jnmuons_1>0 && jmuonpt_1>50) && !(jnmuons_2>0 && jmuonpt_2>50)"}
 
 additional_selections['leptonVeto'] = additional_selections['electronVeto']+additional_selections['muonVeto']
 

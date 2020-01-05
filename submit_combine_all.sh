@@ -5,7 +5,7 @@
 #./submit_combine.py -MC -q longlunch -y run2 -b loose
 #./submit_combine.py -MC -q longlunch -y run2 -b semimedium
 #./submit_combine.py -MC -q longlunch -y run2c -b tight
-./submit_combine.py -MC -q workday -y run2c -b medium
+./submit_combine.py -MC -q longlunch -y run2c -b medium
 #./submit_combine.py -MC -q longlunch -y run2c -b loose
 #./submit_combine.py -MC -q longlunch -y run2c -b semimedium
 
