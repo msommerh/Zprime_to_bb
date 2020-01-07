@@ -36,8 +36,9 @@ aliasSM["mumu"] = aliasSM["2mu"]
 aliasSM["qq"] = aliasSM["preselection"]
 aliasSM['none'] = 'jj_deltaEta<1.1'
 
-additional_selections = {"": "", "AK8veto": " && !(fatjetmass_1>65 && fatjetmass_2>65)", "electronVeto": " && jnelectrons_1<1 && jnelectrons_2<1", "muonVeto": " && !(jnmuons_1>0 && jmuonpt_1>50) && !(jnmuons_2>0 && jmuonpt_2>50)"}
+additional_selections = {"": "", "AK8veto": " && !(fatjetmass_1>65 && fatjetmass_2>65)", "electronVeto": " && nelectrons<1", "muonVeto": " && nmuons<1"}
 
 additional_selections['leptonVeto'] = additional_selections['electronVeto']+additional_selections['muonVeto']
+additional_selections['fullVeto'] = additional_selections['AK8veto']+additional_selections['leptonVeto']
 
 
