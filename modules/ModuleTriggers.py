@@ -87,7 +87,7 @@ class TriggerProducer(Module):
 
         ## Muon selection:
     
-        if not event.HLT_IsoMu27 or not event.Muon_tightId[0] or not event.Muon_pfRelIso03_all[0]<0.1: return False
+        if not event.HLT_IsoMu27 or not event.Muon_pt[0]>30 or not event.Muon_tightId[0] or not event.Muon_pfRelIso03_all[0]<0.1: return False
         muon_p4 = TLorentzVector()
         muon_p4.SetPtEtaPhiM(event.Muon_pt[0], event.Muon_eta[0], event.Muon_phi[0], event.Muon_mass[0])
 
@@ -119,11 +119,12 @@ class TriggerProducer(Module):
             if j1_p4.DeltaR(j_p4) < 1.1: wj1_p4 += j_p4
             if j2_p4.DeltaR(j_p4) < 1.1: wj2_p4 += j_p4
     
-        #if wj1_p4.DeltaR(muon_p4) < 0.4 or wj2_p4.DeltaR(muon_p4) < 0.4: return False
-        if muon_p4.DeltaR(wj1_p4+wj2_p4) < 0.4: return False
+        if wj1_p4.DeltaR(muon_p4) < 0.4 or wj2_p4.DeltaR(muon_p4) < 0.4: return False
 
         self.out.jj_mass_widejet[0] = (wj1_p4+wj2_p4).M()
         self.out.jj_deltaEta_widejet[0]   = abs(wj1_p4.Eta() - wj2_p4.Eta())
+
+        if self.out.jj_mass_widejet[0] < 800: return False
         
         #fatjetMass = 0.
         #if event.nFatJet > 0: fatjetMass = event.FatJet_msoftdrop[0]
