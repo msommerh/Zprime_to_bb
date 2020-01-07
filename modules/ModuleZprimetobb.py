@@ -316,7 +316,7 @@ class ZprimetobbProducer(Module):
 
         nIsoMuons = 0.
         for imu in range(event.nMuon):
-            if abs(event.Muon_eta[imu]) < 2.5 and event.Muon_highPtId[imu]>=2 and event.Muon_tkRelIso[imu]<0.1: nIsoMuons += 1
+            if event.Muon_pt[imu] > 50. and abs(event.Muon_eta[imu]) < 2.5 and event.Muon_highPtId[imu]>=2 and event.Muon_tkRelIso[imu]<0.1: nIsoMuons += 1
         
         ptMuons1, ptMuons2 = 0., 0.
         if event.Jet_muonIdx1[jetIds[0]] >=0 and event.Muon_looseId[event.Jet_muonIdx1[jetIds[0]]]: ptMuons1 += event.Muon_pt[event.Jet_muonIdx1[jetIds[0]]]
