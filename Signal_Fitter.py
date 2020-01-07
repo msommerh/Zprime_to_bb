@@ -125,7 +125,7 @@ def signal(category):
 
     X_mass  = RooRealVar (      "jj_mass_widejet",              "m_{jj}",       1800.,     9000.,  "GeV")
     j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     13000.,  "GeV")
-    jj_deltaEta = RooRealVar(    "jj_deltaEta",                "",      0.,     5.)
+    jj_deltaEta = RooRealVar(    "jj_deltaEta_widejet",                "",      0.,     5.)
     jbtag_WP_1 = RooRealVar("jbtag_WP_1",       "",             -1.,   4.        )
     jbtag_WP_2 = RooRealVar("jbtag_WP_2",       "",             -1.,   4.        )
     fatjetmass_1 = RooRealVar("fatjetmass_1",   "",             -1.,   2500.     )

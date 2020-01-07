@@ -156,7 +156,7 @@ def dijet(category):
     fatjetmass_2 = RooRealVar("fatjetmass_2",   "",             -1.,   2500.     )
     jnmuons_1 = RooRealVar("jnmuons_1",   "j1 n_{#mu}",         -1.,   8.     )
     jnmuons_2 = RooRealVar("jnmuons_2",   "j2 n_{#mu}",         -1.,   8.     )
-    jj_deltaEta = RooRealVar(    "jj_deltaEta",                "",      0.,     5.)
+    jj_deltaEta = RooRealVar(    "jj_deltaEta_widejet",                "",      0.,     5.)
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
     HLT_PFJet500            = RooRealVar("HLT_PFJet500"            , "" , -1., 1.    )
     HLT_CaloJet500_NoJetID  = RooRealVar("HLT_CaloJet500_NoJetID"  , "" , -1., 1.    )

@@ -48,7 +48,6 @@ gStyle.SetOptStat(0)
 BTAGGING    = options.btagging
 NTUPLEDIR   = global_paths.SKIMMEDDIR
 ACCEPTANCEDIR = "acceptance/"
-TRIGGERDIR = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/trigger' ##FIXME INSERT GLOBAL PATH FIXME
 SIGNAL      = 1 # Signal magnification factor
 RATIO       = 4 # 0: No ratio plot; !=0: ratio between the top and bottom pads
 NORM        = options.norm
@@ -314,8 +313,6 @@ def plot(var, cut, year, norm=False, nm1=False):
 
 
 def efficiency(year):
-    import numpy as np
-    from root_numpy import tree2array, fill_hist
     genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
     eff = {}
     if ADDSELECTION: eff_add = {}
@@ -339,35 +336,26 @@ def efficiency(year):
             for j, ss in enumerate(sample[signName]['files']):
                 if year=="run2" or year in ss:
                     sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
-                    ngenSign[m] += sfile.Get("Events").GetBinContent(1) 
+                    if year=='run2':
+                        if '2016' in ss:
+                            ngenSign[m] += sample[signName]['genEvents']['2016']
+                        elif '2017' in ss:
+                            ngenSign[m] += sample[signName]['genEvents']['2017']
+                        elif '2018' in ss:
+                            ngenSign[m] += sample[signName]['genEvents']['2018']
+                        else:
+                            print "ATTENTION!!! Undefinded year in sample:", ss
+                    else:
+                        ngenSign[m] += sample[signName]['genEvents'][year]
                     treeSign[m] = sfile.Get("tree")
                     if BTAGGING=='semimedium':
-                        temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=aliasSM[channel]) 
-                        temp_hist = TH1F('pass', 'pass', 1,0,1)                                     
-                        fill_hist(temp_hist, np.zeros(len(temp_array)), weights=temp_array)         
-                        nevtSign[m] += temp_hist.GetBinContent(1)                                   
-                        temp_array=None; temp_hist.Reset()                                          
-                        if ADDSELECTION: 
-                            temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=aliasSM[channel]+SELECTIONS[options.selection]) 
-                            temp_hist = TH1F('pass', 'pass', 1,0,1)                                     
-                            fill_hist(temp_hist, np.zeros(len(temp_array)), weights=temp_array)         
-                            nevtSign[m] += temp_hist.GetBinContent(1)                                   
-                            temp_array=None; temp_hist.Reset()                                          
+                        nevtSign[m] += treeSign[m].GetEntries(aliasSM[channel])
+                        if ADDSELECTION: nevtSign_add[m] += treeSign[m].GetEntries(aliasSM[channel]+SELECTIONS[options.selection])
                     else:
-                        temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=alias[channel].format(WP=working_points[BTAGGING]))
-                        temp_hist = TH1F('pass', 'pass', 1,0,1)                                     
-                        fill_hist(temp_hist, np.zeros(len(temp_array)), weights=temp_array)         
-                        nevtSign[m] += temp_hist.GetBinContent(1)                                   
-                        temp_array=None; temp_hist.Reset()                                          
-                        if ADDSELECTION: 
-                            temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=alias[channel].format(WP=working_points[BTAGGING])+SELECTIONS[options.selection])
-                            temp_hist = TH1F('pass', 'pass', 1,0,1)                                     
-                            fill_hist(temp_hist, np.zeros(len(temp_array)), weights=temp_array)         
-                            nevtSign_add[m] += temp_hist.GetBinContent(1)                                   
-                            temp_array=None; temp_hist.Reset()                                          
-
+                        nevtSign[m] += treeSign[m].GetEntries(alias[channel].format(WP=working_points[BTAGGING]))
+                        if ADDSELECTION: nevtSign_add[m] += treeSign[m].GetEntries(alias[channel].format(WP=working_points[BTAGGING])+SELECTIONS[options.selection])
                     sfile.Close()
-                    print channel, ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
+                    #print channel, ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
             if nevtSign[m] == 0 or ngenSign[m] < 0: continue
             n = eff[channel].GetN()
             eff[channel].SetPoint(n, m, nevtSign[m]/ngenSign[m])
@@ -604,31 +592,15 @@ def acceptance(year):
 
 def trigger_efficiency(year): ## FIXME work in progressi, adapting from efficiency() FIXME
     from root_numpy import root2array, fill_hist
-    from aliases import triggers   
+    #from aliases import triggers   
 
+    triggers = "(HLT_PFHT1050==1 || HLT_PFHT900==1 || HLT_PFJet500==1 || HLT_PFJet550==1 || HLT_CaloJet500_NoJetID==1 || HLT_CaloJet550_NoJetID==1 || HLT_AK8PFJet500==1 || HLT_AK8PFJet550==1 || HLT_DoublePFJets100_CaloBTagDeepCSV_p71==1 || HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71==1 || HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71==1 || HLT_DoublePFJets200_CaloBTagDeepCSV_p71==1 || HLT_DoublePFJets350_CaloBTagDeepCSV_p71==1 || HLT_DoublePFJets40_CaloBTagDeepCSV_p71==1)"  ##FIXME
+ 
+    #eff = TGraphErrors()
     hist_pass = TH1F("pass", "pass", 100, 0., 10000.)
     hist_all = TH1F("all", "all", 100, 0., 10000.)
 
-    file_list = []
-
-    data_2016_letters = ["B", "C", "D", "E", "F", "G", "H"]
-    data_2017_letters = ["B", "C", "D", "E", "F"]
-    data_2018_letters = ["A", "B", "C", "D"]
-    
-    sample_names = []
-    if year=='2016':
-        letters = data_2016_letters
-    elif year=='2017':
-        letters = data_2017_letters
-    elif year=='2018':
-        letters = data_2018_letters
-    else:
-        print "unknown year"
-        sys.exit()
-    for letter in letters:
-        file_list.append(TRIGGERDIR+"/data_{}_{}_triggers.root".format(year, letter))
-    
-    #file_list = ['/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/trigger/MC_signal_2016_M3000_triggers.root'] ##FIXME temporary placeholder FIXME
+    file_list = ['/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/trigger/MC_signal_2016_M3000_triggers.root'] ##FIXME temporary placeholder FIXME
     for file_name in file_list:
         temp_array = root2array(file_name, treename='tree', branches='jj_mass_widejet', selection="jj_deltaEta_widejet<1.1")
         print
@@ -657,15 +629,9 @@ def trigger_efficiency(year): ## FIXME work in progressi, adapting from efficien
     eff.SetLineColor(2)
     eff.SetLineWidth(2)
 
-    one_line = TGraph()
-    one_line.SetPoint(0, 0., 1.)
-    one_line.SetPoint(1, 10000., 1.)
-    one_line.SetLineStyle(2)
-
     c1 = TCanvas("c1", "Trigger Efficiency", 1200, 800)
     c1.cd(1)
     eff.Draw()
-    one_line.Draw("L")
     eff.SetTitle(";m_{jj} (GeV);trigger efficiency")
     eff.SetMinimum(0.)
     eff.SetMaximum(1.4) #0.65
@@ -674,7 +640,7 @@ def trigger_efficiency(year): ## FIXME work in progressi, adapting from efficien
     eff.GetYaxis().SetTitleSize(0.045)
     eff.GetYaxis().SetTitleOffset(1.1)
     eff.GetXaxis().SetTitleOffset(1.05)
-    eff.GetXaxis().SetRangeUser(0., 9000.)
+    eff.GetXaxis().SetRangeUser(1500, 8000)
     c1.SetTopMargin(0.05)
     drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
     drawAnalysis("")

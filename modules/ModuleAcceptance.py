@@ -14,7 +14,7 @@ class TreeProducerAcceptance(TreeProducerCommon):
     
     def __init__(self, name, isMC=False, year=2016):
         
-        print 'TreeProducerZprimetobb is called', name
+        print 'TreeProducerAcceptance is called', name
         if not isMC:
             print "only defined for MC samples"
             import sys

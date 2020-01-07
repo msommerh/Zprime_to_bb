@@ -37,6 +37,7 @@ parser.add_argument('-o', '--outdir',   dest='outdir',    action='store', type=s
 parser.add_argument('-n', '--nFiles',  dest='nFiles',   action='store', type=int, default=10)
 parser.add_argument('-y', '--year',  dest='year',   action='store', type=int, default=2016)
 parser.add_argument('-MC', '--isMC',   dest='isMC',  action='store_true', default=False)
+parser.add_argument('-Tr', '--trigger',   dest='trigger',  action='store_true', default=False)
 parser.add_argument('-r', '--resubmit',  dest='resubmit',   action='store', type=int, default=-1)
 parser.add_argument('-mp', '--multiprocessing',  dest='multiprocessing',   action='store_true', default=False)
 args = parser.parse_args()
@@ -46,7 +47,6 @@ if args.multiprocessing:
     print "Multiprocessing enabled"
 else:
     print "Multiprocessing not enabled"
-#if year == 0: year = "QCD"
 outdir    = args.outdir
 postfix   = outdir+"/"+args.title+'_flatTuple.root'
 nFiles    = args.nFiles
@@ -74,14 +74,17 @@ print ">>> %-10s = %s"%('output file',postfix)
 print ">>> %-10s = %s"%('infiles',infiles)
 print ">>> %-10s = %s"%('year',str(year))
 
-from modules.ModuleZprimetobb import ZprimetobbProducer
+if args.trigger:
+    from modules.ModuleTriggers import TriggerProducer as Producer
+else:
+    from modules.ModuleZprimetobb import ZprimetobbProducer as Producer
 
 jobs = []
 for n in range(int(ceil(float(len(infiles))/nFiles))):
         if args.resubmit != -1 and n != args.resubmit: continue
         sys.stderr.write("working on file nr "+str(n)+"\n")
         subsample = infiles[n*nFiles:(n+1)*nFiles]
-        module2run = lambda: ZprimetobbProducer(postfix.replace('.root', '_'+str(n)+'.root'), isMC=args.isMC, year=year)
+        module2run = lambda: Producer(postfix.replace('.root', '_'+str(n)+'.root'), isMC=args.isMC, year=year)
         
         RunProcess = lambda : Run(subsample, branchsel, module2run, postfix, json, args.isMC)
         

@@ -39,6 +39,8 @@ if __name__ == "__main__":
                                          help="Number of cpu cores. A number >1 will enable multiprocessing.")
   parser.add_argument('-mn', '--multinode',   dest='multinode',  action='store_true', default=False,
                                          help="Select this to parallelize the submission via multiple condor nodes.")
+  parser.add_argument('-Tr', '--trigger',   dest='trigger',  action='store_true', default=False,
+                                         help="Select this to run on the SingleMuon sample for a trigger study.")
   args = parser.parse_args()
   #checkFiles.args = args
 
@@ -54,6 +56,10 @@ else:
 
 if args.multinode and args.resubmit_file!=-1:
     print "Cannot use multinode mode with distinct file submission! Aborting..."
+    sys.exit()
+
+if args.trigger and args.isMC:
+    print "Cannot run trigger study on MC! Aborting..."
     sys.exit()
 
 def getFileListDAS(dataset):
@@ -118,7 +124,7 @@ def submitJobs(title, infiles, outdir, jobflavour):
         fout.write("file_nr=$1\n")
         fout.write("#####################################\n")
 
-        fout.write("./postprocessors/Zprime_to_bb.py -t {} -i {} -o {} -y {}{} -n {} -r {}{}\n".format(title, infiles, outdir+title, args.year, ' -MC' if args.isMC else '', args.nFiles, '$file_nr' if args.multinode else args.resubmit_file, " -mp" if args.cores>1 else ""))
+        fout.write("./postprocessors/Zprime_to_bb.py -t {} -i {} -o {} -y {}{} -n {} -r {}{}{}\n".format(title, infiles, outdir+title, args.year, ' -MC' if args.isMC else '', args.nFiles, '$file_nr' if args.multinode else args.resubmit_file, " -mp" if args.cores>1 else "", " -Tr" if args.trigger else ""))
         fout.write("echo 'STOP---------------'\n")
         fout.write("echo\n")
         fout.write("echo\n")
@@ -197,7 +203,10 @@ def main():
             if args.isMC:
                     data_type="MC_"+args.mcType
             else:
-                    data_type="data"
+                    if args.trigger:
+                        data_type="SingleMuon"
+                    else:
+                        data_type="data"
     
             if args.year in ['2016','2017','2018']:
                     data_set_file = 'samples/samples_{}_{}.json'.format(data_type, args.year)

@@ -25,27 +25,39 @@ def Run(subsample, module2run, postfix):
 
 parser = ArgumentParser()
 parser.add_argument('-y', '--year',  dest='year',   action='store', type=int, default=2016)
-parser.add_argument('-M', '--mass',  dest='mass',   action='store', type=str, default='all')
 parser.add_argument('-mp', '--multiprocessing',  dest='multiprocessing',   action='store_true', default=False)
 args = parser.parse_args()
 
-mass_points = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
-
 year = args.year
-mass = args.mass
+
 if args.multiprocessing:
     print "Multiprocessing enabled"
 else:
     print "Multiprocessing not enabled"
-outdir    = 'acceptance'
+outdir    = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/trigger' ## FIXME INSERT GLOBALPATH FIXME
 
 jobs = []
 
-if mass!='all': mass_points = [int(mass)]
+data_2016_letters = ["B", "C", "D", "E", "F", "G", "H"]
+data_2017_letters = ["B", "C", "D", "E", "F"]
+data_2018_letters = ["A", "B", "C", "D"]
 
-for m in mass_points:
-    title     = 'MC_signal_{}_M{}'.format(year, m)
-    postfix   = outdir+"/"+title+'_acceptanceHist.root'
+sample_names = []
+if year==2016:
+    letters = data_2016_letters
+elif year==2017:
+    letters = data_2017_letters
+elif year==2018:
+    letters = data_2018_letters
+else:
+    print "unknown year"
+    sys.exit()
+for letter in letters:
+    sample_names.append("SingleMuon_{}_{}".format(year, letter))
+
+jobs = []
+for title in sample_names:
+    postfix   = outdir+"/"+title+'_triggers.root'
     filelist_file = 'filelists/{}.txt'.format(title)
     infiles = []
     filelist = open(filelist_file, 'r').readlines()
@@ -59,10 +71,9 @@ for m in mass_points:
     print ">>> %-10s = %s"%('infiles',infiles)
     print ">>> %-10s = %s"%('year',year)
     
-    from modules.ModuleAcceptance import AcceptanceProducer
+    from modules.ModuleTriggers import TriggerProducer
     
-    module2run = lambda: AcceptanceProducer(postfix, isMC=True, year=year)
-    
+    module2run = lambda: TriggerProducer(postfix, isMC=True, year=year)
     RunProcess = lambda : Run(infiles, module2run, postfix)
     
     if args.multiprocessing:

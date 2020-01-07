@@ -201,20 +201,17 @@ class BTagWeightTool:
         self.effs   = effs
         print "finished initialization..."
 
-    def getWeight(self,event,jetids):
+    def getWeight(self,event,jetids,sigma):
         """Get event weight for a given set of jets."""
         weight = 1.
         for id in jetids:
-          weight *= self.getSF(event.Jet_pt[id],event.Jet_eta[id],event.Jet_partonFlavour[id],self.tagged(event,id))
+          weight *= self.getSF(event.Jet_pt[id],event.Jet_eta[id],event.Jet_partonFlavour[id],self.tagged(event,id),sigma)
         return weight
 
-    def getSF(self,pt,eta,flavor,tagged):
+    def getSF(self,pt,eta,flavor,tagged,sigma):
         """Get b tag SF for a single jet."""
         FLAV = flavorToFLAV(flavor)
-        if   eta>=+2.4: eta = +2.399 # BTagCalibrationReader returns zero if |eta| > 2.4
-        elif eta<=-2.4: eta = -2.399
-        if pt > 1000.: pt = 999 # BTagCalibrationReader returns zero if pt > 1000
-        SF   = self.reader.eval(FLAV,abs(eta),pt) #eval_auto_bounds
+        SF   = self.reader.eval_auto_bounds(sigma, FLAV,abs(eta),pt)
         if tagged:
           weight = SF
         else:

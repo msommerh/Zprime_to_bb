@@ -16,3 +16,4 @@ keep HLT_PFJet*
 keep HLT_CaloJet*_NoJetID
 keep HLT_PFHT*
 keep HLT_DoublePFJets*
+keep HLT_IsoMu27
