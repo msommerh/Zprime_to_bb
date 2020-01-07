@@ -48,7 +48,7 @@ gStyle.SetOptStat(0)
 BTAGGING    = options.btagging
 NTUPLEDIR   = global_paths.SKIMMEDDIR
 ACCEPTANCEDIR = "acceptance/"
-TRIGGERDIR = '/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/trigger' ##FIXME INSERT GLOBAL PATH FIXME
+TRIGGERDIR = '.' ##FIXME INSERT GLOBAL PATH FIXME
 SIGNAL      = 1 # Signal magnification factor
 RATIO       = 4 # 0: No ratio plot; !=0: ratio between the top and bottom pads
 NORM        = options.norm
@@ -602,7 +602,7 @@ def acceptance(year):
     c1.Print("plots/Efficiency/"+year+"_Acceptance.png") 
 
 
-def trigger_efficiency(year): ## FIXME work in progressi, adapting from efficiency() FIXME
+def trigger_efficiency(year): 
     from root_numpy import root2array, fill_hist
     from aliases import triggers   
 
@@ -626,24 +626,14 @@ def trigger_efficiency(year): ## FIXME work in progressi, adapting from efficien
         print "unknown year"
         sys.exit()
     for letter in letters:
-        file_list.append(TRIGGERDIR+"/data_{}_{}_triggers.root".format(year, letter))
+        dir_content =  os.listdir(TRIGGERDIR+"/SingleMuon_{}_{}/".format(year, letter))
+        for entry in dir_content:
+            if "_flatTuple" in entry: file_list.append(TRIGGERDIR+"/SingleMuon_{}_{}/".format(year, letter)+entry)
     
-    #file_list = ['/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/trigger/MC_signal_2016_M3000_triggers.root'] ##FIXME temporary placeholder FIXME
     for file_name in file_list:
         temp_array = root2array(file_name, treename='tree', branches='jj_mass_widejet', selection="jj_deltaEta_widejet<1.1")
-        print
-        print "all events:"
-        print "len(temp_array) =", len(temp_array)                                                  #FIXME debug FIXME
-        print "temp_array[:20] =", temp_array[:20]
-        
         fill_hist(hist_all, temp_array)
-        
-        temp_array = root2array(file_name, treename='tree', branches='jj_mass_widejet', selection="jj_deltaEta_widejet<1.1 && "+triggers) #FIXME 0.5->1.1
-        print
-        print "passing events:"
-        print "len(temp_array) =", len(temp_array)                                                  #FIXME debug FIXME
-        print "temp_array[:20] =", temp_array[:20]
-
+        temp_array = root2array(file_name, treename='tree', branches='jj_mass_widejet', selection="jj_deltaEta_widejet<1.1 && "+triggers)
         fill_hist(hist_pass, temp_array)
         temp_array=None 
        

@@ -22,12 +22,12 @@ def skim(sample):
     if len(fileList)==0: return
     print fileList
     chain = TChain("tree")
-    events_hist = TH1F('Events', 'Events', 1,0,1) ## FIXME new
+    events_hist = TH1F('Events', 'Events', 1,0,1)
     for f in fileList:
         chain.Add(inDir+"/"+sample+"/"+f)
         print chain.GetNtrees(), chain.GetEntries(), inDir+"/"+sample+"/"+f
-        fl = TFile(inDir+"/"+sample+"/"+f, "READ") ## FIXME new
-        events_hist.Add(fl.Get("Events")) ## FIXME new
+        fl = TFile(inDir+"/"+sample+"/"+f, "READ")
+        events_hist.Add(fl.Get("Events"))
         fl.Close()
     #return
     
@@ -38,7 +38,7 @@ def skim(sample):
     # create a new skimmed tree
     tree = chain.CopyTree(cutstring)#GetTree().CloneTree(-1, cutstring)
     tree.Write()
-    events_hist.Write() ## FIXME new
+    events_hist.Write()
     outFile.Close()
 
     chain.Reset()
