@@ -76,7 +76,12 @@ if [ $isMC = "y" ]; then
         sample="MC_signal_${year}"
     fi
 else
-    sample="data_${year}"
+    read -p "isData (JetHT) [y/n]: " isData
+    if [ $isData = "y" ]; then
+        sample="data_${year}"
+    else
+        sample="SingleMuon_${year}"
+    fi
 fi
 echo "sample = ${sample}"
 

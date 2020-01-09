@@ -20,7 +20,7 @@ from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooP
 
 from rooUtils import *
 from samples import sample
-from aliases import alias, aliasSM, working_points
+from aliases import alias, aliasSM, working_points, dijet_bins
 from aliases import additional_selections as SELECTIONS
 #from selections import selection
 #from utils import *
@@ -70,11 +70,14 @@ SHOWERR     = True
 BLIND       = False
 VERBOSE     = options.verbose
 CUTCOUNT    = False
-VARBINS     = False
+VARBINS     = False ## FIXME testing dijet bins FIXME (currently turned off)
 BIAS        = options.bias
 YEAR        = options.year
 ISMC        = options.isMC
 ADDSELECTION= options.selection!=""
+
+X_MIN = 1800.
+X_MAX = 9000.
 
 if YEAR=='2016':
     LUMI=35920.
@@ -109,9 +112,14 @@ if options.selection not in SELECTIONS.keys():
 signalList = ['Zprime_to_bb']
 categories = ['bb', 'bq', 'mumu']
 
-dijet_bins = [955, 1000, 1058, 1118, 1181, 1246, 1313, 1383, 1455, 1530, 1607, 1687, 1770, 1856, 1945, 2037, 2132, 2231, 2332, 2438, 2546, 2659, 2775, 2895, 3019, 3147, 3279, 3416, 3558, 3704, 3854, 4010, 4171, 4337, 4509, 4686, 4869, 5058, 5253, 5455, 5663, 5877, 6099, 6328, 6564, 6808]
-bins = [x+30 for x in dijet_bins]
-abins = array( 'd', bins )
+if VARBINS:
+    bins = [x for x in dijet_bins if x>=X_MIN and x<=X_MAX]
+    X_min = min(bins)
+    X_max = max(bins)
+    abins = array( 'd', bins )
+else:
+    X_min = X_MIN
+    X_max = X_MAX
 
 data = ["data_obs"]
 back = ["QCD", "TTbar"]
@@ -148,7 +156,7 @@ def dijet(category):
     order = 0
     RSS = {}
 
-    X_mass = RooRealVar(        "jj_mass_widejet",              "m_{jj}",       1800.,  9000.,  "GeV") 
+    X_mass = RooRealVar(        "jj_mass_widejet",              "m_{jj}",       X_min, X_max,  "GeV") 
     j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     13000.,  "GeV")
     jbtag_WP_1 = RooRealVar("jbtag_WP_1",       "",             -1.,   4.        )
     jbtag_WP_2 = RooRealVar("jbtag_WP_2",       "",             -1.,   4.        )
@@ -181,16 +189,19 @@ def dijet(category):
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     variables.add(RooArgSet(HLT_DoublePFJets100_CaloBTagDeepCSV_p71, HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets200_CaloBTagDeepCSV_p71, HLT_DoublePFJets350_CaloBTagDeepCSV_p71, HLT_DoublePFJets40_CaloBTagDeepCSV_p71))
 
-    X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))
+    if VARBINS: 
+        binsXmass = RooBinning(len(abins)-1, abins)
+        X_mass.setBinning(binsXmass)
+        plot_binning = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
+    else:
+        X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))              
+        binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
+        plot_binning = binsXmass
 
-    binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
- 
     if BTAGGING=='semimedium': 
         baseCut = aliasSM[category]
-        #baseCut = aliasSM[category+"_vetoAK8"]
     else:
         baseCut = alias[category].format(WP=working_points[BTAGGING])
-        #baseCut = alias[category+"_vetoAK8"].format(WP=working_points[BTAGGING])
 
     if ADDSELECTION: baseCut += SELECTIONS[options.selection]
 
@@ -218,7 +229,7 @@ def dijet(category):
     if isData or options.test:
         setData = RooDataSet("setData", "Data", variables, RooFit.Cut(baseCut), RooFit.Import(treeBkg))
     else:   
-        setData = RooDataSet("setData", "Data (QCD MC)", variables, RooFit.Cut(baseCut), RooFit.WeightVar(weight), RooFit.Import(treeBkg))
+        setData = RooDataSet("setData", "Data (QCD+TTbar MC)", variables, RooFit.Cut(baseCut), RooFit.WeightVar(weight), RooFit.Import(treeBkg))
  
     nevents = setData.sumEntries()
     dataMin, dataMax = array('d', [0.]), array('d', [0.])
@@ -306,32 +317,65 @@ def dijet(category):
     #*******************************************************#
     
     # Fisher test
-    print "-"*25
-    print "function & $\\chi^2$ & RSS & ndof & F-test & result \\\\"
-    print "\\multicolumn{6}{c}{", "Zprime_to_bb", "} \\\\"
-    print "\\hline"
-    CL_high = False
-    for o1 in range(1, 5):
-        o2 = min(o1 + 1, 5)
-        print "%d par & %.2f & %.2f & %d & " % (o1+1, RSS[o1]["chi2"], RSS[o1]["rss"], RSS[o1]["nbins"]-RSS[o1]["npar"]),
-        if o2 > len(RSS):
-            print "\\\\"
-            continue #order==0 and 
-        CL = fisherTest(RSS[o1]['rss'], RSS[o2]['rss'], o1+1., o2+1., RSS[o1]["nbins"])
-        print "%d par vs %d par CL=%f & " % (o1+1, o2+1, CL),
-        if CL > 0.10: # The function with less parameters is enough
-            if not CL_high:
-                order = o1
-                print "%d par are sufficient" % (o1+1),
-                CL_high=True
-        else:
-            print "%d par are needed" % (o2+1),
-            if not CL_high:
-                order = o2
-        print "\\\\"
-    print "\\hline"
-    print "-"*25   
-    print "@ Order is", order, "("+category+")"
+    with open(PLOTDIR+"/Fisher_"+category+".tex", 'w') as fout:
+        fout.write(r"\begin{tabular}{c|c|c|c|c}")
+        fout.write("\n")
+        fout.write(r"function & $\chi^2$ & RSS & ndof & F-test \\")
+        fout.write("\n")
+        fout.write("\hline")
+        fout.write("\n")
+        CL_high = False
+        for o1 in range(1, 5):
+            o2 = min(o1 + 1, 5)
+            fout.write( "%d par & %.2f & %.2f & %d & " % (o1+1, RSS[o1]["chi2"], RSS[o1]["rss"], RSS[o1]["nbins"]-RSS[o1]["npar"]))
+            if o2 > len(RSS):
+                fout.write(r"\\")
+                fout.write("\n")
+                continue #order==0 and 
+            CL = fisherTest(RSS[o1]['rss'], RSS[o2]['rss'], o1+1., o2+1., RSS[o1]["nbins"])
+            fout.write("CL=%.3f " % (CL))
+            if CL > 0.10: # The function with less parameters is enough
+                if not CL_high:
+                    order = o1
+                    #fout.write( "%d par are sufficient " % (o1+1))
+                    CL_high=True
+            else:
+                #fout.write( "%d par are needed " % (o2+1))
+                if not CL_high:
+                    order = o2
+            fout.write(r"\\")
+            fout.write("\n")
+        fout.write("\hline")
+        fout.write("\n")
+        fout.write(r"\end{tabular}")
+    print "saved F-test table as", PLOTDIR+"/Fisher_"+category+".tex"
+
+    #print "-"*25
+    #print "function & $\\chi^2$ & RSS & ndof & F-test & result \\\\"
+    #print "\\multicolumn{6}{c}{", "Zprime_to_bb", "} \\\\"
+    #print "\\hline"
+    #CL_high = False
+    #for o1 in range(1, 5):
+    #    o2 = min(o1 + 1, 5)
+    #    print "%d par & %.2f & %.2f & %d & " % (o1+1, RSS[o1]["chi2"], RSS[o1]["rss"], RSS[o1]["nbins"]-RSS[o1]["npar"]),
+    #    if o2 > len(RSS):
+    #        print "\\\\"
+    #        continue #order==0 and 
+    #    CL = fisherTest(RSS[o1]['rss'], RSS[o2]['rss'], o1+1., o2+1., RSS[o1]["nbins"])
+    #    print "%d par vs %d par CL=%f & " % (o1+1, o2+1, CL),
+    #    if CL > 0.10: # The function with less parameters is enough
+    #        if not CL_high:
+    #            order = o1
+    #            print "%d par are sufficient" % (o1+1),
+    #            CL_high=True
+    #    else:
+    #        print "%d par are needed" % (o2+1),
+    #        if not CL_high:
+    #            order = o2
+    #    print "\\\\"
+    #print "\\hline"
+    #print "-"*25   
+    #print "@ Order is", order, "("+category+")"
     
     #order = min(3, order)
     #order = 2
@@ -377,7 +421,6 @@ def dijet(category):
 
     if VERBOSE: raw_input("Press Enter to continue...")
     
-    
     #*******************************************************#
     #                                                       #
     #                         Plot                          #
@@ -395,18 +438,19 @@ def dijet(category):
     if VARBINS: frame.GetXaxis().SetRangeUser(X_mass.getMin(), lastBin)
     signal = getSignal(category, stype, 2000)  #replacing Alberto's getSignal by own dummy function
 
-    graphData = setData.plotOn(frame, RooFit.Binning(binsXmass), RooFit.Scaling(False), RooFit.Invisible())
+    graphData = setData.plotOn(frame, RooFit.Binning(plot_binning), RooFit.Scaling(False), RooFit.Invisible())
     modelBkg.plotOn(frame, RooFit.VisualizeError(fitRes, 1, False), RooFit.LineColor(602), RooFit.FillColor(590), RooFit.FillStyle(1001), RooFit.DrawOption("FL"), RooFit.Name("1sigma"))
     modelBkg.plotOn(frame, RooFit.LineColor(602), RooFit.FillColor(590), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(modelBkg.GetName()))
     modelAlt.plotOn(frame, RooFit.LineStyle(7), RooFit.LineColor(613), RooFit.FillColor(609), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(modelAlt.GetName()))
     if not isSB and signal[0] is not None: # FIXME remove /(2./3.)
         signal[0].plotOn(frame, RooFit.Normalization(signal[1]*signal[2], RooAbsReal.NumEvent), RooFit.LineStyle(3), RooFit.LineWidth(6), RooFit.LineColor(629), RooFit.DrawOption("L"), RooFit.Name("Signal"))
-    graphData = setData.plotOn(frame, RooFit.Binning(binsXmass), RooFit.Scaling(False), RooFit.XErrorSize(0 if not VARBINS else 1), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.DrawOption("PE0"), RooFit.Name(setData.GetName()))
+    graphData = setData.plotOn(frame, RooFit.Binning(plot_binning), RooFit.Scaling(False), RooFit.XErrorSize(0 if not VARBINS else 1), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.DrawOption("PE0"), RooFit.Name(setData.GetName()))
     fixData(graphData.getHist(), True, True, not isData)
     pulls = frame.pullHist(setData.GetName(), modelBkg.GetName(), True)  
     chi = frame.chiSquare(setData.GetName(), modelBkg.GetName(), True)
     #setToys.plotOn(frame, RooFit.DataError(RooAbsData.Poisson), RooFit.DrawOption("PE0"), RooFit.MarkerColor(2))
-    if VARBINS: frame.GetYaxis().SetTitle("Events / ( 100 GeV )")
+    frame.GetYaxis().SetTitle("Events / ( 100 GeV )")
+    frame.GetYaxis().SetTitleOffset(1.05)   
     frame.Draw()
     #print "frame drawn"
     # Get Chi2
@@ -448,7 +492,8 @@ def dijet(category):
     setBotStyle(frame_res, RATIO, False)
     if VARBINS: frame_res.GetXaxis().SetRangeUser(X_mass.getMin(), lastBin)
     frame_res.GetYaxis().SetRangeUser(-5, 5)
-    frame_res.GetYaxis().SetTitle("(N^{data}-N^{bkg})/#sigma")
+    frame_res.GetYaxis().SetTitle("pulls(#sigma)")
+    frame_res.GetYaxis().SetTitleOffset(0.3)
     frame_res.Draw()
     fixData(pulls, False, True, False)
 
@@ -494,7 +539,6 @@ def dijet(category):
     getattr(w, "import")(normzBkg, RooFit.Rename(normzBkg.GetName()))
     w.writeToFile(WORKDIR+"%s_%s%s.root" % (DATA_TYPE+"_"+YEAR, category, "_test" if options.test else ""), True)
     print "Workspace", WORKDIR+"%s_%s%s.root" % (DATA_TYPE+"_"+YEAR, category, "_test" if options.test else ""), "saved successfully"
-    
     if VERBOSE: raw_input("Press Enter to continue...")
     # ======   END PLOT   ======
     
@@ -558,7 +602,8 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     frame_res.addPlotable(pulls, "P")
     setBotStyle(frame_res, RATIO, False)
     frame_res.GetYaxis().SetRangeUser(-5, 5)
-    frame_res.GetYaxis().SetTitle("(N^{data}-N^{bkg})/#sigma")
+    frame_res.GetYaxis().SetTitle("pulls(#sigma)")
+    frame_res.GetYaxis().SetTitleOffset(0.4)
     frame_res.Draw()
     fixData(pulls, False, True, False)
 

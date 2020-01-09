@@ -67,7 +67,7 @@ for entry in filelist:
         if not entry.startswith("#"): 
                 filepath = entry.replace('\n','')
                 #filepath = filepath.replace('cms-xrd-global.cern.ch', 'xrootd-cms.infn.it')
-                filepath = filepath.replace('cms-xrd-global.cern.ch', 'cmsxrootd.fnal.gov')
+                #filepath = filepath.replace('cms-xrd-global.cern.ch', 'cmsxrootd.fnal.gov')
                 infiles.append(filepath)
 
 print ">>> %-10s = %s"%('output file',postfix)

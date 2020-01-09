@@ -48,7 +48,7 @@ gStyle.SetOptStat(0)
 BTAGGING    = options.btagging
 NTUPLEDIR   = global_paths.SKIMMEDDIR
 ACCEPTANCEDIR = "acceptance/"
-TRIGGERDIR = '.' ##FIXME INSERT GLOBAL PATH FIXME
+TRIGGERDIR = global_paths.SKIMMEDDIR+"TriggerStudy"
 SIGNAL      = 1 # Signal magnification factor
 RATIO       = 4 # 0: No ratio plot; !=0: ratio between the top and bottom pads
 NORM        = options.norm
@@ -265,7 +265,9 @@ def plot(var, cut, year, norm=False, nm1=False):
         c1.cd(2)
         err = hist['BkgSum'].Clone("BkgErr;")
         err.SetTitle("")
-        err.GetYaxis().SetTitle("Data / Bkg")
+        err.GetYaxis().SetTitle("Data / MC")
+        err.GetYaxis().SetTitleOffset(0.9)
+ 
         err.GetXaxis().SetRangeUser(variable[var]['min'], variable[var]['max'])  
         for i in range(1, err.GetNbinsX()+1):
             err.SetBinContent(i, 1)
@@ -605,6 +607,7 @@ def acceptance(year):
 def trigger_efficiency(year): 
     from root_numpy import root2array, fill_hist
     from aliases import triggers   
+    import numpy as np
 
     hist_pass = TH1F("pass", "pass", 100, 0., 10000.)
     hist_all = TH1F("all", "all", 100, 0., 10000.)
@@ -626,9 +629,11 @@ def trigger_efficiency(year):
         print "unknown year"
         sys.exit()
     for letter in letters:
-        dir_content =  os.listdir(TRIGGERDIR+"/SingleMuon_{}_{}/".format(year, letter))
-        for entry in dir_content:
-            if "_flatTuple" in entry: file_list.append(TRIGGERDIR+"/SingleMuon_{}_{}/".format(year, letter)+entry)
+        #dir_content =  os.listdir(TRIGGERDIR+"/SingleMuon_{}_{}/".format(year, letter)) ## intended to run directly on ntuples
+        #for entry in dir_content:
+        #    if "_flatTuple" in entry: file_list.append(TRIGGERDIR+"/SingleMuon_{}_{}/".format(year, letter)+entry)
+        file_list.append(TRIGGERDIR+"/SingleMuon_{}_{}.root".format(year, letter))
+        print "appending:",TRIGGERDIR+"/SingleMuon_{}_{}.root".format(year, letter)
     
     for file_name in file_list:
         temp_array = root2array(file_name, treename='tree', branches='jj_mass_widejet', selection="jj_deltaEta_widejet<1.1")
@@ -636,14 +641,20 @@ def trigger_efficiency(year):
         temp_array = root2array(file_name, treename='tree', branches='jj_mass_widejet', selection="jj_deltaEta_widejet<1.1 && "+triggers)
         fill_hist(hist_pass, temp_array)
         temp_array=None 
-       
-    hist_pass.Sumw2()
-    hist_all.Sumw2()        
-    eff = hist_pass.Clone()
-    eff.Divide(hist_all)
+   
+    import array 
+    binning = range(0,1500,100)+range(1500,2000,100)+range(2000,3100,150)+range(3100,10000,300)
+    binning_ = array.array('d', binning)
+    hist_pass2 = hist_pass.Rebin(len(binning_)-1, "hist_pass_rebinned", binning_)
+    hist_all2 = hist_all.Rebin(len(binning_)-1, "hist_all_rebinned", binning_)
+   
+    hist_pass2.Sumw2()
+    hist_all2.Sumw2()        
+    eff = TGraphAsymmErrors()
+    eff.Divide(hist_pass2, hist_all2)
 
     eff.SetMarkerColor(2)
-    eff.SetMarkerStyle(20)
+    eff.SetMarkerStyle(1)
     eff.SetLineColor(2)
     eff.SetLineWidth(2)
 
@@ -652,9 +663,9 @@ def trigger_efficiency(year):
     one_line.SetPoint(1, 10000., 1.)
     one_line.SetLineStyle(2)
 
-    c1 = TCanvas("c1", "Trigger Efficiency", 1200, 800)
+    c1 = TCanvas("c1", "Trigger Efficiency", 800, 800)
     c1.cd(1)
-    eff.Draw()
+    eff.Draw("AP")
     one_line.Draw("L")
     eff.SetTitle(";m_{jj} (GeV);trigger efficiency")
     eff.SetMinimum(0.)
@@ -664,7 +675,7 @@ def trigger_efficiency(year):
     eff.GetYaxis().SetTitleSize(0.045)
     eff.GetYaxis().SetTitleOffset(1.1)
     eff.GetXaxis().SetTitleOffset(1.05)
-    eff.GetXaxis().SetRangeUser(0., 9000.)
+    eff.GetXaxis().SetLimits(700., 5000.)
     c1.SetTopMargin(0.05)
     drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
     drawAnalysis("")

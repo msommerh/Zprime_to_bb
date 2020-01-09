@@ -10,11 +10,11 @@ from array import array
 from ROOT import TFile, TChain, TTree, TH1, TH1F
 from aliases import triggers
 
-inDir = global_paths.WEIGHTEDDIR[:-1]
-outDir = global_paths.SKIMMEDDIR[:-1]
+inDir = global_paths.PRODUCTIONDIR[:-1]
+outDir = global_paths.SKIMMEDDIR+"TriggerStudy"
 
 blacklist = ["backup"]
-cutstring = "jpt_1>550 && "+triggers
+cutstring = ""
 
 def skim(sample):
     print sample
@@ -22,12 +22,10 @@ def skim(sample):
     if len(fileList)==0: return
     print fileList
     chain = TChain("tree")
-    events_hist = TH1F('Events', 'Events', 1,0,1)
     for f in fileList:
         chain.Add(inDir+"/"+sample+"/"+f)
         print chain.GetNtrees(), chain.GetEntries(), inDir+"/"+sample+"/"+f
         fl = TFile(inDir+"/"+sample+"/"+f, "READ")
-        events_hist.Add(fl.Get("Events"))
         fl.Close()
     #return
     
@@ -38,13 +36,11 @@ def skim(sample):
     # create a new skimmed tree
     tree = chain.CopyTree(cutstring)#GetTree().CloneTree(-1, cutstring)
     tree.Write()
-    events_hist.Write()
     outFile.Close()
 
     chain.Reset()
 
 
-#dirList = [x for x in os.listdir(inDir) if not x in blacklist]
-dirList = [x for x in os.listdir(inDir) if not x in blacklist and ("2017" in x or "2018" in x)]
+dirList = [x for x in os.listdir(inDir) if not x in blacklist and "SingleMuon" in x]
 for d in dirList:
     skim(d)

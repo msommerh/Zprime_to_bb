@@ -69,9 +69,9 @@ def getFileListDAS(dataset):
         if 'USER' in dataset:
             instance = 'prod/phys03'
         cmd = 'dasgoclient -query="file dataset={} instance={}"'.format(dataset, instance)
-        #if args.verbose:
-        #  print "Executing ",cmd
+        #print "Executing ",cmd
         cmd_out  = getoutput( cmd )
+        #print "output: ",cmd_out
         tmpList  = cmd_out.split(os.linesep)
         filelist = [ ]
         for line in tmpList:
@@ -232,7 +232,6 @@ def main():
                     infiles = "filelists/"+title+".txt"
     
                     ## create filelist from DAS
-                    print os.getcwd() 
                     if not os.path.exists("filelists"):
                         os.makedirs("filelists")                    
                     txtfile = open(infiles, "w")

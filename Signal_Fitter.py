@@ -21,7 +21,7 @@ from ROOT import RooFormulaVar, RooGenericPdf, RooGaussian, RooExponential, RooP
 #from alpha import drawPlot
 from rooUtils import *
 from samples import sample
-from aliases import alias, aliasSM, working_points
+from aliases import alias, aliasSM, working_points, dijet_bins
 from aliases import additional_selections as SELECTIONS
 
 import optparse
@@ -61,6 +61,7 @@ RooMsgService.instance().setGlobalKillBelow(RooFit.FATAL)
 gStyle.SetOptTitle(0)
 gStyle.SetPadTopMargin(0.06)
 gStyle.SetPadRightMargin(0.05)
+gStyle.SetPadLeftMargin(0.12)
 gStyle.SetErrorX(0.)
 
 BTAGGING    = options.btagging
@@ -72,6 +73,10 @@ YEAR        = options.year
 VERBOSE     = options.verbose
 READTREE    = True
 ADDSELECTION= options.selection!=""
+VARBINS     = False ## FIXME testing dijet bins FIXME (currently turned off)
+
+X_MIN = 1800.
+X_MAX = 9000.
 
 if YEAR=='2016':
     LUMI=35920.
@@ -106,6 +111,16 @@ signalType = 'Zprime'
 
 jobs = []
 
+if VARBINS:
+    bins = [x for x in dijet_bins if x>=X_MIN and x<=X_MAX]
+    X_min = min(bins)
+    X_max = max(bins)
+    abins = array( 'd', bins )
+else:
+    X_min = X_MIN
+    X_max = X_MAX
+
+
 def signal(category):
 
     interPar = True
@@ -123,7 +138,7 @@ def signal(category):
     #                                                       #
     #*******************************************************#
 
-    X_mass  = RooRealVar (      "jj_mass_widejet",              "m_{jj}",       1800.,     9000.,  "GeV")
+    X_mass  = RooRealVar (      "jj_mass_widejet",              "m_{jj}",       X_min,     X_max,  "GeV")
     j1_pt = RooRealVar(         "jpt_1",                "jet1 pt",      0.,     13000.,  "GeV")
     jj_deltaEta = RooRealVar(    "jj_deltaEta_widejet",                "",      0.,     5.)
     jbtag_WP_1 = RooRealVar("jbtag_WP_1",       "",             -1.,   4.        )
@@ -157,10 +172,21 @@ def signal(category):
     variables.add(RooArgSet(HLT_DoublePFJets100_CaloBTagDeepCSV_p71, HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets200_CaloBTagDeepCSV_p71, HLT_DoublePFJets350_CaloBTagDeepCSV_p71, HLT_DoublePFJets40_CaloBTagDeepCSV_p71))
     X_mass.setRange("X_reasonable_range", X_mass.getMin(), X_mass.getMax())
     X_mass.setRange("X_integration_range", X_mass.getMin(), X_mass.getMax())
-    #X_mass.setBins(int((X_mass.getMax() - X_mass.getMin())/100))
-    X_mass.setBins(int((X_mass.getMax() - X_mass.getMin())/10))
-    binsXmass = RooBinning(int((X_mass.getMax() - X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
-    X_mass.setBinning(binsXmass, "PLOT")
+
+    if VARBINS:        
+        binsXmass = RooBinning(len(abins)-1, abins)
+        X_mass.setBinning(binsXmass)
+        plot_binning = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
+    else:
+        X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))
+        binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
+        plot_binning = binsXmass
+
+    X_mass.setBinning(plot_binning, "PLOT")
+
+    #X_mass.setBins(int((X_mass.getMax() - X_mass.getMin())/10))
+    #binsXmass = RooBinning(int((X_mass.getMax() - X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
+    #X_mass.setBinning(binsXmass, "PLOT")
     massArg = RooArgSet(X_mass)
 
     # Cuts
@@ -381,6 +407,11 @@ def signal(category):
 
     # ====== CONTROL PLOT ======
     c_signal = TCanvas("c_signal", "c_signal", 800, 600)
+    ### FIXME test
+    #c_signal.SetRightMargin(0.09)
+    #c_signal.SetLeftMargin(0.15)
+    #c_signal.SetBottomMargin(0.15)
+    ### FIXME test end
     c_signal.cd()
     frame_signal = X_mass.frame()
     for j, m in enumerate(genPoints):
@@ -738,7 +769,8 @@ def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=No
         frame.GetYaxis().SetRangeUser(0, frame.GetMaximum())
         frame.SetMaximum(frame.GetMaximum()*1.25)
         frame.SetMinimum(0)
-    frame.GetYaxis().SetTitleOffset(frame.GetYaxis().GetTitleOffset()*1.15)
+    #frame.GetYaxis().SetTitleOffset(frame.GetYaxis().GetTitleOffset()*0.8)
+    frame.GetYaxis().SetTitleOffset(1.4)
     frame.Draw()
     drawCMS(LUMI, cmsLabel)
     drawAnalysis(channel)
@@ -754,8 +786,9 @@ def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=No
         if dataset is not None: frame_res.addPlotable(res, "P")
         setBotStyle(frame_res, RATIO, False)
         frame_res.GetYaxis().SetRangeUser(-pullRange, pullRange)
-        frame_res.GetYaxis().SetTitleOffset(frame_res.GetYaxis().GetTitleOffset()*1.12)
-        frame_res.GetYaxis().SetTitle("(N^{data}-N^{bkg})/#sigma")
+        #frame_res.GetYaxis().SetTitleOffset(frame_res.GetYaxis().GetTitleOffset()*0.4)
+        frame_res.GetYaxis().SetTitle("pulls (#sigma)")
+        frame_res.GetYaxis().SetTitleOffset(0.4)
         frame_res.Draw()
         chi2, nbins, npar = 0., 0, 0
         if not res==None:
