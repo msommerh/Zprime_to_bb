@@ -13,3 +13,4 @@ obsolete/
 *.pdf
 datacards/*.txt
 combine/*.txt
+execute_now.sh

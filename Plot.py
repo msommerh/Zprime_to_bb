@@ -58,7 +58,7 @@ LUMI        = {"run2" : 137190, "2016" : 35920, "2017" : 41530, "2018" : 59740}
 ADDSELECTION= options.selection!=""
 
 color = {'none': 920, 'qq': 1, 'bq': 632, 'bb': 600, 'mumu': 418}
-color_shift = {'none': 2, 'qq': 922, 'bq': 2, 'bb': 2}
+color_shift = {'none': 2, 'qq': 922, 'bq': 2, 'bb': 2, 'mumu':2}
 if options.selection not in SELECTIONS.keys():
     print "invalid selection!"
     sys.exit()
@@ -677,7 +677,7 @@ def trigger_efficiency(year):
     eff.GetXaxis().SetTitleOffset(1.05)
     eff.GetXaxis().SetLimits(700., 5000.)
     c1.SetTopMargin(0.05)
-    drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    drawCMS(-1, "Preliminary", year=year) #Preliminary
     drawAnalysis("")
 
     c1.Print("plots/Efficiency/trigger_"+year+".pdf") 

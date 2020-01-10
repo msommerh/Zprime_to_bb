@@ -263,6 +263,14 @@ variable = {
         'max' : 9000.,
         'log' : True,
     },
+    'jj_deltaEta_widejet': {
+        'title' : "#Delta #eta_{jj}",
+        'nbins' : 80,
+        'min' : 0.,
+        'max' : 2.5,
+        'log' : False,
+    },
+
     'nmuons':{
         'title' : "n_{#mu}",
         'nbins' : 8,

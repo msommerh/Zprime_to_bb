@@ -147,6 +147,8 @@ def signal(category):
     fatjetmass_2 = RooRealVar("fatjetmass_2",   "",             -1.,   2500.     )
     jnmuons_1 = RooRealVar(   "jnmuons_1",      "j1 n_{#mu}",    -1.,   8.)
     jnmuons_2 = RooRealVar(   "jnmuons_2",      "j2 n_{#mu}",    -1.,   8.)
+    nmuons = RooRealVar(    "nmuons",       "n_{#mu}",          -1.,   10.     )
+    nelectrons = RooRealVar("nelectrons",    "n_{e}",            -1.,   10.     )
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
     HLT_PFJet500            = RooRealVar("HLT_PFJet500"            , "" , -1., 1.    ) 
     HLT_CaloJet500_NoJetID  = RooRealVar("HLT_CaloJet500_NoJetID"  , "" , -1., 1.    ) 
@@ -168,6 +170,7 @@ def signal(category):
     # there is a maximum of 9 variables in the declaration, so the others need to be added with 'add'
     variables = RooArgSet(X_mass)
     variables.add(RooArgSet(j1_pt, jj_deltaEta, jbtag_WP_1, jbtag_WP_2, fatjetmass_1, fatjetmass_2, jnmuons_1, jnmuons_2, weight))
+    variables.add(RooArgSet(nmuons, nelectrons))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     variables.add(RooArgSet(HLT_DoublePFJets100_CaloBTagDeepCSV_p71, HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets200_CaloBTagDeepCSV_p71, HLT_DoublePFJets350_CaloBTagDeepCSV_p71, HLT_DoublePFJets40_CaloBTagDeepCSV_p71))
     X_mass.setRange("X_reasonable_range", X_mass.getMin(), X_mass.getMax())
@@ -407,11 +410,6 @@ def signal(category):
 
     # ====== CONTROL PLOT ======
     c_signal = TCanvas("c_signal", "c_signal", 800, 600)
-    ### FIXME test
-    #c_signal.SetRightMargin(0.09)
-    #c_signal.SetLeftMargin(0.15)
-    #c_signal.SetBottomMargin(0.15)
-    ### FIXME test end
     c_signal.cd()
     frame_signal = X_mass.frame()
     for j, m in enumerate(genPoints):

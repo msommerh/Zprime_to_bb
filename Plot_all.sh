@@ -253,22 +253,22 @@ wait
 
 if [[ $plot_type == 'jj_deltaEta' || $plot_type == 'all' ]]; then
     echo "plotting jj_deltaEta"
-    ./Plot.py -v jj_deltaEta -c "preselection" -y 2018 &
-    ./Plot.py -B -v jj_deltaEta -c "1b" -y 2018 -b medium &
-    ./Plot.py -B -v jj_deltaEta -c "2b" -y 2018 -b medium &
-    ./Plot.py -B -v jj_deltaEta -c "2mu" -y 2018 -b medium &
-    ./Plot.py -v jj_deltaEta -c "preselection" -y 2017 &
-    ./Plot.py -B -v jj_deltaEta -c "1b" -y 2017 -b medium &
-    ./Plot.py -B -v jj_deltaEta -c "2b" -y 2017 -b medium &
-    ./Plot.py -B -v jj_deltaEta -c "2mu" -y 2017 -b medium &
-    ./Plot.py -v jj_deltaEta -c "preselection" -y 2016 &
-    ./Plot.py -B -v jj_deltaEta -c "1b" -y 2016 -b medium &
-    ./Plot.py -B -v jj_deltaEta -c "2b" -y 2016 -b medium &
-    ./Plot.py -B -v jj_deltaEta -c "2mu" -y 2016 -b medium &
-    ./Plot.py -v jj_deltaEta -c "preselection" -y run2 &
-    ./Plot.py -B -v jj_deltaEta -c "1b" -y run2 -b medium &
-    ./Plot.py -B -v jj_deltaEta -c "2b" -y run2 -b medium &
-    ./Plot.py -B -v jj_deltaEta -c "2mu" -y run2 -b medium &
+    ./Plot.py -v jj_deltaEta_widejet -c "preselection" -y 2018 &
+    ./Plot.py -B -v jj_deltaEta_widejet -c "1b" -y 2018 -b medium &
+    ./Plot.py -B -v jj_deltaEta_widejet -c "2b" -y 2018 -b medium &
+    ./Plot.py -B -v jj_deltaEta_widejet -c "2mu" -y 2018 -b medium &
+    ./Plot.py -v jj_deltaEta_widejet -c "preselection" -y 2017 &
+    ./Plot.py -B -v jj_deltaEta_widejet -c "1b" -y 2017 -b medium &
+    ./Plot.py -B -v jj_deltaEta_widejet -c "2b" -y 2017 -b medium &
+    ./Plot.py -B -v jj_deltaEta_widejet -c "2mu" -y 2017 -b medium &
+    ./Plot.py -v jj_deltaEta_widejet -c "preselection" -y 2016 &
+    ./Plot.py -B -v jj_deltaEta_widejet -c "1b" -y 2016 -b medium &
+    ./Plot.py -B -v jj_deltaEta_widejet -c "2b" -y 2016 -b medium &
+    ./Plot.py -B -v jj_deltaEta_widejet -c "2mu" -y 2016 -b medium &
+    ./Plot.py -v jj_deltaEta_widejet -c "preselection" -y run2 &
+    ./Plot.py -B -v jj_deltaEta_widejet -c "1b" -y run2 -b medium &
+    ./Plot.py -B -v jj_deltaEta_widejet -c "2b" -y run2 -b medium &
+    ./Plot.py -B -v jj_deltaEta_widejet -c "2mu" -y run2 -b medium &
 fi
 wait
 
@@ -330,5 +330,16 @@ if [[ $plot_type == 'acc' ]]; then
     ./Plot.py -a -y 2018
     ./Plot.py -a -y 2017
     ./Plot.py -a -y 2016
+fi
+
+
+### trigger efficiency:
+
+if [[ $plot_type == 'trig' ]]; then
+    echo "plotting the trigger efficiency"
+    #./Plot.py -t -y run2
+    ./Plot.py -t -y 2018
+    ./Plot.py -t -y 2017
+    ./Plot.py -t -y 2016
 fi
 
