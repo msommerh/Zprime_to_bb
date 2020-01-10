@@ -44,7 +44,7 @@ def skim(sample):
     chain.Reset()
 
 
-#dirList = [x for x in os.listdir(inDir) if not x in blacklist]
-dirList = [x for x in os.listdir(inDir) if not x in blacklist and "2018" in x]
+dirList = [x for x in os.listdir(inDir) if not x in blacklist]
+#dirList = [x for x in os.listdir(inDir) if not x in blacklist and "2018" in x]
 for d in dirList:
     skim(d)
