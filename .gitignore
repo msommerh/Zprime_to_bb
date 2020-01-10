@@ -14,3 +14,4 @@ obsolete/
 datacards/*.txt
 combine/*.txt
 execute_now.sh
+*.tex
