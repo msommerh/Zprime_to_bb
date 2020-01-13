@@ -76,8 +76,8 @@ YEAR        = options.year
 ISMC        = options.isMC
 ADDSELECTION= options.selection!=""
 
-X_MIN = 1800.
-X_MAX = 9000.
+X_MIN = 1530.
+X_MAX = 9067.
 
 if YEAR=='2016':
     LUMI=35920.
@@ -581,7 +581,8 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     frame = variable.frame()
     setPadStyle(frame, 1.25, True)
     dataset.plotOn(frame, RooFit.Binning(binning), RooFit.Invisible())
-    if len(fitRes) > 0: model.plotOn(frame, RooFit.VisualizeError(fitRes[0], 1, False), RooFit.Normalization(norm if norm>0 else dataset.sumEntries(), RooAbsReal.NumEvent), RooFit.LineColor(getColor(order, category)[0]), RooFit.FillColor(getColor(order, category)[1]), RooFit.FillStyle(1001), RooFit.DrawOption("FL"))
+    if len(fitRes) > 0:
+        model.plotOn(frame, RooFit.VisualizeError(fitRes[0], 1, False), RooFit.Normalization(norm if norm>0 else dataset.sumEntries(), RooAbsReal.NumEvent), RooFit.LineColor(getColor(order, category)[0]), RooFit.FillColor(getColor(order, category)[1]), RooFit.FillStyle(1001), RooFit.DrawOption("FL"))
     model.plotOn(frame, RooFit.Normalization(norm if norm>0 else dataset.sumEntries(), RooAbsReal.NumEvent), RooFit.LineColor(getColor(order, category)[0]), RooFit.FillColor(getColor(order, category)[1]), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(model.GetName()))
     model.paramOn(frame, RooFit.Label(model.GetTitle()), RooFit.Layout(0.45, 0.95, 0.94), RooFit.Format("NEAU"))
     graphData = dataset.plotOn(frame, RooFit.Binning(binning), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.DrawOption("PE0"), RooFit.Name(dataset.GetName()))
