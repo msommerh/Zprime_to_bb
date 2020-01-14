@@ -17,7 +17,7 @@ from ROOT import TLegend, TLatex, TText, TLine
 
 from samples import sample
 from variables import variable
-from aliases import alias, aliasSM, working_points
+from aliases import alias, aliasSM, working_points, dijet_bins
 from aliases import additional_selections as SELECTIONS
 from utils import *
 import sys
@@ -38,6 +38,7 @@ parser.add_option("-e", "--efficiency", action="store_true", default=False, dest
 parser.add_option("-s", "--selection", action="store", type="string", dest="selection", default="")
 parser.add_option("-a", "--acceptance", action="store_true", default=False, dest="acceptance")
 parser.add_option("-t", "--trigger", action="store_true", default=False, dest="trigger")
+parser.add_option("", "--sync", action="store_true", default=False, dest="sync")
 (options, args) = parser.parse_args()
 
 ########## SETTINGS ##########
@@ -56,6 +57,7 @@ PARALLELIZE = False
 BLIND       = False
 LUMI        = {"run2" : 137190, "2016" : 35920, "2017" : 41530, "2018" : 59740}
 ADDSELECTION= options.selection!=""
+SYNC        = options.sync
 
 color = {'none': 920, 'qq': 1, 'bq': 632, 'bb': 600, 'mumu': 418}
 color_shift = {'none': 2, 'qq': 922, 'bq': 2, 'bb': 2, 'mumu':2}
@@ -126,7 +128,7 @@ def plot(var, cut, year, norm=False, nm1=False):
                     if year=="run2" or year in ss:
                         tree[s].Add(NTUPLEDIR + ss + ".root")
             if variable[var]['nbins']>0: hist[s] = TH1F(s, ";"+variable[var]['title']+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+unit+" );"+('log' if variable[var]['log'] else ''), variable[var]['nbins'], variable[var]['min'], variable[var]['max'])
-            else: hist[s] = TH1F(s, ";"+variable[var]['title'], len(variable[var]['bins'])-1, array('f', variable[var]['bins']))
+            else: hist[s] = TH1F(s, ";"+variable[var]['title']+";Events"+('log' if variable[var]['log'] else ''), len(variable[var]['bins'])-1, array('f', variable[var]['bins']))
             hist[s].Sumw2()
             cutstring = "(eventWeightLumi)" + ("*("+cut+")" if len(cut)>0 else "")
             tree[s].Project(s, var, cutstring)
@@ -193,6 +195,16 @@ def plot(var, cut, year, norm=False, nm1=False):
                 first, last = hist[s].FindBin(0), hist[s].FindBin(0.6)
                 for j in range(first, last): hist[s].SetBinContent(j, -1.e-4)
     
+    if SYNC and var == "jj_mass_widejet" and year in ["2016", "2017", "2018"]:
+        iFile = TFile("sync/JetHT_run" + year + "_red_cert_scan_all.root", "READ")
+        hist['sync'] = iFile.Get("Mjj")
+#        hist['sync'] = tmp.Rebin(len(dijet_bins)-1, "sync", array('d', dijet_bins))
+#        hist['sync'] = tmp.Rebin(100, "sync")
+        hist['sync'].SetMarkerStyle(22)
+        hist['sync'].SetMarkerSize(1.25)
+        hist['sync'].SetMarkerColor(2)
+        print "Imported and drawing sync file"
+    
     # Create stack
     bkg = THStack("Bkg", ";"+hist['BkgSum'].GetXaxis().GetTitle()+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+unit+" )")
     for i, s in enumerate(back): bkg.Add(hist[s])
@@ -226,13 +238,14 @@ def plot(var, cut, year, norm=False, nm1=False):
     c1.GetPad(bool(RATIO)).SetRightMargin(0.05)
     c1.GetPad(bool(RATIO)).SetTicks(1, 1)
     
-    log = "log" in hist['BkgSum'].GetZaxis().GetTitle()
+    log = variable[var]['log'] #"log" in hist['BkgSum'].GetZaxis().GetTitle()
     if log: c1.GetPad(bool(RATIO)).SetLogy()
         
     # Draw
     bkg.Draw("HIST") # stack
     hist['BkgSum'].Draw("SAME, E2") # sum of bkg
     if not isBlind and len(data) > 0: hist['data_obs'].Draw("SAME, PE") # data
+    if 'sync' in hist: hist['sync'].Draw("SAME, PE")
     #data_graph.Draw("SAME, PE")
     if showSignal:
         smagn = 1. #if treeRead else 1.e2 #if log else 1.e2
@@ -282,6 +295,15 @@ def plot(var, cut, year, norm=False, nm1=False):
             if hist['BkgSum'].GetBinContent(i) > 0: 
                 res.SetBinContent(i, res.GetBinContent(i)/hist['BkgSum'].GetBinContent(i))
                 res.SetBinError(i, res.GetBinError(i)/hist['BkgSum'].GetBinContent(i))
+        if 'sync' in hist:
+            res.SetMarkerColor(2)
+            res.SetMarkerStyle(23)
+            res.Reset()
+            for i in range(0, res.GetNbinsX()+1):
+                x = hist['data_obs'].GetXaxis().GetBinCenter(i)
+                if hist['sync'].GetBinContent(hist['sync'].FindBin(x)) > 0: 
+                    res.SetBinContent(i, hist['data_obs'].GetBinContent(hist['data_obs'].FindBin(x))/hist['sync'].GetBinContent(hist['sync'].FindBin(x)))
+                    res.SetBinError(i, hist['data_obs'].GetBinError(hist['data_obs'].FindBin(x))/hist['sync'].GetBinContent(hist['sync'].FindBin(x)))
         setBotStyle(res)
         #err.GetXaxis().SetLabelOffset(err.GetXaxis().GetLabelOffset()*5)
         #err.GetXaxis().SetTitleOffset(err.GetXaxis().GetTitleOffset()*2)
@@ -308,6 +330,12 @@ def plot(var, cut, year, norm=False, nm1=False):
     
     # Print table
     printTable(hist, sign)
+    
+#    if True:
+#        sFile = TFile("sync/data_2016.root", "RECREATE")
+#        sFile.cd()
+#        hist['data_obs'].
+        
     
     if not gROOT.IsBatch(): raw_input("Press Enter to continue...")
 
