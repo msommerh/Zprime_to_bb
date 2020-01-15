@@ -78,7 +78,7 @@ else:
 
 LUMI        = luminosities[YEAR]
 
-SIGNALS = range(1800, 8000+1, 100)
+SIGNALS = range(1600, 8000+1, 100)
 
 theoryLabel = {'B3' : "HVT model B (g_{V}=3)", 'A1' : "HVT model A (g_{V}=1)", 'T1' : "2HDM Type-I", 'T2' : "2HDM Type-II"}
 theoryLineColor = {'B3' : 629, 'A1' : 616-3, 'T1' : 880-4, 'T2' : 602}

@@ -8,7 +8,7 @@ import global_paths
 import os, multiprocessing, math
 import numpy as np
 from array import array
-from ROOT import TFile, TH1, TF1, TLorentzVector
+from ROOT import TFile, TH1, TF1, TLorentzVector, TObject
 import ROOT
 import sys
 
@@ -133,23 +133,29 @@ def processFile(sample, origin, target, verbose=False):
 
     # first loop over all files to get nGenEvents
     totalEntries = 0.
-    file_list = []
-    j = 0
-    while True:
-        if os.path.exists(origin + "/" + sample + "_flatTuple_{}.root".format(j)):
-            file_list.append(origin + "/" + sample + "_flatTuple_{}.root".format(j))
-            j += 1
-        else:
-            print "found {} files for sample:".format(j), sample
-            break
-    if j == 0: 
-        print '  WARNING: files for sample', sample , 'do not exist, continuing'
-        return True
+
+
+    file_list = [origin + "/" + sample + ".root"]
+    
+    #file_list = []
+    #j = 0
+
+    #while True:
+    #    if os.path.exists(origin + "/" + sample + "_flatTuple_{}.root".format(j)):
+    #        file_list.append(origin + "/" + sample + "_flatTuple_{}.root".format(j))
+    #        j += 1
+    #    else:
+    #        print "found {} files for sample:".format(j), sample
+    #        break
+    #if j == 0: 
+    #    print '  WARNING: files for sample', sample , 'do not exist, continuing'
+    #    return True
+
     if isMC:
         for infile_name in file_list:
             infile = TFile(infile_name, 'READ')
-            evtHist = infile.Get('Events')
             try:
+                evtHist = infile.Get('Events')
                 nEvents = evtHist.GetBinContent(1)
                 totalEntries += nEvents
                 #print "sample:",sample,"nEvents:", nEvents
@@ -192,7 +198,37 @@ def processFile(sample, origin, target, verbose=False):
 
         # Variables declaration
         eventWeightLumi = array('f', [1.0])# global event weight with lumi
-        # Looping over file content
+
+
+        # get tree
+        tree = ref_file.Get("tree")
+        nev = tree.GetEntriesFast()
+        new_file.cd()
+        new_tree = tree.CopyTree("")
+        # New branches
+        eventWeightLumiBranch = new_tree.Branch('eventWeightLumi', eventWeightLumi, 'eventWeightLumi/F')
+
+        # looping over events
+        for event in range(0, tree.GetEntries()):
+            if verbose and (event%10000==0 or event==nev-1): print ' = TTree:', tree.GetName(), 'events:', nev, '\t', int(100*float(event+1)/float(nev)), '%\r',
+            tree.GetEntry(event)
+
+            # Initialize
+            eventWeightLumi[0] = 1.
+
+            # Weights
+            if isMC:
+                eventWeightLumi[0] = tree.GenWeight * Leq
+                if isSignal: eventWeightLumi[0] = Leq
+
+            # Fill the branches
+            eventWeightLumiBranch.Fill()
+        new_file.cd()
+        new_tree.Write("", TObject.kOverwrite)
+        if verbose: print ' '
+
+
+        # Looping over additional file content
         for key in ref_file.GetListOfKeys():
             obj = key.ReadObj()
             # Histograms
@@ -202,29 +238,30 @@ def processFile(sample, origin, target, verbose=False):
                 obj.Write()
             # Tree
             elif obj.IsA().InheritsFrom('TTree'):
-                nev = obj.GetEntriesFast()
-                new_file.cd()
-                new_tree = obj.CopyTree("")
-                # New branches
-                eventWeightLumiBranch = new_tree.Branch('eventWeightLumi', eventWeightLumi, 'eventWeightLumi/F')
+                continue
+                #nev = obj.GetEntriesFast()
+                #new_file.cd()
+                #new_tree = obj.CopyTree("")
+                ## New branches
+                #eventWeightLumiBranch = new_tree.Branch('eventWeightLumi', eventWeightLumi, 'eventWeightLumi/F')
 
-                # looping over events
-                for event in range(0, obj.GetEntries()):
-                    if verbose and (event%10000==0 or event==nev-1): print ' = TTree:', obj.GetName(), 'events:', nev, '\t', int(100*float(event+1)/float(nev)), '%\r',
-                    obj.GetEntry(event)
-                    # Initialize
-                    eventWeightLumi[0] = 1.
+                ## looping over events
+                #for event in range(0, obj.GetEntries()):
+                #    if verbose and (event%10000==0 or event==nev-1): print ' = TTree:', obj.GetName(), 'events:', nev, '\t', int(100*float(event+1)/float(nev)), '%\r',
+                #    obj.GetEntry(event)
+                #    # Initialize
+                #    eventWeightLumi[0] = 1.
         
-                    # Weights
-                    if isMC:
-                        eventWeightLumi[0] = obj.GenWeight * Leq
-                        if isSignal: eventWeightLumi[0] = Leq
+                #    # Weights
+                #    if isMC:
+                #        eventWeightLumi[0] = obj.GenWeight * Leq
+                #        if isSignal: eventWeightLumi[0] = Leq
 
-                    # Fill the branches
-                    eventWeightLumiBranch.Fill()
-                new_file.cd()
-                new_tree.Write()
-                if verbose: print ' '
+                #    # Fill the branches
+                #    eventWeightLumiBranch.Fill()
+                #new_file.cd()
+                #new_tree.Write()
+                #if verbose: print ' '
 
             # Directories
             elif obj.IsFolder():
@@ -239,14 +276,15 @@ def processFile(sample, origin, target, verbose=False):
                         new_file.cd(subdir)
                         subobj.Write()
                 new_file.cd('..')
-        #new_file.Close()
+
         ref_file.Close()
         new_file.Close()
 
 HT_bins = ['50to100', '100to200', '200to300', '300to500', '500to700', '700to1000', '1000to1500', '1500to2000', '2000toInf']
 mass_bins = ['600', '800', '1000', '1200', '1400' , '1600', '1800', '2000', '2500', '3000', '3500', '4000', '4500', '5000', '5500', '6000', '7000', '8000']
 
-data_2016_letters = ["B", "C", "D", "E", "F", "G", "H"]
+#data_2016_letters = ["B", "C", "D", "E", "F", "G", "H"]
+data_2016_letters = ["B1", "B2", "C", "D", "E", "F", "G", "H"]
 data_2017_letters = ["B", "C", "D", "E", "F"]
 data_2018_letters = ["A", "B", "C", "D"]
 
@@ -281,9 +319,11 @@ else:
 
 jobs = []
 for d in sample_names:
-    origin = global_paths.PRODUCTIONDIR+d         
-    target = global_paths.WEIGHTEDDIR+d
-
+    #origin = global_paths.PRODUCTIONDIR+d        
+    #target = global_paths.WEIGHTEDDIR+d         
+    origin = global_paths.WEIGHTEDDIR  
+    target = global_paths.SKIMMEDDIR[:-1]
+ 
     print "working on",origin
     print "output will be stored in", target
 

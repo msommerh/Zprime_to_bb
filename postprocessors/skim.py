@@ -7,14 +7,16 @@
 import global_paths
 import os
 from array import array
-from ROOT import TFile, TChain, TTree, TH1, TH1F
+from ROOT import TFile, TChain, TTree, TH1, TH1F, TObject
 from aliases import triggers
 
-inDir = global_paths.WEIGHTEDDIR[:-1]
-outDir = global_paths.SKIMMEDDIR[:-1]
+#inDir = global_paths.WEIGHTEDDIR[:-1]
+#outDir = global_paths.SKIMMEDDIR[:-1]
+inDir = global_paths.PRODUCTIONDIR[:-1] 
+outDir = global_paths.WEIGHTEDDIR[:-1]
 
 blacklist = ["backup"]
-cutstring = "jpt_1>550 && "+triggers
+cutstring = "jj_mass_widejet>1530 && "+triggers
 
 def skim(sample):
     print sample
@@ -37,14 +39,14 @@ def skim(sample):
     outFile.cd()
     # create a new skimmed tree
     tree = chain.CopyTree(cutstring)#GetTree().CloneTree(-1, cutstring)
-    tree.Write()
+    tree.Write("", TObject.kOverwrite)
     events_hist.Write()
     outFile.Close()
 
     chain.Reset()
 
 
-dirList = [x for x in os.listdir(inDir) if not x in blacklist]
-#dirList = [x for x in os.listdir(inDir) if not x in blacklist and "2018" in x]
+#dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'SingleMuon' in x]
+dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'SingleMuon' in x and 'data' in x] ##FIXME FIXME
 for d in dirList:
     skim(d)

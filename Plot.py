@@ -110,6 +110,17 @@ def plot(var, cut, year, norm=False, nm1=False):
     print "Plotting from", ("tree" if treeRead else "file"), var, "in", channel, "channel with:"
     print "  dataset:", pd
     print "  cut    :", cut
+
+    if var == 'jj_deltaEta_widejet':
+        if "jj_deltaEta_widejet<1.1 && " in cut:
+            print 
+            print "omitting jj_deltaEta_widejet<1.1 cut to draw the deltaEta distribution"
+            print
+            cut = cut.replace("jj_deltaEta_widejet<1.1 && ", "")
+        else:
+            print
+            print "no 'jj_deltaEta_widejet<1.1 && ' in the cut string detected, so it cannot be ommited explicitly"
+            print
     
     ### Create and fill MC histograms ###
     # Create dict
@@ -125,8 +136,10 @@ def plot(var, cut, year, norm=False, nm1=False):
                 if not 'data' in s or ('data' in s and ss in pd):
                     if year=="run2" or year in ss:
                         tree[s].Add(NTUPLEDIR + ss + ".root")
-            if variable[var]['nbins']>0: hist[s] = TH1F(s, ";"+variable[var]['title']+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+unit+" );"+('log' if variable[var]['log'] else ''), variable[var]['nbins'], variable[var]['min'], variable[var]['max'])
-            else: hist[s] = TH1F(s, ";"+variable[var]['title'], len(variable[var]['bins'])-1, array('f', variable[var]['bins']))
+            if variable[var]['nbins']>0: 
+                hist[s] = TH1F(s, ";"+variable[var]['title']+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+unit+" );"+('log' if variable[var]['log'] else ''), variable[var]['nbins'], variable[var]['min'], variable[var]['max'])
+            else: 
+                hist[s] = TH1F(s, ";"+variable[var]['title']+";Events;"+('log' if variable[var]['log'] else ''), len(variable[var]['bins'])-1, array('f', variable[var]['bins']))
             hist[s].Sumw2()
             cutstring = "(eventWeightLumi)" + ("*("+cut+")" if len(cut)>0 else "")
             tree[s].Project(s, var, cutstring)
@@ -194,7 +207,10 @@ def plot(var, cut, year, norm=False, nm1=False):
                 for j in range(first, last): hist[s].SetBinContent(j, -1.e-4)
     
     # Create stack
-    bkg = THStack("Bkg", ";"+hist['BkgSum'].GetXaxis().GetTitle()+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+unit+" )")
+    if variable[var]['nbins']>0: 
+        bkg = THStack("Bkg", ";"+hist['BkgSum'].GetXaxis().GetTitle()+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+unit+" )")
+    else: 
+        bkg = THStack("Bkg", ";"+hist['BkgSum'].GetXaxis().GetTitle()+";Events; " )
     for i, s in enumerate(back): bkg.Add(hist[s])
     
     
@@ -648,8 +664,12 @@ def trigger_efficiency(year):
         fill_hist(hist_pass, temp_array)
         temp_array=None 
    
-    import array 
-    binning = range(0,1500,100)+range(1500,2000,100)+range(2000,3100,150)+range(3100,10000,300)
+    import array
+    from aliases import dijet_bins 
+    binning=[]
+    for num in dijet_bins:
+        if num<=10000: binning.append(num)
+    #binning = range(0,1500,100)+range(1500,2000,100)+range(2000,3100,150)+range(3100,10000,300)
     binning_ = array.array('d', binning)
     hist_pass2 = hist_pass.Rebin(len(binning_)-1, "hist_pass_rebinned", binning_)
     hist_all2 = hist_all.Rebin(len(binning_)-1, "hist_all_rebinned", binning_)

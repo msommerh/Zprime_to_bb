@@ -78,6 +78,8 @@ ADDSELECTION= options.selection!=""
 
 X_MIN = 1530.
 X_MAX = 9067.
+#X_MIN = 1800.
+#X_MAX = 9000.
 
 if YEAR=='2016':
     LUMI=35920.
@@ -118,8 +120,8 @@ if VARBINS:
     X_max = max(bins)
     abins = array( 'd', bins )
 else:
-    X_min = X_MIN
-    X_max = X_MAX
+    X_min = X_MIN-X_MIN%10
+    X_max = X_MAX-(X_MAX-X_min)%100
 
 data = ["data_obs"]
 back = ["QCD", "TTbar"]
@@ -196,7 +198,7 @@ def dijet(category):
         X_mass.setBinning(binsXmass)
         plot_binning = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
     else:
-        X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))              
+        X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))  
         binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
         plot_binning = binsXmass
 
@@ -417,8 +419,8 @@ def dijet(category):
     setToys.SetTitle("Data (toys)")
     if not isData:
         print " - Generating", nevents, "events for toy data"
-        #setToys = modelBkg.generate(RooArgSet(X_mass), nevents) 
-        setToys = modelAlt.generate(RooArgSet(X_mass), nevents) 
+        setToys = modelBkg.generate(RooArgSet(X_mass), nevents) 
+        #setToys = modelAlt.generate(RooArgSet(X_mass), nevents) 
         print "toy data generated"
 
     if VERBOSE: raw_input("Press Enter to continue...")
@@ -529,9 +531,9 @@ def dijet(category):
     # create workspace
     w = RooWorkspace("Zprime_"+YEAR, "workspace")
     # Dataset
-    #if isData: getattr(w, "import")(setData, RooFit.Rename("data_obs"))
-    #else: getattr(w, "import")(setToys, RooFit.Rename("data_obs"))
-    getattr(w, "import")(setData, RooFit.Rename("data_obs")) 
+    if isData: getattr(w, "import")(setData, RooFit.Rename("data_obs"))
+    else: getattr(w, "import")(setToys, RooFit.Rename("data_obs"))
+    #getattr(w, "import")(setData, RooFit.Rename("data_obs")) 
     if BIAS:
         getattr(w, "import")(cat, RooFit.Rename(cat.GetName()))
         getattr(w, "import")(normulti, RooFit.Rename(normulti.GetName()))

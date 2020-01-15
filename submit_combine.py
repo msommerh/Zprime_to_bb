@@ -45,7 +45,7 @@ if YEAR=='run2c':
 else:
     separate_years=False
 
-mass_points = range(1800,8001,100)
+mass_points = range(1600,8001,100)
 nJobs = len(mass_points)
 
 if separate_years and not YEAR=='run2':
