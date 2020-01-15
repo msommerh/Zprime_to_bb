@@ -26,6 +26,7 @@ if __name__ == "__main__":
 
     f1 = TFile("Tylers_mjj_spectra/JetHT_run{}_red_cert_scan_all.root".format(args.year), "READ")
     tot_hist0 = f1.Get("Mjj")
+    print "the integral of Tyler's Mjj is:", tot_hist0.Integral()
     tot_hist1 = tot_hist0.Rebin(len(dijet_bins)-1, "mini", binning)
 
     tot_hist2 = TH1F("nano", ";M_{jj} (GeV);Events", len(dijet_bins)-1, binning)

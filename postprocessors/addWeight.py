@@ -321,7 +321,7 @@ jobs = []
 for d in sample_names:
     #origin = global_paths.PRODUCTIONDIR+d        
     #target = global_paths.WEIGHTEDDIR+d         
-    origin = global_paths.WEIGHTEDDIR  
+    origin = global_paths.WEIGHTEDDIR[:-1]  
     target = global_paths.SKIMMEDDIR[:-1]
  
     print "working on",origin

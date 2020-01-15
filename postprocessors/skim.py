@@ -47,6 +47,6 @@ def skim(sample):
 
 
 #dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'SingleMuon' in x]
-dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'SingleMuon' in x and 'data' in x] ##FIXME FIXME
+dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'SingleMuon' in x and 'data_2018' in x] ##FIXME FIXME
 for d in dirList:
     skim(d)

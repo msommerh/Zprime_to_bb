@@ -211,7 +211,7 @@ def plot(var, cut, year, norm=False, nm1=False):
         hist['sync'] = iFile.Get("Mjj")
 #        hist['sync'] = tmp.Rebin(len(dijet_bins)-1, "sync", array('d', dijet_bins))
 #        hist['sync'] = tmp.Rebin(100, "sync")
-        hist['sync'].SetMarkerStyle(22)
+        hist['sync'].SetMarkerStyle(31)
         hist['sync'].SetMarkerSize(1.25)
         hist['sync'].SetMarkerColor(2)
         print "Imported and drawing sync file"
@@ -311,7 +311,7 @@ def plot(var, cut, year, norm=False, nm1=False):
                 res.SetBinError(i, res.GetBinError(i)/hist['BkgSum'].GetBinContent(i))
         if 'sync' in hist:
             res.SetMarkerColor(2)
-            res.SetMarkerStyle(23)
+            res.SetMarkerStyle(31)
             res.Reset()
             for i in range(0, res.GetNbinsX()+1):
                 x = hist['data_obs'].GetXaxis().GetBinCenter(i)

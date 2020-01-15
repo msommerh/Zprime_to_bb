@@ -90,6 +90,12 @@ output in: *global_paths.PRODUCTIONDIR*
 
 ## Postprocess samples
 
+### skim the samples:
+```
+./postprocessors/skim.py
+```
+output in *global_paths.WEIGHTEDDIR*
+
 ### add weights, even to the data and MC signal:    
 
 [year]: 2016, 2017, 2018;   [MC_type]: signal, QCD, TTbar
@@ -97,12 +103,7 @@ output in: *global_paths.PRODUCTIONDIR*
 ./postprocessors/addWeights.py -y [year] -MC -MT [MC_type]
 ./postprocessors/addWeights.py -y [year] 
 ```
-output in *global_paths.WEIGHTEDDIR*
 
-### skim the samples:
-```
-./postprocessors/skim.py
-```
 output in *global_paths.SKIMMEDDIR*
 
 ### deduce btagging uncertainty

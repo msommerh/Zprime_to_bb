@@ -73,7 +73,7 @@ YEAR        = options.year
 VERBOSE     = options.verbose
 READTREE    = True
 ADDSELECTION= options.selection!=""
-VARBINS     = False ## FIXME testing dijet bins FIXME (currently turned off)
+VARBINS     = True ## FIXME testing dijet bins FIXME (currently turned off)
 
 X_MIN = 1530.
 X_MAX = 9067.

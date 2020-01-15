@@ -21,6 +21,7 @@ muonVeto = " && nmuons<1"
 preselection = "jj_mass_widejet>1530 && jj_deltaEta_widejet<1.1 && "
 
 alias = { ## the same as above with the new btag_WP variable
+    "preselection_noveto" : "jj_mass_widejet>1530 && jj_deltaEta_widejet<1.1",
     "preselection" : preselection+triggers+AK8veto+electronVeto+muonVeto,
     "2b" : preselection+triggers+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1>={WP} && jbtag_WP_2>={WP}",
     "1b" : preselection+triggers+AK8veto+electronVeto+muonVeto+" && ((jbtag_WP_1>={WP} && jbtag_WP_2<{WP}) || (jbtag_WP_1<{WP} && jbtag_WP_2>={WP}))",
@@ -28,6 +29,7 @@ alias = { ## the same as above with the new btag_WP variable
 }
 
 aliasSM = { ## a new btagging category that is semi medium, semi loose.
+    "preselection_noveto" : "jj_mass_widejet>1530 && jj_deltaEta_widejet<1.1",
     "preselection" : preselection+triggers+AK8veto+electronVeto+muonVeto,
     "2b" : preselection+triggers+AK8veto+electronVeto+muonVeto+" && ((jbtag_WP_1>=2 && jbtag_WP_2>=1) || (jbtag_WP_1>=1 && jbtag_WP_2>=2))",
     "1b" : preselection+triggers+AK8veto+electronVeto+muonVeto+" && ((jbtag_WP_1>=2 && jbtag_WP_2<1) || (jbtag_WP_1<1 && jbtag_WP_2>=2))",
