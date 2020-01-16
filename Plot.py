@@ -207,7 +207,7 @@ def plot(var, cut, year, norm=False, nm1=False):
                 for j in range(first, last): hist[s].SetBinContent(j, -1.e-4)
     
     if SYNC and var == "jj_mass_widejet" and year in ["2016", "2017", "2018"]:
-        iFile = TFile("sync/JetHT_run" + year + "_red_cert_scan_all.root", "READ")
+        iFile = TFile("sync/JetHT_run" + year + "_red_cert_scan.root", "READ")
         hist['sync'] = iFile.Get("Mjj")
 #        hist['sync'] = tmp.Rebin(len(dijet_bins)-1, "sync", array('d', dijet_bins))
 #        hist['sync'] = tmp.Rebin(100, "sync")

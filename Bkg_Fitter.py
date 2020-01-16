@@ -70,7 +70,7 @@ SHOWERR     = True
 BLIND       = False
 VERBOSE     = options.verbose
 CUTCOUNT    = False
-VARBINS     = True ## FIXME testing dijet bins FIXME (currently turned off)
+VARBINS     = False ## FIXME testing dijet bins FIXME (currently turned off)
 BIAS        = options.bias
 YEAR        = options.year
 ISMC        = options.isMC
@@ -166,6 +166,8 @@ def dijet(category):
     fatjetmass_2 = RooRealVar("fatjetmass_2",   "",             -1.,   2500.     )
     jnmuons_1 = RooRealVar("jnmuons_1",     "j1 n_{#mu}",       -1.,   8.     )
     jnmuons_2 = RooRealVar("jnmuons_2",     "j2 n_{#mu}",       -1.,   8.     )
+    jid_1 = RooRealVar("jid_1",     "j1 ID",       -1.,   8.     )
+    jid_2 = RooRealVar("jid_2",     "j2 ID",       -1.,   8.     )
     nmuons = RooRealVar(    "nmuons",       "n_{#mu}",          -1.,   10.     )
     nelectrons = RooRealVar("nelectrons",    "n_{e}",            -1.,   10.     )
     jj_deltaEta = RooRealVar(    "jj_deltaEta_widejet",                "",      0.,     5.)
@@ -189,7 +191,7 @@ def dijet(category):
 
     variables = RooArgSet(X_mass)
     variables.add(RooArgSet(jbtag_WP_1, jbtag_WP_2, fatjetmass_1, fatjetmass_2, jnmuons_1, jnmuons_2, nmuons, nelectrons, weight))
-    variables.add(RooArgSet(j1_pt, jj_deltaEta))
+    variables.add(RooArgSet(j1_pt, jj_deltaEta, jid_1, jid_2))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     variables.add(RooArgSet(HLT_DoublePFJets100_CaloBTagDeepCSV_p71, HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets200_CaloBTagDeepCSV_p71, HLT_DoublePFJets350_CaloBTagDeepCSV_p71, HLT_DoublePFJets40_CaloBTagDeepCSV_p71))
 
@@ -198,7 +200,7 @@ def dijet(category):
         X_mass.setBinning(binsXmass)
         plot_binning = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
     else:
-        X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10))  
+        X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10)) 
         binsXmass = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
         plot_binning = binsXmass
 
