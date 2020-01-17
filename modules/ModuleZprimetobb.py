@@ -32,6 +32,7 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         #self.addBranch('jCSV_1'         , float)
         #self.addBranch('jdeepCSV_1'     , float)
         self.addBranch('jdeepFlavour_1' , float)
+        self.addBranch('jnconst_1'      , int)
         self.addBranch('jchf_1'         , float)
         self.addBranch('jnhf_1'         , float)
         self.addBranch('jcef_1'         , float)
@@ -53,6 +54,7 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         #self.addBranch('jCSV_2'         , float)
         #self.addBranch('jdeepCSV_2'     , float)
         self.addBranch('jdeepFlavour_2' , float)
+        self.addBranch('jnconst_2'      , int)
         self.addBranch('jchf_2'         , float)
         self.addBranch('jnhf_2'         , float)
         self.addBranch('jcef_2'         , float)
@@ -83,8 +85,24 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('ptBalance'      , float)
         self.addBranch('HT'             , float)
         self.addBranch('MET'            , float)
-        self.addBranch('fatjetmass_1'   , float)
-        self.addBranch('fatjetmass_2'   , float)
+        self.addBranch('fatjetmass_1'     , float)
+        self.addBranch('fatjettau21_1'    , float)
+        self.addBranch('fatjettau21ddt_1' , float)
+        self.addBranch('fatjetHbbvsQCD_1' , float)
+        self.addBranch('fatjetWvsQCD_1'   , float)
+        self.addBranch('fatjetZHbbvsQCD_1', float)
+        self.addBranch('fatjetZbbvsQCD_1' , float)
+        self.addBranch('fatjetZvsQCD_1'   , float)
+        self.addBranch('fatjetbbvsLight_1', float)
+        self.addBranch('fatjetmass_2'     , float)
+        self.addBranch('fatjettau21_2'    , float)
+        self.addBranch('fatjettau21ddt_2' , float)
+        self.addBranch('fatjetHbbvsQCD_2' , float)
+        self.addBranch('fatjetWvsQCD_2'   , float)
+        self.addBranch('fatjetZHbbvsQCD_2', float)
+        self.addBranch('fatjetZbbvsQCD_2' , float)
+        self.addBranch('fatjetZvsQCD_2'   , float)
+        self.addBranch('fatjetbbvsLight_2', float)
 #        self.addBranch('MET_over_SumEt' , float)
 #        self.addBranch('jjetsId_1'      , int)
 #        self.addBranch('jjetsId_2'      , int)
@@ -306,17 +324,13 @@ class ZprimetobbProducer(Module):
         self.out.jj_deltaEta_widejet[0]   = abs(wj1_p4.Eta() - wj2_p4.Eta())
         
         
-        fatjetMass = 0.
-        if event.nFatJet > 0: fatjetMass = event.FatJet_msoftdrop[0]
-        if event.nFatJet > 1: secondaryFatjetMass = event.FatJet_msoftdrop[1]
-        
         nIsoElectrons = 0.
         for iel in range(event.nElectron):
             if event.Electron_pt[iel] > 50. and abs(event.Electron_eta[iel]) < 2.5 and event.Electron_cutBased[iel] >= 2: nIsoElectrons += 1
 
         nIsoMuons = 0.
         for imu in range(event.nMuon):
-            if event.Muon_pt[imu] > 50. and abs(event.Muon_eta[imu]) < 2.5 and event.Muon_highPtId[imu]>=2 and event.Muon_tkRelIso[imu]<0.1: nIsoMuons += 1
+            if event.Muon_pt[imu] > 50. and abs(event.Muon_eta[imu]) < 2.4 and event.Muon_highPtId[imu]>=2 and event.Muon_tkRelIso[imu]<0.1: nIsoMuons += 1
         
         ptMuons1, ptMuons2 = 0., 0.
         if event.Jet_muonIdx1[jetIds[0]] >=0 and event.Muon_looseId[event.Jet_muonIdx1[jetIds[0]]]: ptMuons1 += event.Muon_pt[event.Jet_muonIdx1[jetIds[0]]]
@@ -329,7 +343,7 @@ class ZprimetobbProducer(Module):
         if event.Jet_muonIdx1[jetIds[1]] >=0: ptRel2 = event.Muon_jetPtRelv2[event.Jet_muonIdx1[jetIds[1]]]
 
         ## Fill jet branches
-        self.out.njets[0]         = len(jetIds)
+        self.out.njets[0]       = len(jetIds)
         
         self.out.jpt_1[0]       = event.Jet_pt[jetIds[0]]
         self.out.jeta_1[0]      = event.Jet_eta[jetIds[0]]
@@ -338,6 +352,7 @@ class ZprimetobbProducer(Module):
         #self.out.jCSV_1[0]      = event.Jet_btagCSVV2[jetIds[0]]
         #self.out.jdeepCSV_1[0]  = event.Jet_btagDeepB[jetIds[0]]
         self.out.jdeepFlavour_1[0]  = event.Jet_btagDeepFlavB[jetIds[0]]
+        self.out.jnconst_1[0] = event.Jet_nConstituents[jetIds[0]]
         self.out.jchf_1[0] = event.Jet_chHEF[jetIds[0]]
         self.out.jnhf_1[0] = event.Jet_neHEF[jetIds[0]]
         self.out.jcef_1[0] = event.Jet_chEmEF[jetIds[0]]
@@ -361,6 +376,7 @@ class ZprimetobbProducer(Module):
         #self.out.jCSV_2[0]      = event.Jet_btagCSVV2[jetIds[1]]
         #self.out.jdeepCSV_2[0]  = event.Jet_btagDeepB[jetIds[1]]
         self.out.jdeepFlavour_2[0]  = event.Jet_btagDeepFlavB[jetIds[1]]
+        self.out.jnconst_2[0] = event.Jet_nConstituents[jetIds[1]]
         self.out.jchf_2[0] = event.Jet_chHEF[jetIds[1]]
         self.out.jnhf_2[0] = event.Jet_neHEF[jetIds[1]]
         self.out.jcef_2[0] = event.Jet_chEmEF[jetIds[1]]
@@ -381,8 +397,26 @@ class ZprimetobbProducer(Module):
         if leading1==0 and leading2==1: self.out.jsorted[0] = 1
 
         #self.out.MET_over_SumEt[0] = event.MET_pt/jetHT
-        self.out.fatjetmass_1[0] = fatjetMass
-        if event.nFatJet > 1: self.out.fatjetmass_2[0] = secondaryFatjetMass
+        if event.nFatJet >= 1 and event.FatJet_pt[0] > 200.:
+            self.out.fatjetmass_1[0] = event.FatJet_msoftdrop[0]
+            self.out.fatjettau21_1[0] = (event.FatJet_tau2[0]/event.FatJet_tau1[0]) if event.FatJet_tau1[0] > 0. else -1.
+            self.out.fatjettau21ddt_1[0] = self.out.fatjettau21_1[0] + 0.082*ROOT.TMath.Log(event.FatJet_msoftdrop[0]**2/event.FatJet_pt[0])
+            self.out.fatjetHbbvsQCD_1[0] = event.FatJet_deepTagMD_HbbvsQCD[0]
+            self.out.fatjetWvsQCD_1[0] = event.FatJet_deepTagMD_WvsQCD[0]
+            self.out.fatjetZHbbvsQCD_1[0] = event.FatJet_deepTagMD_ZHbbvsQCD[0]
+            self.out.fatjetZbbvsQCD_1[0] = event.FatJet_deepTagMD_ZbbvsQCD[0]
+            self.out.fatjetZvsQCD_1[0] = event.FatJet_deepTagMD_ZvsQCD[0]
+            self.out.fatjetbbvsLight_1[0] = event.FatJet_deepTagMD_bbvsLight[0]
+        if event.nFatJet >= 2 and event.FatJet_pt[1] > 200.:
+            self.out.fatjetmass_2[0] = event.FatJet_msoftdrop[1]
+            self.out.fatjettau21_2[0] = (event.FatJet_tau2[1]/event.FatJet_tau1[1]) if event.FatJet_tau1[1] > 0. else -1.
+            self.out.fatjettau21ddt_2[0] = self.out.fatjettau21_1[1] + 0.082*ROOT.TMath.Log(event.FatJet_msoftdrop[1]**2/event.FatJet_pt[1])
+            self.out.fatjetHbbvsQCD_2[0] = event.FatJet_deepTagMD_HbbvsQCD[1]
+            self.out.fatjetWvsQCD_2[0] = event.FatJet_deepTagMD_WvsQCD[1]
+            self.out.fatjetZHbbvsQCD_2[0] = event.FatJet_deepTagMD_ZHbbvsQCD[1]
+            self.out.fatjetZbbvsQCD_2[0] = event.FatJet_deepTagMD_ZbbvsQCD[1]
+            self.out.fatjetZvsQCD_2[0] = event.FatJet_deepTagMD_ZvsQCD[1]
+            self.out.fatjetbbvsLight_2[0] = event.FatJet_deepTagMD_bbvsLight[1]
         self.out.ptBalance[0] = (event.Jet_pt[jetIds[0]] - event.Jet_pt[jetIds[1]])/(event.Jet_pt[jetIds[0]] + event.Jet_pt[jetIds[1]])
         self.out.HT[0] = jetHT
         self.out.MET[0] = event.MET_pt
