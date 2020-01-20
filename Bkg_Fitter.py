@@ -24,6 +24,7 @@ from aliases import alias, aliasSM, working_points, dijet_bins
 from aliases import additional_selections as SELECTIONS
 #from selections import selection
 #from utils import *
+from utils import extend_binning
 
 import optparse
 
@@ -119,6 +120,10 @@ if VARBINS:
     X_min = min(bins)
     X_max = max(bins)
     abins = array( 'd', bins )
+    narrow_bins = extend_binning(10, bins)
+    print "dijet bins:", bins
+    print "narrow bins:", narrow_bins
+    abins_narrow = array('d', narrow_bins)
 else:
     X_min = X_MIN-X_MIN%10
     X_max = X_MAX-(X_MAX-X_min)%100
@@ -197,7 +202,9 @@ def dijet(category):
 
     if VARBINS: 
         binsXmass = RooBinning(len(abins)-1, abins)
-        X_mass.setBinning(binsXmass)
+        X_mass.setBinning(RooBinning(len(abins_narrow)-1, abins_narrow))
+        #binsXmass = RooBinning(len(abins)-1, abins)
+        #X_mass.setBinning(binsXmass)
         plot_binning = RooBinning(int((X_mass.getMax()-X_mass.getMin())/100), X_mass.getMin(), X_mass.getMax())
     else:
         X_mass.setBins(int((X_mass.getMax()-X_mass.getMin())/10)) 
@@ -244,7 +251,7 @@ def dijet(category):
     
     lastBin = X_mass.getMax()
     if VARBINS: 
-        for b in bins:
+        for b in narrow_bins: ##FIXME switched to narrow bins here
             if b > xmax:
                 lastBin = b
                 break

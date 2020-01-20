@@ -817,4 +817,12 @@ def drawCut(hist):
     line1.SetLineColor(1)
     line1.Draw()
 
-
+def extend_binning(n, binning):
+    import numpy as np
+    new_binning = []
+    for i, lower_edge in enumerate(binning[:-1]):
+        temp = np.linspace(binning[i], binning[i+1], n)
+        if i!=0: temp = temp[1:]
+        for entry in temp:
+            new_binning.append(int(np.ceil(entry)))
+    return new_binning

@@ -16,9 +16,9 @@ AK8veto = " && !(fatjetmass_1>65 && fatjetmass_2>65)"
 electronVeto = " && nelectrons<1"
 muonVeto = " && nmuons<1"
 
-tight_jetID = " && jid_1>1 && jid_2>1"
+#tight_jetID = " && jid_1>1 && jid_2>1"
+tight_jetID = " && jid_1>5 && jid_2>5" #&& jcef_1<0.9 && jcef_2<0.9"
 
-#preselection = "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta_widejet<1.1 && "
 preselection = "jj_mass_widejet>1530 && jj_deltaEta_widejet<1.1 && "
 
 alias = { ## the same as above with the new btag_WP variable

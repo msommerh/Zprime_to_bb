@@ -6,6 +6,7 @@ from ROOT import TFile, TTree, TLorentzVector, TObject, TH1, TH1D, TF1, TH1F
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 from TreeProducerCommon import TreeProducerCommon
+import ROOT
 #from PileupWeightTool import PileupWeightTool
 import math
 
@@ -218,6 +219,9 @@ class ZprimetobbProducer(Module):
                     for ijet in range(event.nJet):
                         if event.Jet_pt[ijet] < 30: continue
                         if abs(event.Jet_eta[ijet]) > 2.5: continue
+                        if event.Jet_jetId[ijet]<6: continue
+                        if event.Jet_chEmEF[ijet]>0.9: continue
+                        if (self.year==2017 or self.year==2018) and event.Jet_chEmEF[ijet]>0.8:continue
                         jetIds.append(ijet)
 
                     BTagAK4Weight_deepJet       = self.btagToolAK4_deepJet.getWeight(event,jetIds, "central")  
@@ -266,6 +270,9 @@ class ZprimetobbProducer(Module):
         for ijet in range(event.nJet):
             if event.Jet_pt[ijet] < 30: continue
             if abs(event.Jet_eta[ijet]) > 2.5: continue
+            if event.Jet_jetId[ijet]<6: continue                                                    
+            if event.Jet_chEmEF[ijet]>0.9: continue
+            if (self.year==2017 or self.year==2018) and event.Jet_chEmEF[ijet]>0.8:continue
             jetIds.append(ijet)
             jetHT += event.Jet_pt[ijet]
             if event.Jet_btagDeepFlavB[ijet] >= self.btagLoose: jetBTagLoose += 1
@@ -316,6 +323,9 @@ class ZprimetobbProducer(Module):
         for ijet in range(event.nJet):
             if ijet == jetIds[0] or ijet == jetIds[1]: continue
             if event.Jet_pt[ijet] < 30 or abs(event.Jet_eta[ijet]) > 2.5: continue
+            if event.Jet_jetId[ijet]<6: continue                                                    
+            if event.Jet_chEmEF[ijet]>0.9: continue
+            if (self.year==2017 or self.year==2018) and event.Jet_chEmEF[ijet]>0.8:continue
             j_p4 = TLorentzVector()
             j_p4.SetPtEtaPhiM(event.Jet_pt[ijet], event.Jet_eta[ijet], event.Jet_phi[ijet], event.Jet_mass[ijet])
             if j1_p4.DeltaR(j_p4) < 1.1: wj1_p4 += j_p4
@@ -410,7 +420,7 @@ class ZprimetobbProducer(Module):
         if event.nFatJet >= 2 and event.FatJet_pt[1] > 200.:
             self.out.fatjetmass_2[0] = event.FatJet_msoftdrop[1]
             self.out.fatjettau21_2[0] = (event.FatJet_tau2[1]/event.FatJet_tau1[1]) if event.FatJet_tau1[1] > 0. else -1.
-            self.out.fatjettau21ddt_2[0] = self.out.fatjettau21_1[1] + 0.082*ROOT.TMath.Log(event.FatJet_msoftdrop[1]**2/event.FatJet_pt[1])
+            self.out.fatjettau21ddt_2[0] = self.out.fatjettau21_2[0] + 0.082*ROOT.TMath.Log(event.FatJet_msoftdrop[1]**2/event.FatJet_pt[1])
             self.out.fatjetHbbvsQCD_2[0] = event.FatJet_deepTagMD_HbbvsQCD[1]
             self.out.fatjetWvsQCD_2[0] = event.FatJet_deepTagMD_WvsQCD[1]
             self.out.fatjetZHbbvsQCD_2[0] = event.FatJet_deepTagMD_ZHbbvsQCD[1]

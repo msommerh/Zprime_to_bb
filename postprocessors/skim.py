@@ -15,7 +15,7 @@ from aliases import triggers
 inDir = global_paths.PRODUCTIONDIR[:-1] 
 outDir = global_paths.WEIGHTEDDIR[:-1]
 
-blacklist = ["backup"]
+blacklist = ["backup","weighted","parallel_execution"]
 cutstring = "jj_mass_widejet>1530 && "+triggers
 
 def skim(sample):
@@ -47,6 +47,6 @@ def skim(sample):
 
 
 #dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'SingleMuon' in x]
-dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'SingleMuon' in x and 'data_2018' in x] ##FIXME FIXME
+dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'SingleMuon' in x and "data_2018" in x]
 for d in dirList:
     skim(d)

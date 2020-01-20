@@ -23,6 +23,7 @@ from rooUtils import *
 from samples import sample
 from aliases import alias, aliasSM, working_points, dijet_bins
 from aliases import additional_selections as SELECTIONS
+from utils import extend_binning
 
 import optparse
 
@@ -67,7 +68,7 @@ gStyle.SetErrorX(0.)
 BTAGGING    = options.btagging
 NTUPLEDIR   = global_paths.SKIMMEDDIR
 PLOTDIR     = "plots/"+BTAGGING+"/"
-WORKDIR     = "workspace/"+BTAGGING+"/"
+WORKDIR     = "workspace/"+BTAGGING+"/" 
 RATIO       = 4
 YEAR        = options.year
 VERBOSE     = options.verbose
@@ -117,7 +118,10 @@ if VARBINS:
     bins = [x for x in dijet_bins if x>=X_MIN and x<=X_MAX]
     X_min = min(bins)
     X_max = max(bins)
-    abins = array( 'd', bins )
+    narrow_bins = extend_binning(10, bins)
+    abins = array( 'd', narrow_bins )
+    print "dijet bins:", bins
+    print "narrow bins:", narrow_bins
 else:
     X_min = X_MIN-X_MIN%10
     X_max = X_MAX-(X_MAX-X_min)%100
