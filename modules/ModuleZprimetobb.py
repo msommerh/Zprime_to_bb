@@ -211,8 +211,8 @@ class ZprimetobbProducer(Module):
         """Process event, return True (go to next module) or False (fail, go to next event)."""
       
         if self.isMC:
-                GenWeight = -1. if event.genWeight<0 else 1.
                 PUWeight = 1. #self.puTool.getWeight(event.Pileup_nTrueInt)
+                GenWeight = 1.
                 if 'signal' in self.name.lower():
 
                     jetIds = [ ]
@@ -230,6 +230,7 @@ class ZprimetobbProducer(Module):
 
                     self.out.events.Fill(0., BTagAK4Weight_deepJet) 
                 else:
+                    GenWeight = -1. if event.genWeight<0 else 1.
                     self.out.events.Fill(0., GenWeight)
                 try:
                     LHEWeight = event.LHEWeight_originalXWGTUP

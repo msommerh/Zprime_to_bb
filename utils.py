@@ -515,7 +515,7 @@ def getChannel(channel):
     
     return text
 
-def drawCMS(lumi, text, onTop=False, year=''):
+def drawCMS(lumi, text, onTop=False, year='', suppressCMS=False):
     latex = TLatex()
     latex.SetNDC()
     latex.SetTextSize(0.045)
@@ -543,8 +543,9 @@ def drawCMS(lumi, text, onTop=False, year=''):
     if not onTop: latex.SetTextAlign(11)
     latex.SetTextFont(62)
     latex.SetTextSize(0.05 if len(text)>0 else 0.06)
-    if not onTop: latex.DrawLatex(0.15, 0.88 if len(text)>0 else 0.85, "CMS")
-    else: latex.DrawLatex(0.24, 0.9925, "CMS")
+    if not suppressCMS:
+        if not onTop: latex.DrawLatex(0.15, 0.88 if len(text)>0 else 0.85, "CMS")
+        else: latex.DrawLatex(0.24, 0.9925, "CMS")
     latex.SetTextSize(0.04)
     latex.SetTextFont(52)
     if not onTop: latex.DrawLatex(0.15, 0.84, text)

@@ -281,7 +281,8 @@ def plot(var, cut, year, norm=False, nm1=False):
  
     #if log: bkg.SetMinimum(1)
     leg.Draw()
-    drawCMS(LUMI[year], "Preliminary")
+    #drawCMS(LUMI[year], "Preliminary")
+    drawCMS(LUMI[year], "Work in Progress", suppressCMS=True)
     drawRegion('XVH'+channel, True)
     drawAnalysis(channel)
     
@@ -364,7 +365,8 @@ def efficiency(year):
     eff = {}
     #if ADDSELECTION: eff_add = {}
     
-    channels = ['none', 'qq', 'bq', 'bb', 'mumu']
+    #channels = ['none', 'qq', 'bq', 'bb', 'mumu']
+    channels = ['qq', 'bq', 'bb', 'mumu']
 
     for channel in channels:
         treeSign = {}
@@ -513,7 +515,8 @@ def efficiency(year):
     eff["sum"].GetXaxis().SetTitleOffset(1.05)
     eff["sum"].GetXaxis().SetRangeUser(1500, 8000)
     c1.SetTopMargin(0.05)
-    drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    #drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
     drawAnalysis("")
 
     #if ADDSELECTION:
@@ -645,7 +648,8 @@ def acceptance(year):
     eff.GetXaxis().SetTitleOffset(1.05)
     eff.GetXaxis().SetRangeUser(1500, 8000)
     c1.SetTopMargin(0.05)
-    drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    #drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
     drawAnalysis("")
 
     c1.Print("plots/Efficiency/"+year+"_Acceptance.pdf") 
@@ -729,7 +733,8 @@ def trigger_efficiency(year):
     eff.GetXaxis().SetTitleOffset(1.05)
     eff.GetXaxis().SetLimits(700., 5000.)
     c1.SetTopMargin(0.05)
-    drawCMS(-1, "Preliminary", year=year) #Preliminary
+    #drawCMS(-1, "Preliminary", year=year) #Preliminary
+    drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
     drawAnalysis("")
 
     c1.Print("plots/Efficiency/trigger_"+year+".pdf") 
