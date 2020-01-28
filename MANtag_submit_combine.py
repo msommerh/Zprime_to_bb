@@ -19,7 +19,7 @@ if __name__ == "__main__":
                                          help="select queue for submission" )
   parser.add_argument('-y', '--year',    dest='year', type=str, default='2016', action='store', choices=['2016','2017','2018','run2', 'run2c'],
                                          help="set year, type run2 for combined submission." )
-  parser.add_argument('-MC', '--isMC',   dest='isMC',  action='store_true', default=False,
+  parser.add_argument('-MC', '--isMC',   dest='isMC',  action='store_true', default=True,
                                          help="Select this if the sample is MC, otherwise it is flagged as data.")
   parser.add_argument("-b", "--btagging", action="store", type=str, dest="btagging", default="medium", choices=['tight', 'medium', 'loose', 'semimedium'])
   parser.add_argument("-c", "--category", action="store", type=str, dest="category", default="", choices=['', 'bb', 'bq', 'mumu'],
@@ -39,7 +39,7 @@ else:
 
 YEAR=args.year
 if YEAR=='run2c':
-    print "Pring running combine on separate fits for each year of run2..."
+    print "running combine on separate fits for each year of run2..."
     YEAR='run2'
     separate_years=True
 else:
@@ -54,7 +54,7 @@ if separate_years and not YEAR=='run2':
 
 def submitJobs():
     path = global_paths.MAINDIR[:-1]
-    workdir = global_paths.SUBMISSIONLOGS+"tmp_combine{category}_{year}_{btagging}{suffix}".format(category="_"+args.category if args.category!="" else "", year=YEAR+'c' if separate_years else YEAR, btagging=args.btagging, suffix="_MC" if args.isMC else "")
+    workdir = global_paths.SUBMISSIONLOGS+"tmp_MANtag_combine{category}_{year}_{btagging}{suffix}".format(category="_"+args.category if args.category!="" else "", year=YEAR+'c' if separate_years else YEAR, btagging=args.btagging, suffix="_MC" if args.isMC else "")
     if not os.path.exists(workdir):
         os.makedirs(workdir)
         print "Directory "+workdir+" created."
@@ -64,7 +64,7 @@ def submitJobs():
 
     #submit job
 
-    exefile = open(global_paths.MAINDIR+"combine{}.sh".format("_single" if args.category!="" else ""), "r")
+    exefile = open(global_paths.MAINDIR+"MANtag_combine{}.sh".format("_single" if args.category!="" else ""), "r")
     execontents = exefile.readlines()
     exefile.close()
     execontents[7] = "main_dir='"+global_paths.MAINDIR+"'\n"

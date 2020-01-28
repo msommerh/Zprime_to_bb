@@ -16,7 +16,7 @@ from ROOT import TLegend, TLatex, TText, TColor
 
 #from DMPD.Heppy.tools.samples import *
 from utils import *
-from theoryXs import HVT, SSM
+from hvtXs import HVT
 
 #from thdmXs import THDM
 
@@ -36,14 +36,12 @@ from theoryXs import HVT, SSM
 import optparse
 usage = "usage: %prog [options]"
 parser = optparse.OptionParser(usage)
-parser.add_option("-y", "--year", action="store", type="string", dest="year",default="2017")
-parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
+parser.add_option("-y", "--year", action="store", type="string", dest="year",default="run2c")
+#parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
 parser.add_option("-B", "--blind", action="store_true", default=False, dest="blind")
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
-parser.add_option("-A", "--Acceptance", action="store_true", default=False, dest="Acceptance")
 (options, args) = parser.parse_args()
- 
 gStyle.SetOptStat(0)
 
 gROOT.SetBatch(True)
@@ -56,9 +54,8 @@ LUMI        = 35867
 MAXIMUM     = {'XVHsl' : 4500., 'XWHsl' : 4500., 'XZHsl' : 3500., 'bb':100}
 BTAGGING    = options.btagging
 YEAR        = options.year
-ISMC        = options.isMC
+ISMC        = True
 CATEGORY    = options.category
-INCLUDEACC  = options.Acceptance
 
 if YEAR not in ['2016', '2017', '2018', 'run2', 'run2c']:
     print "unknown year:", YEAR
@@ -83,13 +80,10 @@ LUMI        = luminosities[YEAR]
 
 SIGNALS = range(1600, 8000+1, 100)
 
-ACCEPTANCE = {}
-for s in range(500,9000+1,100): ACCEPTANCE[s] = 0.405 ##FIXME could include mass dependent exact value FIXME
-
-theoryLabel = {'B3' : "HVT model B (g_{V}=3)", 'A1' : "HVT model A (g_{V}=1)", "SSM" : "SSM Z'"}
-theoryLineColor = {'B3' : 629, 'A1' : 616-3, "SSM" : 602}
-theoryFillColor = {'B3' : 625, 'A1' : 616-7, 'SSM' : 856}
-theoryFillStyle = {'B3' : 3002, 'A1' : 3013, 'SSM' : 3013}
+theoryLabel = {'B3' : "HVT model B (g_{V}=3)", 'A1' : "HVT model A (g_{V}=1)", 'T1' : "2HDM Type-I", 'T2' : "2HDM Type-II"}
+theoryLineColor = {'B3' : 629, 'A1' : 616-3, 'T1' : 880-4, 'T2' : 602}
+theoryFillColor = {'B3' : 625, 'A1' : 616-7, 'T1' : 880-9, 'T2' : 856}
+theoryFillStyle = {'B3' : 3002, 'A1' : 3013, 'T1' : 3002, 'T2' : 3013}
 
 
 def fillValues(filename):
@@ -118,25 +112,20 @@ def fillValues(filename):
 def limit():
     method = ''
     channel = "bb"
-    if INCLUDEACC:
-        particleP = "X"
-    else:
-        particleP = "Z'"
+    particleP = "Z'"
     particle = channel
     multF = ZPTOBB
     THEORY = ['A1', 'B3']
-    #if INCLUDEACC: THEORY.append('SSM')  ## FIXME FIXME FIXME
- 
+    
     suffix = "_"+BTAGGING
     if ISMC: suffix += "_MC"
     if SY: suffix += "_comb"
     #if method=="cls": suffix="_CLs"
-    if INCLUDEACC: suffix+="_acc"
 
     if SY:
-        filename = "./combine/limits/" + BTAGGING + "/combined_run2/"+ YEAR + "_M%d.txt"
+        filename = "./combine/limits/MANtag_study/" + BTAGGING + "/combined_run2/"+ YEAR + "_M%d.txt"
     else:
-        filename = "./combine/limits/" + BTAGGING + "/"+ YEAR + "_M%d.txt"
+        filename = "./combine/limits/MANtag_study/" + BTAGGING + "/"+ YEAR + "_M%d.txt"
     if CATEGORY!="": 
         filename = filename.replace(BTAGGING + "/", BTAGGING + "/single_category/"+CATEGORY+"_")
         suffix += "_"+CATEGORY
@@ -160,18 +149,13 @@ def limit():
             print "Key Error:", m, "not in value map"
             continue
 
-        if INCLUDEACC:
-            acc_factor = ACCEPTANCE[m]
-        else:
-            acc_factor = 1.
-
         n = Exp0s.GetN()
-        Obs0s.SetPoint(n, m, val[m][0]*multF*acc_factor)
-        Exp0s.SetPoint(n, m, val[m][3]*multF*acc_factor)
-        Exp1s.SetPoint(n, m, val[m][3]*multF*acc_factor)
-        Exp1s.SetPointError(n, 0., 0., (val[m][3]-val[m][2])*multF*acc_factor, (val[m][4]-val[m][3])*multF*acc_factor)
-        Exp2s.SetPoint(n, m, val[m][3]*multF*acc_factor)
-        Exp2s.SetPointError(n, 0., 0., (val[m][3]-val[m][1])*multF*acc_factor, (val[m][5]-val[m][3])*multF*acc_factor)
+        Obs0s.SetPoint(n, m, val[m][0]*multF)
+        Exp0s.SetPoint(n, m, val[m][3]*multF)
+        Exp1s.SetPoint(n, m, val[m][3]*multF)
+        Exp1s.SetPointError(n, 0., 0., val[m][3]*multF-val[m][2]*multF, val[m][4]*multF-val[m][3]*multF)
+        Exp2s.SetPoint(n, m, val[m][3]*multF)
+        Exp2s.SetPointError(n, 0., 0., val[m][3]*multF-val[m][1]*multF, val[m][5]*multF-val[m][3]*multF)
         if len(val[m]) > 6: Sign.SetPoint(n, m, val[m][6])
         if len(val[m]) > 7: pVal.SetPoint(n, m, val[m][7])
         if len(val[m]) > 8: Best.SetPoint(n, m, val[m][8])
@@ -180,27 +164,19 @@ def limit():
 
     for t in THEORY:
         Theory[t] = TGraphAsymmErrors()
-        Xs_dict = HVT[t]['Z']['XS'] if t!='SSM' else SSM['Z']
-        for m in sorted(Xs_dict.keys()):
-            if INCLUDEACC and t!='SSM':
-                acc_factor = ACCEPTANCE[m]
-            else:
-                acc_factor = 1.
+        addXZH = True
+        for m in sorted(HVT[t]['W']['XS'].keys()):
             if m < mass[0] or m > mass[-1]: continue
-            if t!= 'SSM' and m>4500: continue ## for now because I don't have the higher mass xs FIXME
+            if m>4500: continue ## for now because I don't have the higher mass xs FIXME
             XsZ, XsZ_Up, XsZ_Down = 0., 0., 0.
-            if t!='SSM':
+            if addXZH:
                 XsZ = 1000.*HVT[t]['Z']['XS'][m]*0.12 #temporary BR value set to 0.12 FIXME
                 XsZ_Up = XsZ*(1.+math.hypot(HVT[t]['Z']['QCD'][m][0]-1., HVT[t]['Z']['PDF'][m][0]-1.))
                 XsZ_Down = XsZ*(1.-math.hypot(1.-HVT[t]['Z']['QCD'][m][0], 1.-HVT[t]['Z']['PDF'][m][0]))
-            else:
-                XsZ = 1000.*SSM['Z'][m]*SSM["BrZ"][m]
-                XsZ_Up = XsZ
-                XsZ_Down = XsZ
-     
+
             n = Theory[t].GetN()
-            Theory[t].SetPoint(n, m, XsZ*acc_factor)
-            Theory[t].SetPointError(n, 0., 0., (XsZ-XsZ_Down)*acc_factor, (XsZ_Up-XsZ)*acc_factor)
+            Theory[t].SetPoint(n, m, XsZ)
+            Theory[t].SetPointError(n, 0., 0., (XsZ-XsZ_Down), (XsZ_Up-XsZ))
 
             Theory[t].SetLineColor(theoryLineColor[t])
             Theory[t].SetFillColor(theoryFillColor[t])
@@ -224,7 +200,7 @@ def limit():
     Exp2s.GetXaxis().SetTitleSize(Exp2s.GetXaxis().GetTitleSize()*1.25)
     Exp2s.GetXaxis().SetNoExponent(True)
     Exp2s.GetXaxis().SetMoreLogLabels(True)
-    Exp2s.GetYaxis().SetTitle("#sigma("+particleP+") #bf{#it{#Beta}}("+particleP+" #rightarrow "+particle+"){} (fb)".format(" #times #Alpha" if INCLUDEACC else ""))
+    Exp2s.GetYaxis().SetTitle("#sigma("+particleP+") #bf{#it{#Beta}}("+particleP+" #rightarrow "+particle+") (fb)")
     Exp2s.GetYaxis().SetTitleOffset(1.5)
     Exp2s.GetYaxis().SetNoExponent(True)
     Exp2s.GetYaxis().SetMoreLogLabels()
@@ -322,11 +298,11 @@ def limit():
 
     if not gROOT.IsBatch(): raw_input("Press Enter to continue...")
 
-    c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".png")
-    c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".pdf")
+    c1.Print("combine/plotsLimit/ExclusionLimits/MANtag_study/"+YEAR+suffix+".png")
+    c1.Print("combine/plotsLimit/ExclusionLimits/MANtag_study/"+YEAR+suffix+".pdf")
     if 'ah' in channel or 'sl' in channel:
-        c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".C")
-        c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".root")
+        c1.Print("combine/plotsLimit/ExclusionLimits/MANtag_study/"+YEAR+suffix+".C")
+        c1.Print("combine/plotsLimit/ExclusionLimits/MANtag_study/"+YEAR+suffix+".root")
 
     for t in THEORY:
         print "Model", t, ":",
@@ -334,8 +310,8 @@ def limit():
             if not (Theory[t].Eval(m) > Obs0s.Eval(m)) == (Theory[t].Eval(m+1) > Obs0s.Eval(m+1)): print m,
         print ""
 
-    return ##FIXME
-
+    return ##FIXME the paths in the following unused lines are not adjusted to have a separate MANtag_study directory
+        
 
     # ---------- Significance ----------
     c2 = TCanvas("c2", "Significance", 800, 600)

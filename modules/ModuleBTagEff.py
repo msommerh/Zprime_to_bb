@@ -109,6 +109,7 @@ class bTagEffProducer(Module):
         for ijet in range(event.nJet):
             if event.Jet_pt[ijet] < 30: continue
             if abs(event.Jet_eta[ijet]) > 2.5: continue
+            if event.Jet_jetId[ijet]<6: continue
             jetIds.append(ijet)
 
         if len(jetIds)<2: return False
