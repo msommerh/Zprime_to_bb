@@ -354,7 +354,7 @@ class ZprimetobbProducer(Module):
 
         ## Fill jet branches
         self.out.njets[0]       = len(jetIds)
-        
+      
         self.out.jpt_1[0]       = event.Jet_pt[jetIds[0]]
         self.out.jeta_1[0]      = event.Jet_eta[jetIds[0]]
         self.out.jphi_1[0]      = event.Jet_phi[jetIds[0]]

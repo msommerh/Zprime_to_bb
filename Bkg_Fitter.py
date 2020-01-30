@@ -71,7 +71,7 @@ SHOWERR     = True
 BLIND       = False
 VERBOSE     = options.verbose
 CUTCOUNT    = False
-VARBINS     = True ## FIXME testing dijet bins FIXME (currently turned on)
+VARBINS     = True
 BIAS        = options.bias
 YEAR        = options.year
 ISMC        = options.isMC
@@ -251,7 +251,7 @@ def dijet(category):
     
     lastBin = X_mass.getMax()
     if VARBINS: 
-        for b in narrow_bins: ##FIXME switched to narrow bins here
+        for b in narrow_bins: # switched to narrow bins here
             if b > xmax:
                 lastBin = b
                 break

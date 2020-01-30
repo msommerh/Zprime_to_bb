@@ -74,7 +74,7 @@ YEAR        = options.year
 VERBOSE     = options.verbose
 READTREE    = True
 ADDSELECTION= options.selection!=""
-VARBINS     = True ## FIXME testing dijet bins FIXME (currently turned on)
+VARBINS     = True
 
 X_MIN = 1530.
 X_MAX = 9067.
@@ -582,7 +582,7 @@ def signal(category):
             #jslope1 = gslope1.Eval(m)
             #jalpha2 = galpha2.Eval(m)
             #jslope2 = gslope2.Eval(m)
-            jmean = gmean.Eval(m, 0, "S")   ## checking if a spline yields nicer fits FIXME
+            jmean = gmean.Eval(m, 0, "S") 
             jsigma = gsigma.Eval(m, 0, "S")
             jalpha1 = galpha1.Eval(m, 0, "S")
             jslope1 = gslope1.Eval(m, 0, "S")

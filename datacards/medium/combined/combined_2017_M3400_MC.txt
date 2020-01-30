@@ -13,17 +13,17 @@ shapes Bkg_2017_mumu         mumu                  ./workspace/medium/MC_QCD_TTb
 shapes ZpBB_2017_mumu_M3400  mumu                  ./workspace/medium/MC_signal_2017_mumu.root Zprime_2017:ZpBB_2017_mumu_M3400
 shapes data_obs              mumu                  ./workspace/medium/MC_QCD_TTbar_2017_mumu.root Zprime_2017:data_obs
 ----------------------------------------------------------------------------------------------------------------------------------
-bin          bb             bq             mumu         
-observation  -1             -1             -1           
+bin          bb              bq              mumu          
+observation  -1              -1              -1            
 ----------------------------------------------------------------------------------------------------------------------------------
 bin                                     bb                    bb                    bq                    bq                    mumu                  mumu                
 process                                 ZpBB_2017_bb_M3400    Bkg_2017_bb           ZpBB_2017_bq_M3400    Bkg_2017_bq           ZpBB_2017_mumu_M3400  Bkg_2017_mumu       
 process                                 -2                    1                     -1                    2                     0                     3                   
 rate                                    1                     1                     1                     1                     1                     1                   
 ----------------------------------------------------------------------------------------------------------------------------------
-btag_2017_bb_M3400      lnN             1.09522074798         -                     -                     -                     -                     -                   
-btag_2017_bq_M3400      lnN             -                     -                     1.00911637193         -                     -                     -                   
-btag_2017_mumu_M3400    lnN             -                     -                     -                     -                     0.91922157993         -                   
+btag_2017_bb_M3400      lnN             1.09506067196         -                     -                     -                     -                     -                   
+btag_2017_bq_M3400      lnN             -                     -                     1.0088939076          -                     -                     -                   
+btag_2017_mumu_M3400    lnN             -                     -                     -                     -                     0.918796567111        -                   
 lumi                    lnN             1.026                 -                     1.026                 -                     1.026                 -                   
 CMS2017sig_mumu_p2_jer  param  0.0 1.0
 CMS2017sig_bb_p2_jer  param  0.0 1.0

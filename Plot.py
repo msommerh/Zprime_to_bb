@@ -60,7 +60,7 @@ BLIND       = False
 LUMI        = {"run2" : 137190, "2016" : 35920, "2017" : 41530, "2018" : 59740}
 ADDSELECTION= options.selection!=""
 SYNC        = options.sync
-BTAGGEFFVARS= ['jdeepFlavour']#["jCSV", "jdeepCSV", "jdeepFlavour"]
+BTAGGEFFVARS= ["jCSV", "jdeepCSV", "jdeepFlavour"]
 
 color = {'none': 920, 'qq': 1, 'bq': 632, 'bb': 600, 'mumu': 418}
 color_shift = {'none': 2, 'qq': 922, 'bq': 2, 'bb': 2, 'mumu':2}
@@ -68,6 +68,7 @@ if options.selection not in SELECTIONS.keys():
     print "invalid selection!"
     sys.exit()
 btag_colors = {"jdeepFlavour":418, "jdeepCSV":2, "jCSV":1}
+btag_titles = {"jCSV": "CSVv2", "jdeepCSV": "deepCSV", "jdeepFlavour": "deepJet"}
 
 ########## SAMPLES ##########
 data = ["data_obs"]
@@ -615,17 +616,20 @@ def acceptance(year):
         eff_dEta.SetPointError(n, 0, math.sqrt(nevtSign_dEta[m])/ngenSign[m])
 
     eff.SetMarkerColor(4)
-    eff.SetMarkerStyle(20)
+    eff.SetMarkerStyle(24)
+    eff.SetMarkerSize(2)
     eff.SetLineColor(4)
     eff.SetLineWidth(3)
     eff_eta.SetMarkerColor(2)
-    eff_eta.SetMarkerStyle(20)
+    eff_eta.SetMarkerStyle(23)
+    eff_eta.SetMarkerSize(2)
     eff_eta.SetLineColor(2)
     eff_eta.SetLineWidth(2)
     eff_eta.SetLineStyle(2)
-    eff_dEta.SetMarkerColor(8)
-    eff_dEta.SetMarkerStyle(20)
-    eff_dEta.SetLineColor(8)
+    eff_dEta.SetMarkerColor(418)
+    eff_dEta.SetMarkerStyle(23)
+    eff_dEta.SetMarkerSize(2)
+    eff_dEta.SetLineColor(418)
     eff_dEta.SetLineWidth(2)
     eff_dEta.SetLineStyle(2)
 
@@ -776,8 +780,6 @@ def btag_efficiency(cut, year, pT_range=None):
         if k in cut: 
             cut = cut.replace(k, aliasSM[k])
     
-    print "  cut    :", cut
-
     ### Create and fill MC histograms ###
     # Create dict
     file = {}
@@ -811,10 +813,6 @@ def btag_efficiency(cut, year, pT_range=None):
                 hist[s+"_"+var].Add(temp_hist)
                 temp_hist.Delete() 
 
-    for s in hist.keys():
-        print "hist[{}] :".format(s)
-        print hist[s].Print()   
- 
     fpr = {}
     tpr = {}
     thr = {}
@@ -839,7 +837,7 @@ def btag_efficiency(cut, year, pT_range=None):
         bkg_labels = np.zeros(len(bkg_weights))
         fpr[var], tpr[var], thr[var] = roc_curve(np.concatenate((sig_labels, bkg_labels)), np.array(vals+vals), sample_weight=np.concatenate((sig_weights,bkg_weights)))
     
-    canv = TCanvas('c', 'c', 600, 600)
+    canv = TCanvas('c', 'c', 500, 650)
     canv.SetGrid()
 
     graphs = {}
@@ -857,11 +855,11 @@ def btag_efficiency(cut, year, pT_range=None):
         graphs[var].GetYaxis().SetTitleOffset(1.4)
     leg = TLegend(0.65, 0.15, 0.9, 0.35)
     for j, var in enumerate(btag_vars):
-        leg.AddEntry(graphs[var], var[1:])
+        leg.AddEntry(graphs[var], btag_titles[var])
         if j==0:
             graphs[var].Draw("AL")
         else:
-            graphs[var].Draw("AL SAME")
+            graphs[var].Draw("L SAME")
     
     latex = TLatex(0.05, 0.5, str(pT_range[0])+'<p_{T}<'+str(pT_range[1])+' GeV')
     latex.SetTextSize(0.043)

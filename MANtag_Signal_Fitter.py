@@ -71,7 +71,7 @@ RATIO       = 4
 YEAR        = options.year
 VERBOSE     = options.verbose
 READTREE    = True
-VARBINS     = True
+VARBINS     = True #FIXME
 
 X_MIN = 1530.
 X_MAX = 9067.
@@ -272,8 +272,8 @@ def signal(category):
             
             for ss in pd:
 
-                if os.path.exists(NTUPLEDIR + ss + ".root"):
-                    treeSign[m].Add(NTUPLEDIR + ss + ".root")
+                if os.path.exists(NTUPLEDIR + ss +   "_"+BTAGGING+ ".root"):
+                    treeSign[m].Add(NTUPLEDIR + ss + "_"+BTAGGING+ ".root")
                 else:
                     print "found no file for sample:", ss
             
