@@ -174,6 +174,14 @@ fit on the MC signal:
 ```
 ./Signal_Fitter.py -y [year] -b [btagging]
 ```
+before running the signal fits for the first time, one might need to load the signal model:
+```
+cd PDFs/
+root -l
+.L HWWLVJRooPdfs.cxx++
+.q 
+cd ..
+```
 
 fit on MC background:
 ```
