@@ -505,20 +505,21 @@ SSM["Z"] = {
 
 SSM["BrZ"] = {}
 
-sin2_thetaW=0.233
-MT=172.2
+sin2_thetaW=0.233**2
+MT=175.
 nu_BR = 0.5
-lep_BR = 0.5 -2*sin2_thetaW + 4*sin2_thetaW**2
-up_BR = 0.5 - (4./3.)*sin2_thetaW + (16./9.)*sin2_thetaW**2
-down_BR = 0.5 - (2./3.)*sin2_thetaW + (4./9.)*sin2_thetaW**2
-Total_BR_no_top = 3*nu_BR + 3*lep_BR + 9*down_BR + 6*up_BR
+lep_BR = 0.5 -2*sin2_thetaW + 4*(sin2_thetaW**2)
+up_BR = 0.5 - (4./3.)*sin2_thetaW + (16./9.)*(sin2_thetaW**2)
+down_BR = 0.5 - (2./3.)*sin2_thetaW + (4./9.)*(sin2_thetaW**2)
+Total_width = 3*nu_BR + 3*lep_BR + 9*down_BR + 9*up_BR
 
 #print "SSM['BrZ'] = {"
 for m in sorted(SSM["Z"].keys()):
-    if m < 2*MT:
-        Branching_Ratio = (9*down_BR + 6*up_Br)/Total_BR_no_top
-    else:
-        Branching_Ratio = (9*down_BR + 6*up_BR)/(Total_BR_no_top+3*up_BR*(1.-((2*MT)/m)**2)**1.5)
+    #if m < 2*MT:
+    #    Branching_Ratio = (9*down_BR + 6*up_Br)/Total_BR_no_top
+    #else:
+    #    Branching_Ratio = (9*down_BR + 6*up_BR)/(Total_BR_no_top+3*up_BR*(1.-((2*MT)/m)**2)**1.5)
+    Branching_Ratio = 3*down_BR/Total_width
     SSM["BrZ"][m] = Branching_Ratio
 #    print m,": ", Branching_Ratio, ","
 #print "}"

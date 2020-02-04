@@ -125,7 +125,7 @@ def limit():
     particle = channel
     multF = ZPTOBB
     THEORY = ['A1', 'B3']
-    #if INCLUDEACC: THEORY.append('SSM')  ## FIXME FIXME FIXME
+    if INCLUDEACC: THEORY.append('SSM')
  
     suffix = "_"+BTAGGING
     if ISMC: suffix += "_MC"
@@ -187,10 +187,10 @@ def limit():
             else:
                 acc_factor = 1.
             if m < mass[0] or m > mass[-1]: continue
-            if t!= 'SSM' and m>4500: continue ## for now because I don't have the higher mass xs FIXME
+            if t!= 'SSM' and m>4500: continue ## I don't have the higher mass xs
             XsZ, XsZ_Up, XsZ_Down = 0., 0., 0.
             if t!='SSM':
-                XsZ = 1000.*HVT[t]['Z']['XS'][m]*0.12 #temporary BR value set to 0.12 FIXME
+                XsZ = 1000.*HVT[t]['Z']['XS'][m]*SSM["BrZ"][m] #assuming the same BR as the SSM Z' one
                 XsZ_Up = XsZ*(1.+math.hypot(HVT[t]['Z']['QCD'][m][0]-1., HVT[t]['Z']['PDF'][m][0]-1.))
                 XsZ_Down = XsZ*(1.-math.hypot(1.-HVT[t]['Z']['QCD'][m][0], 1.-HVT[t]['Z']['PDF'][m][0]))
             else:
@@ -277,7 +277,10 @@ def limit():
     Exp2s.GetYaxis().SetTitleOffset(1.25)
     Exp2s.GetYaxis().SetMoreLogLabels(True)
     Exp2s.GetYaxis().SetNoExponent(True)
-    Exp2s.GetYaxis().SetRangeUser(0.1, 5.e3)
+    if INCLUDEACC:
+        Exp2s.GetYaxis().SetRangeUser(0.05, 5.e3)
+    else:
+        Exp2s.GetYaxis().SetRangeUser(0.1, 5.e3)
     #else: Exp2s.GetYaxis().SetRangeUser(0.1, 1.e2)
     #Exp2s.GetXaxis().SetRangeUser(mass[0], min(mass[-1], MAXIMUM[channel] if channel in MAXIMUM else 1.e6))
     Exp2s.GetXaxis().SetRangeUser(SIGNALS[0], SIGNALS[-1])

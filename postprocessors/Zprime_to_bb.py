@@ -88,7 +88,7 @@ for n in range(int(ceil(float(len(infiles))/nFiles))):
         
         RunProcess = lambda : Run(subsample, branchsel, module2run, postfix, json, args.isMC)
         
-        if args.multiprocessing:
+        if args.multiprocessing:                     
             p = multiprocessing.Process(target=RunProcess)
             jobs.append(p)
             p.start()        

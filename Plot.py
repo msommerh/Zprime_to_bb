@@ -52,8 +52,8 @@ NTUPLEDIR   = global_paths.SKIMMEDDIR
 ACCEPTANCEDIR = "acceptance/"
 TRIGGERDIR = global_paths.SKIMMEDDIR+"TriggerStudy"
 SIGNAL      = 1 # Signal magnification factor
-#RATIO       = 4 # 0: No ratio plot; !=0: ratio between the top and bottom pads
-RATIO       = 0 # 0: No ratio plot; !=0: ratio between the top and bottom pads
+RATIO       = 4 # 0: No ratio plot; !=0: ratio between the top and bottom pads
+if options.blind: RATIO = 0
 NORM        = options.norm
 PARALLELIZE = False
 BLIND       = False
@@ -68,7 +68,7 @@ if options.selection not in SELECTIONS.keys():
     print "invalid selection!"
     sys.exit()
 btag_colors = {"jdeepFlavour":418, "jdeepCSV":2, "jCSV":1}
-btag_titles = {"jCSV": "CSVv2", "jdeepCSV": "deepCSV", "jdeepFlavour": "deepJet"}
+btag_titles = {"jCSV": "CSVv2", "jdeepCSV": "DeepCSV", "jdeepFlavour": "DeepJet"}
 
 ########## SAMPLES ##########
 data = ["data_obs"]
@@ -329,8 +329,8 @@ def plot(var, cut, year, norm=False, nm1=False):
                 res.SetBinContent(i, res.GetBinContent(i)/hist['BkgSum'].GetBinContent(i))
                 res.SetBinError(i, res.GetBinError(i)/hist['BkgSum'].GetBinContent(i))
         if 'sync' in hist:
-            res.SetMarkerColor(2)
-            res.SetMarkerStyle(31)
+            res.SetMarkerColor(1)
+            res.SetMarkerStyle(20)
             res.Reset()
             for i in range(0, res.GetNbinsX()+1):
                 x = hist['data_obs'].GetXaxis().GetBinCenter(i)
@@ -791,7 +791,20 @@ def btag_efficiency(cut, year, pT_range=None):
         tree[s] = TChain("tree")
         for j, ss in enumerate(sample[s]['files']):
             if year=="run2" or year in ss:
-                tree[s].Add(NTUPLEDIR + ss + ".root")
+                ### to run on big ntuples:
+                #k = 0
+                #while True:
+                #    if os.path.exists("/eos/user/m/msommerh/Zprime_to_bb_analysis/" + ss + "/" + ss+ "_flatTuple_{}.root".format(k)):
+                #        tree[s].Add("/eos/user/m/msommerh/Zprime_to_bb_analysis/" + ss + "/" + ss + "_flatTuple_{}.root".format(k))
+                #        k += 1
+                #    else:
+                #        print "found {} files for sample:".format(k), ss
+                #        break
+                #if k == 0:
+                #    print '  WARNING: files for sample', ss , 'do not exist, continuing'
+                #    return True 
+                ### end big ntuples
+                tree[s].Add(NTUPLEDIR + ss + ".root") ## to run on skimmed ntuples
         for var in btag_vars:
             hist[s+"_"+var] = TH1F(s+"_"+var, ";efficiency; mistag rate", nbins, min_, max_)
             for suf in ["_1", "_2"]: 
@@ -844,7 +857,7 @@ def btag_efficiency(cut, year, pT_range=None):
     for j, var in enumerate(btag_vars):
         graphs[var] = TGraph(len(tpr[var]), tpr[var], fpr[var])
         graphs[var].SetLineColor(btag_colors[var])
-        graphs[var].SetMarkerStyle(23)
+        graphs[var].SetMarkerStyle(1)
         graphs[var].SetMarkerColor(btag_colors[var])
         graphs[var].SetLineWidth(2)
 
@@ -857,9 +870,9 @@ def btag_efficiency(cut, year, pT_range=None):
     for j, var in enumerate(btag_vars):
         leg.AddEntry(graphs[var], btag_titles[var])
         if j==0:
-            graphs[var].Draw("AL")
+            graphs[var].Draw("APL")
         else:
-            graphs[var].Draw("L SAME")
+            graphs[var].Draw("PL SAME")
     
     latex = TLatex(0.05, 0.5, str(pT_range[0])+'<p_{T}<'+str(pT_range[1])+' GeV')
     latex.SetTextSize(0.043)

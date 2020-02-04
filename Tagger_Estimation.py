@@ -34,7 +34,7 @@ parser.add_option("-y", "--year", action="store", type="string", dest="year", de
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
 parser.add_option("-s", "--save", action="store_true", default=False, dest="save")
 parser.add_option("-n", "--norm", action="store_true", default=False, dest="norm")
-parser.add_option("-B", "--blind", action="store_true", default=False, dest="blind")
+parser.add_option("-B", "--blind", action="store_true", default=True, dest="blind")
 parser.add_option("-f", "--final", action="store_true", default=False, dest="final")
 (options, args) = parser.parse_args()
 
@@ -56,9 +56,13 @@ color = {'none': 920, 'qq': 1, 'bq': 632, 'bb': 600, 'mumu': 418}
 color_shift = {'none': 2, 'qq': 922, 'bq': 2, 'bb': 2, 'mumu':2}
 
 ########## SAMPLES ##########
-data = ["data_obs"]
+#data = ["data_obs"]
+data = []
 back = ["TTbar", "QCD"]
-sign = ['ZpBB_M1600', 'ZpBB_M1800', 'ZpBB_M2000', 'ZpBB_M2500', 'ZpBB_M3000', 'ZpBB_M3500', 'ZpBB_M4000', 'ZpBB_M4500', 'ZpBB_M5000', 'ZpBB_M5500', 'ZpBB_M6000','ZpBB_M7000', 'ZpBB_M8000']
+if options.save:
+    sign = ['ZpBB_M1600', 'ZpBB_M1800', 'ZpBB_M2000', 'ZpBB_M2500', 'ZpBB_M3000', 'ZpBB_M3500', 'ZpBB_M4000', 'ZpBB_M4500', 'ZpBB_M5000', 'ZpBB_M5500', 'ZpBB_M6000','ZpBB_M7000', 'ZpBB_M8000']
+else:
+    sign = ['ZpBB_M2000', 'ZpBB_M4000', 'ZpBB_M6000']
 ########## ######## ##########
 
 if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
@@ -243,8 +247,8 @@ def plot(var, cut, year, norm=False, nm1=False):
     hist['BkgSum'].SetFillColor(1)
     for i, s in enumerate(back): hist['BkgSum'].Add(hist[s])
     
-    if options.norm:
-        for i, s in enumerate(back + ['BkgSum']): hist[s].Scale(hist[data[0]].Integral()/hist['BkgSum'].Integral())
+    #if options.norm:
+    #    for i, s in enumerate(back + ['BkgSum']): hist[s].Scale(hist[data[0]].Integral()/hist['BkgSum'].Integral())
 
     # Create data and Bkg sum histograms
     if options.blind or 'SR' in channel:
@@ -254,7 +258,7 @@ def plot(var, cut, year, norm=False, nm1=False):
     hist['data_obs'].SetMarkerStyle(20)
     hist['data_obs'].SetMarkerSize(1.25)
     
-    for i, s in enumerate(data+back+sign+['BkgSum']): addOverflow(hist[s], False) # Add overflow
+    for i, s in enumerate(back+sign+['BkgSum']): addOverflow(hist[s], False) # Add overflow
     for i, s in enumerate(sign): hist[s].SetLineWidth(3)
     for i, s in enumerate(sign): sample[s]['plot'] = True#sample[s]['plot'] and s.startswith(channel[:2])
     

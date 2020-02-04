@@ -157,6 +157,8 @@ def signal(category):
     jid_2 = RooRealVar(   "jid_2",      "j2 ID",    -1.,   8.)
     jnmuons_1 = RooRealVar(   "jnmuons_1",      "j1 n_{#mu}",    -1.,   8.)
     jnmuons_2 = RooRealVar(   "jnmuons_2",      "j2 n_{#mu}",    -1.,   8.)
+    jmuonpt_1 = RooRealVar(   "jmuonpt_1",      "j1 muon pt",    0.,   13000.)
+    jmuonpt_2 = RooRealVar(   "jmuonpt_2",      "j2 muon pt",    0.,   13000.)
     nmuons = RooRealVar(    "nmuons",       "n_{#mu}",          -1.,   10.     )
     nelectrons = RooRealVar("nelectrons",    "n_{e}",            -1.,   10.     )
     HLT_AK8PFJet500         = RooRealVar("HLT_AK8PFJet500"         , "",  -1., 1.    )
@@ -180,7 +182,7 @@ def signal(category):
     # there is a maximum of 9 variables in the declaration, so the others need to be added with 'add'
     variables = RooArgSet(X_mass)
     variables.add(RooArgSet(j1_pt, jj_deltaEta, jbtag_WP_1, jbtag_WP_2, fatjetmass_1, fatjetmass_2, jnmuons_1, jnmuons_2, weight))
-    variables.add(RooArgSet(nmuons, nelectrons, jid_1, jid_2))
+    variables.add(RooArgSet(nmuons, nelectrons, jid_1, jid_2, jmuonpt_1, jmuonpt_2))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
     variables.add(RooArgSet(HLT_DoublePFJets100_CaloBTagDeepCSV_p71, HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets200_CaloBTagDeepCSV_p71, HLT_DoublePFJets350_CaloBTagDeepCSV_p71, HLT_DoublePFJets40_CaloBTagDeepCSV_p71))
     X_mass.setRange("X_reasonable_range", X_mass.getMin(), X_mass.getMax())
@@ -629,8 +631,10 @@ def signal(category):
 
         #signalNorm[m].setConstant(False)  ## newly put here to ensure it's freely floating in the combine fit
  
-    c1 = TCanvas("c1", "Crystal Ball", 1200, 1200) #if not isAH else 1200
-    c1.Divide(2, 3)
+    #c1 = TCanvas("c1", "Crystal Ball", 1200, 1200) #if not isAH else 1200
+    #c1.Divide(2, 3)
+    c1 = TCanvas("c1", "Crystal Ball", 1800, 800)
+    c1.Divide(3, 2)
     c1.cd(1)
     gmean.SetMinimum(0.)
     gmean.Draw("APL")

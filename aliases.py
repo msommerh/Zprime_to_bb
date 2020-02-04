@@ -16,8 +16,7 @@ AK8veto = " && !(fatjetmass_1>65 && fatjetmass_2>65)"
 electronVeto = " && nelectrons<1"
 muonVeto = " && nmuons<1"
 
-#tight_jetID = " && jid_1>1 && jid_2>1"
-tight_jetID = " && jid_1>5 && jid_2>5" #&& jcef_1<0.9 && jcef_2<0.9"
+tight_jetID = " && jid_1>5 && jid_2>5"
 
 preselection = "jj_mass_widejet>1530 && jj_deltaEta_widejet<1.1 && "
 
@@ -26,7 +25,7 @@ alias = { ## the same as above with the new btag_WP variable
     "preselection" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto,
     "2b" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1>={WP} && jbtag_WP_2>={WP}",
     "1b" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && ((jbtag_WP_1>={WP} && jbtag_WP_2<{WP}) || (jbtag_WP_1<{WP} && jbtag_WP_2>={WP}))",
-    "2mu": preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1<{WP} && jbtag_WP_2<{WP} && jnmuons_1>0 && jnmuons_2>0"
+    "2mu": preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1<{WP} && jbtag_WP_2<{WP} && jnmuons_1>0 && jnmuons_2>0"# && jmuonpt_1>5 && jmuonpt_2>5"
 }
 
 aliasSM = { ## a new btagging category that is semi medium, semi loose.
@@ -34,7 +33,7 @@ aliasSM = { ## a new btagging category that is semi medium, semi loose.
     "preselection" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto,
     "2b" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && ((jbtag_WP_1>=2 && jbtag_WP_2>=1) || (jbtag_WP_1>=1 && jbtag_WP_2>=2))",
     "1b" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && ((jbtag_WP_1>=2 && jbtag_WP_2<1) || (jbtag_WP_1<1 && jbtag_WP_2>=2))",
-    "2mu": preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1<2 && jbtag_WP_2<2 && jnmuons_1>0 && jnmuons_2>0"
+    "2mu": preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1<2 && jbtag_WP_2<2 && jnmuons_1>0 && jnmuons_2>0 && jnmuons_2>0"# && jmuopt_1>5 && jmuonpt_2>5"
 }
 
 alias["bb"] = alias["2b"]
