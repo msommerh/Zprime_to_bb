@@ -135,21 +135,23 @@ def processFile(sample, origin, target, verbose=False):
     totalEntries = 0.
 
 
-    file_list = [origin + "/" + sample + ".root"]
+    #file_list = [origin + "/" + sample + ".root"] ## FIXME this is the original line FIXME
     
-    #file_list = []
-    #j = 0
+    ##FIXME this here is for big ntuples: FIXME
+    file_list = []
+    j = 0
 
-    #while True:
-    #    if os.path.exists(origin + "/" + sample + "_flatTuple_{}.root".format(j)):
-    #        file_list.append(origin + "/" + sample + "_flatTuple_{}.root".format(j))
-    #        j += 1
-    #    else:
-    #        print "found {} files for sample:".format(j), sample
-    #        break
-    #if j == 0: 
-    #    print '  WARNING: files for sample', sample , 'do not exist, continuing'
-    #    return True
+    while True:
+        if os.path.exists(origin + "/" + sample + "_flatTuple_{}.root".format(j)):
+            file_list.append(origin + "/" + sample + "_flatTuple_{}.root".format(j))
+            j += 1
+        else:
+            print "found {} files for sample:".format(j), sample
+            break
+    if j == 0: 
+        print '  WARNING: files for sample', sample , 'do not exist, continuing'
+        return True
+    ##FIXME end big ntuples FIXME
 
     if isMC:
         for infile_name in file_list:
@@ -186,6 +188,7 @@ def processFile(sample, origin, target, verbose=False):
 
     # Open old files now to plug in weights
     for ref_file_name in file_list:
+        if not "2016_HT700to1000_flatTuple_1.root" in ref_file_name: continue ##FIXME FIXME
         print "working on file:", ref_file_name
 
         # Weighted output
@@ -319,10 +322,11 @@ else:
 
 jobs = []
 for d in sample_names:
-    #origin = global_paths.PRODUCTIONDIR+d        
-    #target = global_paths.WEIGHTEDDIR+d         
-    origin = global_paths.WEIGHTEDDIR[:-1]  
-    target = global_paths.SKIMMEDDIR[:-1]
+    if not "QCD_2016" in d: continue ##FIXME FIXME
+    origin = global_paths.PRODUCTIONDIR+d       ##FIXME FIXME FIXME 
+    target = global_paths.PRODUCTIONDIR+"weighted_large/"+d        ##FIXME FIXME FIXME 
+    #origin = global_paths.WEIGHTEDDIR[:-1]  
+    #target = global_paths.SKIMMEDDIR[:-1]
  
     print "working on",origin
     print "output will be stored in", target

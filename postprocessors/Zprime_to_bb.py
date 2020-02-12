@@ -67,7 +67,7 @@ for entry in filelist:
         if not entry.startswith("#"): 
                 filepath = entry.replace('\n','')
                 #filepath = filepath.replace('cms-xrd-global.cern.ch', 'xrootd-cms.infn.it')
-                #filepath = filepath.replace('cms-xrd-global.cern.ch', 'cmsxrootd.fnal.gov')
+                filepath = filepath.replace('cms-xrd-global.cern.ch', 'cmsxrootd.fnal.gov')
                 infiles.append(filepath)
 
 print ">>> %-10s = %s"%('output file',postfix)
@@ -88,7 +88,7 @@ for n in range(int(ceil(float(len(infiles))/nFiles))):
         
         RunProcess = lambda : Run(subsample, branchsel, module2run, postfix, json, args.isMC)
         
-        if args.multiprocessing:
+        if args.multiprocessing:                     
             p = multiprocessing.Process(target=RunProcess)
             jobs.append(p)
             p.start()        

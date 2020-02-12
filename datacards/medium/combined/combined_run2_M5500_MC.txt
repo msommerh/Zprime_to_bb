@@ -21,9 +21,9 @@ process                                 ZpBB_run2_bb_M5500    Bkg_run2_bb       
 process                                 -2                    1                     -1                    2                     0                     3                   
 rate                                    1                     1                     1                     1                     1                     1                   
 ----------------------------------------------------------------------------------------------------------------------------------
-btag_run2_bb_M5500      lnN             1.15515337883         -                     -                     -                     -                     -                   
-btag_run2_bq_M5500      lnN             -                     -                     1.00668929476         -                     -                     -                   
-btag_run2_mumu_M5500    lnN             -                     -                     -                     -                     0.856890378265        -                   
+btag_run2_bb_M5500      lnN             1.15511679775         -                     -                     -                     -                     -                   
+btag_run2_bq_M5500      lnN             -                     -                     1.0065225933          -                     -                     -                   
+btag_run2_mumu_M5500    lnN             -                     -                     -                     -                     0.856689296217        -                   
 lumi                    lnN             1.026                 -                     1.026                 -                     1.026                 -                   
 CMSrun2sig_bb_p1_jes  param  0.0 1.0
 CMSrun2sig_bq_p2_jer  param  0.0 1.0

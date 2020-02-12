@@ -21,9 +21,9 @@ process                                 ZpBB_run2_bb_M1500    Bkg_run2_bb       
 process                                 -2                    1                     -1                    2                     0                     3                   
 rate                                    1                     1                     1                     1                     1                     1                   
 ----------------------------------------------------------------------------------------------------------------------------------
-btag_run2_bb_M1500      lnN             1.13788802976         -                     -                     -                     -                     -                   
-btag_run2_bq_M1500      lnN             -                     -                     0.982163388549        -                     -                     -                   
-btag_run2_mumu_M1500    lnN             -                     -                     -                     -                     0.819149900001        -                   
+btag_run2_bb_M1500      lnN             1.13789802088         -                     -                     -                     -                     -                   
+btag_run2_bq_M1500      lnN             -                     -                     0.979797682972        -                     -                     -                   
+btag_run2_mumu_M1500    lnN             -                     -                     -                     -                     0.81466228337         -                   
 lumi                    lnN             1.026                 -                     1.026                 -                     1.026                 -                   
 CMSrun2sig_bb_p1_jes  param  0.0 1.0
 CMSrun2sig_bq_p2_jer  param  0.0 1.0

@@ -8,7 +8,7 @@ dijet_bins = [1, 3, 6, 10, 16, 23, 31, 40, 50, 61, 74, 88, 103, 119, 137, 156, 1
 
 working_points = {'loose': 1, 'medium': 2, 'tight': 3}
 
-#triggers = "(HLT_PFHT1050==1 || HLT_PFHT900==1 || HLT_PFJet500==1 || HLT_PFJet550==1 || HLT_CaloJet500_NoJetID==1 || HLT_CaloJet550_NoJetID==1 || HLT_AK8PFJet500==1 || HLT_AK8PFJet550==1)"
+reduced_triggers = "(HLT_PFHT1050==1 || HLT_PFHT900==1 || HLT_PFJet500==1 || HLT_PFJet550==1 || HLT_CaloJet500_NoJetID==1 || HLT_CaloJet550_NoJetID==1 || HLT_AK8PFJet500==1 || HLT_AK8PFJet550==1)"
 
 triggers = "(HLT_PFHT1050==1 || HLT_PFHT900==1 || HLT_PFJet500==1 || HLT_PFJet550==1 || HLT_CaloJet500_NoJetID==1 || HLT_CaloJet550_NoJetID==1 || HLT_AK8PFJet500==1 || HLT_AK8PFJet550==1 || HLT_DoublePFJets100_CaloBTagDeepCSV_p71==1 || HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71==1 || HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71==1 || HLT_DoublePFJets200_CaloBTagDeepCSV_p71==1 || HLT_DoublePFJets350_CaloBTagDeepCSV_p71==1 || HLT_DoublePFJets40_CaloBTagDeepCSV_p71==1)"
 
@@ -16,17 +16,16 @@ AK8veto = " && !(fatjetmass_1>65 && fatjetmass_2>65)"
 electronVeto = " && nelectrons<1"
 muonVeto = " && nmuons<1"
 
-tight_jetID = " && jid_1>1 && jid_2>1"
+tight_jetID = " && jid_1>5 && jid_2>5"
 
-#preselection = "jj_mass_widejet>1800 && jpt_1>600 && jj_deltaEta_widejet<1.1 && "
 preselection = "jj_mass_widejet>1530 && jj_deltaEta_widejet<1.1 && "
 
 alias = { ## the same as above with the new btag_WP variable
-    "preselection_noveto" : "jj_mass_widejet>1530 && jj_deltaEta_widejet<1.1"+tight_jetID,
+    "preselection_noveto" : "jj_mass_widejet>1530 && jj_deltaEta_widejet<1.1"+tight_jetID+" && "+reduced_triggers,
     "preselection" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto,
     "2b" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1>={WP} && jbtag_WP_2>={WP}",
     "1b" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && ((jbtag_WP_1>={WP} && jbtag_WP_2<{WP}) || (jbtag_WP_1<{WP} && jbtag_WP_2>={WP}))",
-    "2mu": preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1<{WP} && jbtag_WP_2<{WP} && jnmuons_1>0 && jnmuons_2>0"
+    "2mu": preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1<{WP} && jbtag_WP_2<{WP} && jnmuons_1>0 && jnmuons_2>0"# && jmuonpt_1>5 && jmuonpt_2>5"
 }
 
 aliasSM = { ## a new btagging category that is semi medium, semi loose.
@@ -34,7 +33,7 @@ aliasSM = { ## a new btagging category that is semi medium, semi loose.
     "preselection" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto,
     "2b" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && ((jbtag_WP_1>=2 && jbtag_WP_2>=1) || (jbtag_WP_1>=1 && jbtag_WP_2>=2))",
     "1b" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && ((jbtag_WP_1>=2 && jbtag_WP_2<1) || (jbtag_WP_1<1 && jbtag_WP_2>=2))",
-    "2mu": preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1<2 && jbtag_WP_2<2 && jnmuons_1>0 && jnmuons_2>0"
+    "2mu": preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1<2 && jbtag_WP_2<2 && jnmuons_1>0 && jnmuons_2>0 && jnmuons_2>0"# && jmuopt_1>5 && jmuonpt_2>5"
 }
 
 alias["bb"] = alias["2b"]

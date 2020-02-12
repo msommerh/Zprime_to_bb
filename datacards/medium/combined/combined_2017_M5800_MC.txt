@@ -13,17 +13,17 @@ shapes Bkg_2017_mumu         mumu                  ./workspace/medium/MC_QCD_TTb
 shapes ZpBB_2017_mumu_M5800  mumu                  ./workspace/medium/MC_signal_2017_mumu.root Zprime_2017:ZpBB_2017_mumu_M5800
 shapes data_obs              mumu                  ./workspace/medium/MC_QCD_TTbar_2017_mumu.root Zprime_2017:data_obs
 ----------------------------------------------------------------------------------------------------------------------------------
-bin          bb              bq              mumu          
-observation  -1              -1              -1            
+bin          bb             bq             mumu         
+observation  -1             -1             -1           
 ----------------------------------------------------------------------------------------------------------------------------------
 bin                                     bb                    bb                    bq                    bq                    mumu                  mumu                
 process                                 ZpBB_2017_bb_M5800    Bkg_2017_bb           ZpBB_2017_bq_M5800    Bkg_2017_bq           ZpBB_2017_mumu_M5800  Bkg_2017_mumu       
 process                                 -2                    1                     -1                    2                     0                     3                   
 rate                                    1                     1                     1                     1                     1                     1                   
 ----------------------------------------------------------------------------------------------------------------------------------
-btag_2017_bb_M5800      lnN             1.09717473758         -                     -                     -                     -                     -                   
-btag_2017_bq_M5800      lnN             -                     -                     1.01029885494         -                     -                     -                   
-btag_2017_mumu_M5800    lnN             -                     -                     -                     -                     0.923161462939        -                   
+btag_2017_bb_M5800      lnN             1.09697219935         -                     -                     -                     -                     -                   
+btag_2017_bq_M5800      lnN             -                     -                     1.0108060474          -                     -                     -                   
+btag_2017_mumu_M5800    lnN             -                     -                     -                     -                     0.92453955049         -                   
 lumi                    lnN             1.026                 -                     1.026                 -                     1.026                 -                   
 CMS2017sig_mumu_p2_jer  param  0.0 1.0
 CMS2017sig_bb_p2_jer  param  0.0 1.0

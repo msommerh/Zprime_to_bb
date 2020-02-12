@@ -11,7 +11,7 @@ import math
 from array import array
 from ROOT import ROOT, gROOT, gStyle, gRandom, TSystemDirectory
 from ROOT import TFile, TChain, TTree, TCut, TF1, TH1F, TH2F, THStack
-from ROOT import TGraph, TGraphErrors, TGraphAsymmErrors, TVirtualFitter
+from ROOT import TGraph, TGraphErrors, TGraphAsymmErrors, TVirtualFitter, TMultiGraph
 from ROOT import TStyle, TCanvas, TPad
 from ROOT import TLegend, TLatex, TText, TLine
 
@@ -38,6 +38,7 @@ parser.add_option("-e", "--efficiency", action="store_true", default=False, dest
 parser.add_option("-s", "--selection", action="store", type="string", dest="selection", default="")
 parser.add_option("-a", "--acceptance", action="store_true", default=False, dest="acceptance")
 parser.add_option("-t", "--trigger", action="store_true", default=False, dest="trigger")
+parser.add_option("", "--btagging_eff", action="store_true", default=False, dest="btagging_eff")
 parser.add_option("", "--sync", action="store_true", default=False, dest="sync")
 (options, args) = parser.parse_args()
 
@@ -52,18 +53,22 @@ ACCEPTANCEDIR = "acceptance/"
 TRIGGERDIR = global_paths.SKIMMEDDIR+"TriggerStudy"
 SIGNAL      = 1 # Signal magnification factor
 RATIO       = 4 # 0: No ratio plot; !=0: ratio between the top and bottom pads
+if options.blind: RATIO = 0
 NORM        = options.norm
 PARALLELIZE = False
 BLIND       = False
 LUMI        = {"run2" : 137190, "2016" : 35920, "2017" : 41530, "2018" : 59740}
 ADDSELECTION= options.selection!=""
 SYNC        = options.sync
+BTAGGEFFVARS= ["jCSV", "jdeepCSV", "jdeepFlavour"]
 
 color = {'none': 920, 'qq': 1, 'bq': 632, 'bb': 600, 'mumu': 418}
 color_shift = {'none': 2, 'qq': 922, 'bq': 2, 'bb': 2, 'mumu':2}
 if options.selection not in SELECTIONS.keys():
     print "invalid selection!"
     sys.exit()
+btag_colors = {"jdeepFlavour":418, "jdeepCSV":2, "jCSV":1}
+btag_titles = {"jCSV": "CSVv2", "jdeepCSV": "DeepCSV", "jdeepFlavour": "DeepJet"}
 
 ########## SAMPLES ##########
 data = ["data_obs"]
@@ -207,8 +212,18 @@ def plot(var, cut, year, norm=False, nm1=False):
                 for j in range(first, last): hist[s].SetBinContent(j, -1.e-4)
     
     if SYNC and var == "jj_mass_widejet" and year in ["2016", "2017", "2018"]:
-        iFile = TFile("sync/JetHT_run" + year + "_red_cert_scan.root", "READ")
-        hist['sync'] = iFile.Get("Mjj")
+        #iFile = TFile("sync/JetHT_run" + year + "_red_cert_scan.root", "READ")
+        #hist['sync'] = iFile.Get("Mjj")
+        if year == '2016':
+            iFile = TFile("sync/2016/2016_07Aug2017_1246_1p1.root", "READ")
+            hist['sync'] = iFile.Get("h_mjj_data")
+        elif year == '2017':
+            iFile = TFile("sync/2017/histos_Run2017BCDEF_17Nov2017_JEC2017_mjj1530_cemf_lt_0p8_deltaETA_lt_1p1.root", "READ")
+            hist['sync'] = iFile.Get("h_mjj_data")
+        elif year == '2018':
+            iFile = TFile("sync/2018/Double_sideband_inputs_18v10_preliminary_v2.root", "READ")
+            hist['sync'] = iFile.Get("h_mjj")
+   
 #        hist['sync'] = tmp.Rebin(len(dijet_bins)-1, "sync", array('d', dijet_bins))
 #        hist['sync'] = tmp.Rebin(100, "sync")
         hist['sync'].SetMarkerStyle(31)
@@ -281,7 +296,8 @@ def plot(var, cut, year, norm=False, nm1=False):
  
     #if log: bkg.SetMinimum(1)
     leg.Draw()
-    drawCMS(LUMI[year], "Preliminary")
+    #drawCMS(LUMI[year], "Preliminary")
+    drawCMS(LUMI[year], "Work in Progress", suppressCMS=True)
     drawRegion('XVH'+channel, True)
     drawAnalysis(channel)
     
@@ -292,7 +308,10 @@ def plot(var, cut, year, norm=False, nm1=False):
         c1.cd(2)
         err = hist['BkgSum'].Clone("BkgErr;")
         err.SetTitle("")
-        err.GetYaxis().SetTitle("Data / MC")
+        if SYNC:
+            err.GetYaxis().SetTitle("Nano/Mini")
+        else:
+            err.GetYaxis().SetTitle("Data / MC")
         err.GetYaxis().SetTitleOffset(0.9)
  
         err.GetXaxis().SetRangeUser(variable[var]['min'], variable[var]['max'])  
@@ -310,8 +329,8 @@ def plot(var, cut, year, norm=False, nm1=False):
                 res.SetBinContent(i, res.GetBinContent(i)/hist['BkgSum'].GetBinContent(i))
                 res.SetBinError(i, res.GetBinError(i)/hist['BkgSum'].GetBinContent(i))
         if 'sync' in hist:
-            res.SetMarkerColor(2)
-            res.SetMarkerStyle(31)
+            res.SetMarkerColor(1)
+            res.SetMarkerStyle(20)
             res.Reset()
             for i in range(0, res.GetNbinsX()+1):
                 x = hist['data_obs'].GetXaxis().GetBinCenter(i)
@@ -329,6 +348,7 @@ def plot(var, cut, year, norm=False, nm1=False):
             if len(err.GetXaxis().GetBinLabel(1))==0: # Bin labels: not a ordinary plot
                 drawRatio(hist['data_obs'], hist['BkgSum'])
                 drawStat(hist['data_obs'], hist['BkgSum'])
+        if SYNC: err.GetYaxis().SetRangeUser(0.9,1.1)
 
     c1.Update()
 
@@ -364,7 +384,8 @@ def efficiency(year):
     eff = {}
     #if ADDSELECTION: eff_add = {}
     
-    channels = ['none', 'qq', 'bq', 'bb', 'mumu']
+    #channels = ['none', 'qq', 'bq', 'bb', 'mumu']
+    channels = ['qq', 'bq', 'bb', 'mumu']
 
     for channel in channels:
         treeSign = {}
@@ -513,7 +534,8 @@ def efficiency(year):
     eff["sum"].GetXaxis().SetTitleOffset(1.05)
     eff["sum"].GetXaxis().SetRangeUser(1500, 8000)
     c1.SetTopMargin(0.05)
-    drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    #drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
     drawAnalysis("")
 
     #if ADDSELECTION:
@@ -594,17 +616,20 @@ def acceptance(year):
         eff_dEta.SetPointError(n, 0, math.sqrt(nevtSign_dEta[m])/ngenSign[m])
 
     eff.SetMarkerColor(4)
-    eff.SetMarkerStyle(20)
+    eff.SetMarkerStyle(24)
+    eff.SetMarkerSize(2)
     eff.SetLineColor(4)
     eff.SetLineWidth(3)
     eff_eta.SetMarkerColor(2)
-    eff_eta.SetMarkerStyle(20)
+    eff_eta.SetMarkerStyle(23)
+    eff_eta.SetMarkerSize(2)
     eff_eta.SetLineColor(2)
     eff_eta.SetLineWidth(2)
     eff_eta.SetLineStyle(2)
-    eff_dEta.SetMarkerColor(8)
-    eff_dEta.SetMarkerStyle(20)
-    eff_dEta.SetLineColor(8)
+    eff_dEta.SetMarkerColor(418)
+    eff_dEta.SetMarkerStyle(23)
+    eff_dEta.SetMarkerSize(2)
+    eff_dEta.SetLineColor(418)
     eff_dEta.SetLineWidth(2)
     eff_dEta.SetLineStyle(2)
 
@@ -645,7 +670,8 @@ def acceptance(year):
     eff.GetXaxis().SetTitleOffset(1.05)
     eff.GetXaxis().SetRangeUser(1500, 8000)
     c1.SetTopMargin(0.05)
-    drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    #drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
     drawAnalysis("")
 
     c1.Print("plots/Efficiency/"+year+"_Acceptance.pdf") 
@@ -729,18 +755,150 @@ def trigger_efficiency(year):
     eff.GetXaxis().SetTitleOffset(1.05)
     eff.GetXaxis().SetLimits(700., 5000.)
     c1.SetTopMargin(0.05)
-    drawCMS(-1, "Preliminary", year=year) #Preliminary
+    #drawCMS(-1, "Preliminary", year=year) #Preliminary
+    drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
     drawAnalysis("")
 
     c1.Print("plots/Efficiency/trigger_"+year+".pdf") 
     c1.Print("plots/Efficiency/trigger_"+year+".png") 
 
+def btag_efficiency(cut, year, pT_range=None):
+    ### Preliminary Operations ###
+    from root_numpy import hist2array
+    from sklearn.metrics import roc_curve
+    import numpy as np
+    genPoints = [1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+    signal = ['ZpBB_M'+str(x) for x in genPoints]
+    btag_vars = BTAGGEFFVARS
+    nbins = 100
+    min_, max_ = 0., 1.   
+ 
+    treeRead = True
+    channel = cut
+    isAH = False 
+    for k in sorted(alias.keys(), key=len, reverse=True):
+        if k in cut: 
+            cut = cut.replace(k, aliasSM[k])
+    
+    ### Create and fill MC histograms ###
+    # Create dict
+    file = {}
+    tree = {}
+    hist = {}
+    
+    ### Create and fill MC histograms ###
+    for i, s in enumerate(back+signal):
+        tree[s] = TChain("tree")
+        for j, ss in enumerate(sample[s]['files']):
+            if year=="run2" or year in ss:
+                ### to run on big ntuples:
+                #k = 0
+                #while True:
+                #    if os.path.exists("/eos/user/m/msommerh/Zprime_to_bb_analysis/" + ss + "/" + ss+ "_flatTuple_{}.root".format(k)):
+                #        tree[s].Add("/eos/user/m/msommerh/Zprime_to_bb_analysis/" + ss + "/" + ss + "_flatTuple_{}.root".format(k))
+                #        k += 1
+                #    else:
+                #        print "found {} files for sample:".format(k), ss
+                #        break
+                #if k == 0:
+                #    print '  WARNING: files for sample', ss , 'do not exist, continuing'
+                #    return True 
+                ### end big ntuples
+                tree[s].Add(NTUPLEDIR + ss + ".root") ## to run on skimmed ntuples
+        for var in btag_vars:
+            hist[s+"_"+var] = TH1F(s+"_"+var, ";efficiency; mistag rate", nbins, min_, max_)
+            for suf in ["_1", "_2"]: 
+                temp_hist = TH1F(s+"_"+var+suf, ";efficiency; mistag rate", nbins, min_, max_)
+                temp_hist.Sumw2()
+                if pT_range is not None:
+                    pT_cut = " && jpt"+suf+">="+str(pT_range[0])+" && jpt"+suf+"<"+str(pT_range[1])
+                else:  
+                    pT_cut = ""
+                if s in signal:
+                    flavourcut = " && abs(jflavour"+suf+")==5"
+                else:
+                    flavourcut = " && (abs(jflavour"+suf+")<4 || abs(jflavour"+suf+")==9 || abs(jflavour"+suf+")==21)" ## FIXME this currently excludes charms
+                if len(cut)==0: flavourcut = flavourcut[4:]
+                cutstring = "(eventWeightLumi)" + "*("+cut+flavourcut+pT_cut+")"
+                tree[s].Project(s+"_"+var+suf, var+suf, cutstring)
+                if not tree[s].GetTree()==None: hist[s+"_"+var].SetOption("%s" % tree[s].GetTree().GetEntriesFast())
+                #hist[s][var+suf].Scale(sample[s]['weight'] if hist[s].Integral() >= 0 else 0)
+                hist[s+"_"+var].Add(temp_hist)
+                temp_hist.Delete() 
+
+    fpr = {}
+    tpr = {}
+    thr = {}
+    for var in btag_vars:
+        hist_sig = TH1F(var+"_sig", ";efficiency; mistag rate", nbins, min_, max_) 
+        hist_bkg = TH1F(var+"_bkg", ";efficiency; mistag rate", nbins, min_, max_) 
+        for i, s in enumerate(signal):
+            hist_sig.Add(hist[s+"_"+var])
+        for i, s in enumerate(back):
+            hist_bkg.Add(hist[s+"_"+var])
+        sig_arr, sig_edges = hist2array(hist_sig, return_edges=True)
+        bkg_arr, bkg_edges = hist2array(hist_bkg, return_edges=True)
+        assert len(sig_edges[0]) == len(bkg_edges[0])
+        vals = []
+        sig_weights = []
+        bkg_weights = []
+        for j, entry in enumerate(sig_edges[0][:-1]):
+            vals.append(0.5*(sig_edges[0][j]+sig_edges[0][j+1]))
+            sig_weights.append(sig_arr[j])
+            bkg_weights.append(bkg_arr[j])
+        sig_labels = np.ones(len(sig_weights))
+        bkg_labels = np.zeros(len(bkg_weights))
+        fpr[var], tpr[var], thr[var] = roc_curve(np.concatenate((sig_labels, bkg_labels)), np.array(vals+vals), sample_weight=np.concatenate((sig_weights,bkg_weights)))
+    
+    canv = TCanvas('c', 'c', 500, 650)
+    canv.SetGrid()
+
+    graphs = {}
+    for j, var in enumerate(btag_vars):
+        graphs[var] = TGraph(len(tpr[var]), tpr[var], fpr[var])
+        graphs[var].SetLineColor(btag_colors[var])
+        graphs[var].SetMarkerStyle(1)
+        graphs[var].SetMarkerColor(btag_colors[var])
+        graphs[var].SetLineWidth(2)
+
+        graphs[var].SetTitle(";b tagging efficiency;mistag rate (udsg jets)")
+        graphs[var].GetXaxis().SetLimits(0.,1.)
+        graphs[var].GetHistogram().SetMinimum(1e-4)
+        graphs[var].GetHistogram().SetMaximum(1.)
+        graphs[var].GetYaxis().SetTitleOffset(1.4)
+    leg = TLegend(0.65, 0.15, 0.9, 0.35)
+    for j, var in enumerate(btag_vars):
+        leg.AddEntry(graphs[var], btag_titles[var])
+        if j==0:
+            graphs[var].Draw("APL")
+        else:
+            graphs[var].Draw("PL SAME")
+    
+    latex = TLatex(0.05, 0.5, str(pT_range[0])+'<p_{T}<'+str(pT_range[1])+' GeV')
+    latex.SetTextSize(0.043)
+    latex.Draw()
+
+    leg.Draw()
+    canv.SetLogy()
+
+    if pT_range is not None:
+        pt_suff = "pT{}to{}".format(pT_range[0], pT_range[1])
+    else:
+        pt_suff = "incl_pT"
+    canv.Print("plots/btag_eff/ROC_{}_{}.png".format(year,pt_suff))
+    canv.Print("plots/btag_eff/ROC_{}_{}.pdf".format(year,pt_suff))
+
+ 
 if options.efficiency:
     efficiency(options.year)
 elif options.acceptance:
     acceptance(options.year)
 elif options.trigger:
     trigger_efficiency(options.year)
+elif options.btagging_eff:
+    pt_ranges = [(30,200),(200,400),(400,600),(600,800),(800,1000),(1000,1400),(1400,1800),(1800,2200),(2200,2600),(2600,3000)]
+    for pt_range in pt_ranges:
+        btag_efficiency(options.cut, options.year, pT_range=pt_range)
 else:
     plot(options.variable, options.cut, options.year)
 

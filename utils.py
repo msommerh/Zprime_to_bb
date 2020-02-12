@@ -515,7 +515,7 @@ def getChannel(channel):
     
     return text
 
-def drawCMS(lumi, text, onTop=False, year=''):
+def drawCMS(lumi, text, onTop=False, year='', suppressCMS=False):
     latex = TLatex()
     latex.SetNDC()
     latex.SetTextSize(0.045)
@@ -543,8 +543,9 @@ def drawCMS(lumi, text, onTop=False, year=''):
     if not onTop: latex.SetTextAlign(11)
     latex.SetTextFont(62)
     latex.SetTextSize(0.05 if len(text)>0 else 0.06)
-    if not onTop: latex.DrawLatex(0.15, 0.88 if len(text)>0 else 0.85, "CMS")
-    else: latex.DrawLatex(0.24, 0.9925, "CMS")
+    if not suppressCMS:
+        if not onTop: latex.DrawLatex(0.15, 0.88 if len(text)>0 else 0.85, "CMS")
+        else: latex.DrawLatex(0.24, 0.9925, "CMS")
     latex.SetTextSize(0.04)
     latex.SetTextFont(52)
     if not onTop: latex.DrawLatex(0.15, 0.84, text)
@@ -817,4 +818,12 @@ def drawCut(hist):
     line1.SetLineColor(1)
     line1.Draw()
 
-
+def extend_binning(n, binning):
+    import numpy as np
+    new_binning = []
+    for i, lower_edge in enumerate(binning[:-1]):
+        temp = np.linspace(binning[i], binning[i+1], n)
+        if i!=0: temp = temp[1:]
+        for entry in temp:
+            new_binning.append(int(np.ceil(entry)))
+    return new_binning

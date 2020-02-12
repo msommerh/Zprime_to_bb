@@ -6,6 +6,7 @@ from ROOT import TFile, TTree, TLorentzVector, TObject, TH1, TH1D, TF1, TH1F
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 from TreeProducerCommon import TreeProducerCommon
+import ROOT
 #from PileupWeightTool import PileupWeightTool
 import math
 
@@ -29,8 +30,8 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('jeta_1'         , float)
         self.addBranch('jphi_1'         , float)
         self.addBranch('jmass_1'        , float)
-        #self.addBranch('jCSV_1'         , float)
-        #self.addBranch('jdeepCSV_1'     , float)
+        self.addBranch('jCSV_1'         , float)
+        self.addBranch('jdeepCSV_1'     , float)
         self.addBranch('jdeepFlavour_1' , float)
         self.addBranch('jnconst_1'      , int)
         self.addBranch('jchf_1'         , float)
@@ -51,8 +52,8 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('jeta_2'         , float)
         self.addBranch('jphi_2'         , float)
         self.addBranch('jmass_2'        , float)
-        #self.addBranch('jCSV_2'         , float)
-        #self.addBranch('jdeepCSV_2'     , float)
+        self.addBranch('jCSV_2'         , float)
+        self.addBranch('jdeepCSV_2'     , float)
         self.addBranch('jdeepFlavour_2' , float)
         self.addBranch('jnconst_2'      , int)
         self.addBranch('jchf_2'         , float)
@@ -210,14 +211,17 @@ class ZprimetobbProducer(Module):
         """Process event, return True (go to next module) or False (fail, go to next event)."""
       
         if self.isMC:
-                GenWeight = -1. if event.genWeight<0 else 1.
                 PUWeight = 1. #self.puTool.getWeight(event.Pileup_nTrueInt)
+                GenWeight = 1.
                 if 'signal' in self.name.lower():
 
                     jetIds = [ ]
                     for ijet in range(event.nJet):
                         if event.Jet_pt[ijet] < 30: continue
                         if abs(event.Jet_eta[ijet]) > 2.5: continue
+                        if event.Jet_jetId[ijet]<6: continue
+                        #if event.Jet_chEmEF[ijet]>0.9: continue ##FIXME
+                        #if (self.year==2017 or self.year==2018) and event.Jet_chEmEF[ijet]>0.8:continue
                         jetIds.append(ijet)
 
                     BTagAK4Weight_deepJet       = self.btagToolAK4_deepJet.getWeight(event,jetIds, "central")  
@@ -226,6 +230,7 @@ class ZprimetobbProducer(Module):
 
                     self.out.events.Fill(0., BTagAK4Weight_deepJet) 
                 else:
+                    GenWeight = -1. if event.genWeight<0 else 1.
                     self.out.events.Fill(0., GenWeight)
                 try:
                     LHEWeight = event.LHEWeight_originalXWGTUP
@@ -266,6 +271,9 @@ class ZprimetobbProducer(Module):
         for ijet in range(event.nJet):
             if event.Jet_pt[ijet] < 30: continue
             if abs(event.Jet_eta[ijet]) > 2.5: continue
+            if event.Jet_jetId[ijet]<6: continue                                                    
+            #if event.Jet_chEmEF[ijet]>0.9: continue ## FIXME
+            #if (self.year==2017 or self.year==2018) and event.Jet_chEmEF[ijet]>0.8:continue
             jetIds.append(ijet)
             jetHT += event.Jet_pt[ijet]
             if event.Jet_btagDeepFlavB[ijet] >= self.btagLoose: jetBTagLoose += 1
@@ -299,7 +307,6 @@ class ZprimetobbProducer(Module):
         
         ## Dijet-based event selections
         if self.out.jj_mass[0] < 800: return False  # will need to change this when deriving the trigger efficiency
-        #if self.out.jj_deltaEta[0]>1.1: return False
         
         j1_p4_lepcorr = j1_p4 * (1. + event.Jet_chEmEF[jetIds[0]]+event.Jet_muEF[jetIds[0]])
         j2_p4_lepcorr = j2_p4 * (1. + event.Jet_chEmEF[jetIds[1]]+event.Jet_muEF[jetIds[1]])
@@ -316,6 +323,9 @@ class ZprimetobbProducer(Module):
         for ijet in range(event.nJet):
             if ijet == jetIds[0] or ijet == jetIds[1]: continue
             if event.Jet_pt[ijet] < 30 or abs(event.Jet_eta[ijet]) > 2.5: continue
+            if event.Jet_jetId[ijet]<6: continue                                                    
+            #if event.Jet_chEmEF[ijet]>0.9: continue ## FIXME
+            #if (self.year==2017 or self.year==2018) and event.Jet_chEmEF[ijet]>0.8:continue
             j_p4 = TLorentzVector()
             j_p4.SetPtEtaPhiM(event.Jet_pt[ijet], event.Jet_eta[ijet], event.Jet_phi[ijet], event.Jet_mass[ijet])
             if j1_p4.DeltaR(j_p4) < 1.1: wj1_p4 += j_p4
@@ -344,13 +354,13 @@ class ZprimetobbProducer(Module):
 
         ## Fill jet branches
         self.out.njets[0]       = len(jetIds)
-        
+      
         self.out.jpt_1[0]       = event.Jet_pt[jetIds[0]]
         self.out.jeta_1[0]      = event.Jet_eta[jetIds[0]]
         self.out.jphi_1[0]      = event.Jet_phi[jetIds[0]]
         self.out.jmass_1[0]     = event.Jet_mass[jetIds[0]]
-        #self.out.jCSV_1[0]      = event.Jet_btagCSVV2[jetIds[0]]
-        #self.out.jdeepCSV_1[0]  = event.Jet_btagDeepB[jetIds[0]]
+        self.out.jCSV_1[0]      = event.Jet_btagCSVV2[jetIds[0]]
+        self.out.jdeepCSV_1[0]  = event.Jet_btagDeepB[jetIds[0]]
         self.out.jdeepFlavour_1[0]  = event.Jet_btagDeepFlavB[jetIds[0]]
         self.out.jnconst_1[0] = event.Jet_nConstituents[jetIds[0]]
         self.out.jchf_1[0] = event.Jet_chHEF[jetIds[0]]
@@ -373,8 +383,8 @@ class ZprimetobbProducer(Module):
         self.out.jeta_2[0]      = event.Jet_eta[jetIds[1]]
         self.out.jphi_2[0]      = event.Jet_phi[jetIds[1]]
         self.out.jmass_2[0]     = event.Jet_mass[jetIds[1]]
-        #self.out.jCSV_2[0]      = event.Jet_btagCSVV2[jetIds[1]]
-        #self.out.jdeepCSV_2[0]  = event.Jet_btagDeepB[jetIds[1]]
+        self.out.jCSV_2[0]      = event.Jet_btagCSVV2[jetIds[1]]
+        self.out.jdeepCSV_2[0]  = event.Jet_btagDeepB[jetIds[1]]
         self.out.jdeepFlavour_2[0]  = event.Jet_btagDeepFlavB[jetIds[1]]
         self.out.jnconst_2[0] = event.Jet_nConstituents[jetIds[1]]
         self.out.jchf_2[0] = event.Jet_chHEF[jetIds[1]]
@@ -410,7 +420,7 @@ class ZprimetobbProducer(Module):
         if event.nFatJet >= 2 and event.FatJet_pt[1] > 200.:
             self.out.fatjetmass_2[0] = event.FatJet_msoftdrop[1]
             self.out.fatjettau21_2[0] = (event.FatJet_tau2[1]/event.FatJet_tau1[1]) if event.FatJet_tau1[1] > 0. else -1.
-            self.out.fatjettau21ddt_2[0] = self.out.fatjettau21_1[1] + 0.082*ROOT.TMath.Log(event.FatJet_msoftdrop[1]**2/event.FatJet_pt[1])
+            self.out.fatjettau21ddt_2[0] = self.out.fatjettau21_2[0] + 0.082*ROOT.TMath.Log(event.FatJet_msoftdrop[1]**2/event.FatJet_pt[1])
             self.out.fatjetHbbvsQCD_2[0] = event.FatJet_deepTagMD_HbbvsQCD[1]
             self.out.fatjetWvsQCD_2[0] = event.FatJet_deepTagMD_WvsQCD[1]
             self.out.fatjetZHbbvsQCD_2[0] = event.FatJet_deepTagMD_ZHbbvsQCD[1]

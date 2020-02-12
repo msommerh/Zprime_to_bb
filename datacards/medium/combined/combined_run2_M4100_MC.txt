@@ -21,9 +21,9 @@ process                                 ZpBB_run2_bb_M4100    Bkg_run2_bb       
 process                                 -2                    1                     -1                    2                     0                     3                   
 rate                                    1                     1                     1                     1                     1                     1                   
 ----------------------------------------------------------------------------------------------------------------------------------
-btag_run2_bb_M4100      lnN             1.15417084738         -                     -                     -                     -                     -                   
-btag_run2_bq_M4100      lnN             -                     -                     1.00650028273         -                     -                     -                   
-btag_run2_mumu_M4100    lnN             -                     -                     -                     -                     0.853779248191        -                   
+btag_run2_bb_M4100      lnN             1.15409525047         -                     -                     -                     -                     -                   
+btag_run2_bq_M4100      lnN             -                     -                     1.00628439156         -                     -                     -                   
+btag_run2_mumu_M4100    lnN             -                     -                     -                     -                     0.853473852474        -                   
 lumi                    lnN             1.026                 -                     1.026                 -                     1.026                 -                   
 CMSrun2sig_bb_p1_jes  param  0.0 1.0
 CMSrun2sig_bq_p2_jer  param  0.0 1.0

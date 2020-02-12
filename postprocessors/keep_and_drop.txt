@@ -6,7 +6,7 @@ drop *GenJet*
 drop *GenPart*
 drop *Dressed*
 drop *TrigObj*
-drop *SV*
+drop SV*
 drop HTXS*
 drop Tau_*
 drop L1*
