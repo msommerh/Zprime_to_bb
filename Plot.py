@@ -38,6 +38,7 @@ parser.add_option("-e", "--efficiency", action="store_true", default=False, dest
 parser.add_option("-s", "--selection", action="store", type="string", dest="selection", default="")
 parser.add_option("-a", "--acceptance", action="store_true", default=False, dest="acceptance")
 parser.add_option("-t", "--trigger", action="store_true", default=False, dest="trigger")
+parser.add_option("", "--separate", action="store_true", default=False, dest="separate")
 parser.add_option("", "--btagging_eff", action="store_true", default=False, dest="btagging_eff")
 parser.add_option("", "--sync", action="store_true", default=False, dest="sync")
 (options, args) = parser.parse_args()
@@ -61,13 +62,14 @@ LUMI        = {"run2" : 137190, "2016" : 35920, "2017" : 41530, "2018" : 59740}
 ADDSELECTION= options.selection!=""
 SYNC        = options.sync
 BTAGGEFFVARS= ["jCSV", "jdeepCSV", "jdeepFlavour"]
+SEPARATE    = options.separate
 
 color = {'none': 920, 'qq': 1, 'bq': 632, 'bb': 600, 'mumu': 418}
 color_shift = {'none': 2, 'qq': 922, 'bq': 2, 'bb': 2, 'mumu':2}
 if options.selection not in SELECTIONS.keys():
     print "invalid selection!"
     sys.exit()
-btag_colors = {"jdeepFlavour":418, "jdeepCSV":2, "jCSV":1}
+btag_colors = {"jdeepFlavour":801, "jdeepCSV":6, "jCSV":4}
 btag_titles = {"jCSV": "CSVv2", "jdeepCSV": "DeepCSV", "jdeepFlavour": "DeepJet"}
 
 ########## SAMPLES ##########
@@ -297,7 +299,8 @@ def plot(var, cut, year, norm=False, nm1=False):
     #if log: bkg.SetMinimum(1)
     leg.Draw()
     #drawCMS(LUMI[year], "Preliminary")
-    drawCMS(LUMI[year], "Work in Progress", suppressCMS=True)
+    #drawCMS(LUMI[year], "Work in Progress", suppressCMS=True)
+    drawCMS(LUMI[year], "", suppressCMS=True)
     drawRegion('XVH'+channel, True)
     drawAnalysis(channel)
     
@@ -380,9 +383,12 @@ def plot(var, cut, year, norm=False, nm1=False):
 def efficiency(year):
     import numpy as np
     from root_numpy import tree2array, fill_hist
+    from aliases import AK8veto, electronVeto, muonVeto
     genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
     eff = {}
-    #if ADDSELECTION: eff_add = {}
+    vetoes = {"AK8":AK8veto, "electron": electronVeto, "muon": muonVeto}
+    VETO = "AK8" ##could change the veto to investigate here
+    if SEPARATE: eff_add = {}
     
     #channels = ['none', 'qq', 'bq', 'bb', 'mumu']
     channels = ['qq', 'bq', 'bb', 'mumu']
@@ -392,50 +398,50 @@ def efficiency(year):
         ngenSign = {}
         nevtSign = {}
         eff[channel] = TGraphErrors()
-        #if ADDSELECTION:
-        #    nevtSign_add = {}
-        #    eff_add[channel] = TGraphErrors()
+        if SEPARATE:
+            nevtSign_add = {}
+            eff_add[channel] = TGraphErrors()
 
         for i, m in enumerate(genPoints):
             signName = "ZpBB_M"+str(m)
             ngenSign[m] = 0.
             nevtSign[m] = 0.
-            #if ADDSELECTION: nevtSign_add[m] = 0.
+            if SEPARATE: nevtSign_add[m] = 0.
             for j, ss in enumerate(sample[signName]['files']):
                 if year=="run2" or year in ss:
                     sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
                     ngenSign[m] += sfile.Get("Events").GetBinContent(1) 
                     treeSign[m] = sfile.Get("tree")
                     if BTAGGING=='semimedium':
-                        if ADDSELECTION:
-                            temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=aliasSM[channel]+SELECTIONS[options.selection])
-                        else:
-                            temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=aliasSM[channel]) 
+                        #if SEPARATE:
+                        #    temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=aliasSM[channel].replace(vetoes[VETO], ""))
+                        #else:
+                        temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=aliasSM[channel]) 
                         temp_hist = TH1F('pass', 'pass', 1,0,1)                                     
                         fill_hist(temp_hist, np.zeros(len(temp_array)), weights=temp_array)         
                         nevtSign[m] += temp_hist.GetBinContent(1)                                   
                         temp_array=None; temp_hist.Reset()                                          
-                        #if ADDSELECTION: 
-                        #    temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=aliasSM[channel]+SELECTIONS[options.selection]) 
-                        #    temp_hist = TH1F('pass', 'pass', 1,0,1)                                     
-                        #    fill_hist(temp_hist, np.zeros(len(temp_array)), weights=temp_array)         
-                        #    nevtSign[m] += temp_hist.GetBinContent(1)                                   
-                        #    temp_array=None; temp_hist.Reset()                                          
+                        if SEPARATE: 
+                            temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=aliasSM[channel].replace(vetoes[VETO], "")) 
+                            temp_hist = TH1F('pass', 'pass', 1,0,1)                                     
+                            fill_hist(temp_hist, np.zeros(len(temp_array)), weights=temp_array)         
+                            nevtSign[m] += temp_hist.GetBinContent(1)                                   
+                            temp_array=None; temp_hist.Reset()                                          
                     else:
-                        if ADDSELECTION:
-                            temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=alias[channel].format(WP=working_points[BTAGGING])+SELECTIONS[options.selection])               
-                        else:
-                            temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=alias[channel].format(WP=working_points[BTAGGING]))
+                        #if SEPARATE:
+                        #    temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=alias[channel].format(WP=working_points[BTAGGING]).replace(vetoes[VETO], ""))               
+                        #else:
+                        temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=alias[channel].format(WP=working_points[BTAGGING]))
                         temp_hist = TH1F('pass', 'pass', 1,0,1)                                     
                         fill_hist(temp_hist, np.zeros(len(temp_array)), weights=temp_array)         
                         nevtSign[m] += temp_hist.GetBinContent(1)                                   
                         temp_array=None; temp_hist.Reset()                                          
-                        #if ADDSELECTION: 
-                        #    temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=alias[channel].format(WP=working_points[BTAGGING])+SELECTIONS[options.selection])
-                        #    temp_hist = TH1F('pass', 'pass', 1,0,1)                                     
-                        #    fill_hist(temp_hist, np.zeros(len(temp_array)), weights=temp_array)         
-                        #    nevtSign_add[m] += temp_hist.GetBinContent(1)                                   
-                        #    temp_array=None; temp_hist.Reset()                                          
+                        if SEPARATE: 
+                            temp_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection=alias[channel].format(WP=working_points[BTAGGING]).replace(vetoes[VETO], ""))
+                            temp_hist = TH1F('pass', 'pass', 1,0,1)                                     
+                            fill_hist(temp_hist, np.zeros(len(temp_array)), weights=temp_array)         
+                            nevtSign_add[m] += temp_hist.GetBinContent(1)                                   
+                            temp_array=None; temp_hist.Reset()                                          
 
                     sfile.Close()
                     print channel, ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
@@ -443,21 +449,21 @@ def efficiency(year):
             n = eff[channel].GetN()
             eff[channel].SetPoint(n, m, nevtSign[m]/ngenSign[m])
             eff[channel].SetPointError(n, 0, math.sqrt(nevtSign[m])/ngenSign[m])
-            #if ADDSELECTION:
-            #    eff_add[channel].SetPoint(n, m, nevtSign_add[m]/ngenSign[m])
-            #    eff_add[channel].SetPointError(n, 0, math.sqrt(nevtSign_add[m])/ngenSign[m])
+            if SEPARATE:
+                eff_add[channel].SetPoint(n, m, nevtSign_add[m]/ngenSign[m])
+                eff_add[channel].SetPointError(n, 0, math.sqrt(nevtSign_add[m])/ngenSign[m])
 
         eff[channel].SetMarkerColor(color[channel])
         eff[channel].SetMarkerStyle(20)
         eff[channel].SetLineColor(color[channel])
         eff[channel].SetLineWidth(2)
 
-        #if ADDSELECTION:
-        #    eff_add[channel].SetMarkerColor(color[channel]+color_shift[channel])
-        #    eff_add[channel].SetMarkerStyle(21)
-        #    eff_add[channel].SetLineColor(color[channel]+color_shift[channel])
-        #    eff_add[channel].SetLineWidth(2)
-        #    eff_add[channel].SetLineStyle(7)
+        if SEPARATE:
+            eff_add[channel].SetMarkerColor(color[channel]+color_shift[channel])
+            eff_add[channel].SetMarkerStyle(21)
+            eff_add[channel].SetLineColor(color[channel]+color_shift[channel])
+            eff_add[channel].SetLineWidth(2)
+            eff_add[channel].SetLineStyle(7)
 
         if channel=='qq' or channel=='none': eff[channel].SetLineStyle(3)
 
@@ -470,28 +476,31 @@ def efficiency(year):
     eff["sum"].SetMarkerColor(1)
     eff["sum"].SetLineWidth(2)
     
-    #if ADDSELECTION:
-    #    eff_add["sum"] = TGraphErrors(n)
-    #    eff_add["sum"].SetMarkerStyle(25)
-    #    eff_add["sum"].SetMarkerColor(1)
-    #    eff_add["sum"].SetLineWidth(2)
-    #    eff_add["sum"].SetLineStyle(7)
+    if SEPARATE:
+        eff_add["sum"] = TGraphErrors(n)
+        eff_add["sum"].SetMarkerStyle(25)
+        eff_add["sum"].SetMarkerColor(1)
+        eff_add["sum"].SetLineWidth(2)
+        eff_add["sum"].SetLineStyle(7)
 
     for i in range(n):
         tot, mass = 0., 0.
-        #if ADDSELECTION: tot_add = 0.
+        if SEPARATE: tot_add = 0.
         for channel in channels:
             if channel=='qq' or channel=='none': continue #not sure if I should include 2mu category in sum
             if eff[channel].GetN() > i:
                 tot += eff[channel].GetY()[i]
-                #if ADDSELECTION: tot_add += eff_add[channel].GetY()[i]
+                if SEPARATE: tot_add += eff_add[channel].GetY()[i]
                 mass = eff[channel].GetX()[i]
                 if tot > maxEff: maxEff = tot
         eff["sum"].SetPoint(i, mass, tot)
-        #if ADDSELECTION: eff_add["sum"].SetPoint(i, mass, tot_add)
+        if SEPARATE: eff_add["sum"].SetPoint(i, mass, tot_add)
 
 
-    leg = TLegend(0.15, 0.60, 0.95, 0.8)
+    if SEPARATE:
+        leg = TLegend(0.15, 0.50, 0.95, 0.8)
+    else:
+        leg = TLegend(0.15, 0.60, 0.95, 0.8)
     leg.SetBorderSize(0)
     leg.SetFillStyle(0) #1001
     leg.SetFillColor(0)
@@ -499,34 +508,37 @@ def efficiency(year):
     for i, channel in enumerate(channels):
         if eff[channel].GetN() > 0: 
             leg.AddEntry(eff[channel], getChannel(channel), "pl")
-            #if ADDSELECTION: leg.AddEntry(eff_add[channel], getChannel(channel)+" "+options.selection, "pl") 
-    #if ADDSELECTION: 
-    #    leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])*0.045)
-    #else:
-    leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])/2.*0.045)
-    legS = TLegend(0.5, 0.85-0.045, 0.9, 0.85)
+            if SEPARATE: leg.AddEntry(eff_add[channel], getChannel(channel)+" no "+VETO+"-veto", "pl") 
+    if SEPARATE: 
+        leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])*0.045)
+    else:
+        leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])/2.*0.045)
+    if SEPARATE:
+        legS = TLegend(0.5, 0.8-0.045, 0.9, 0.85)
+    else:
+        legS = TLegend(0.5, 0.85-0.045, 0.9, 0.85)
     legS.SetBorderSize(0)
     legS.SetFillStyle(0) #1001
     legS.SetFillColor(0)
     legS.AddEntry(eff['sum'], "Total b tag efficiency (1 b tag + 2 b tag + 2 #mu)", "pl")
-    #if ADDSELECTION: legS.AddEntry(eff_add['sum'], "Total b tag efficiency (1 b tag + 2 b tag + 2 #mu) "+options.selection, "pl")
+    if SEPARATE: legS.AddEntry(eff_add['sum'], "Total b tag efficiency, no "+VETO+"-veto", "pl")
     c1 = TCanvas("c1", "Signal Efficiency", 1200, 800)
     c1.cd(1)
     eff['sum'].Draw("APL")
-    #if ADDSELECTION: eff_add['sum'].Draw("SAME, PL")
+    if SEPARATE: eff_add['sum'].Draw("SAME, PL")
     for i, channel in enumerate(channels): 
         eff[channel].Draw("SAME, PL")
-        #if ADDSELECTION: eff_add[channel].Draw("SAME, PL")
+        if SEPARATE: eff_add[channel].Draw("SAME, PL")
     leg.Draw()
     legS.Draw()
     setHistStyle(eff["sum"], 1.1)
     eff["sum"].SetTitle(";m_{Z'} (GeV);Acceptance #times efficiency")
     eff["sum"].SetMinimum(0.)
     eff["sum"].SetMaximum(max(1., maxEff*1.5)) #0.65
-    #if ADDSELECTION: 
-    #    eff_add["sum"].SetTitle(";m_{Z'} (GeV);Acceptance #times efficiency")
-    #    eff_add["sum"].SetMinimum(0.)
-    #    eff_add["sum"].SetMaximum(1.)
+    if SEPARATE: 
+        eff_add["sum"].SetTitle(";m_{Z'} (GeV);Acceptance #times efficiency")
+        eff_add["sum"].SetMinimum(0.)
+        eff_add["sum"].SetMaximum(1.)
 
     eff["sum"].GetXaxis().SetTitleSize(0.045)
     eff["sum"].GetYaxis().SetTitleSize(0.045)
@@ -535,15 +547,16 @@ def efficiency(year):
     eff["sum"].GetXaxis().SetRangeUser(1500, 8000)
     c1.SetTopMargin(0.05)
     #drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
-    drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
+    #drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
+    drawCMS(-1, "", year=year, suppressCMS=True)
     drawAnalysis("")
 
-    #if ADDSELECTION:
-    #    c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+"_"+options.selection+".pdf") 
-    #    c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+"_"+options.selection+".png") 
-    #else:
-    c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+".pdf") 
-    c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+".png") 
+    if SEPARATE:
+        c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+"_no"+VETO+"veto.pdf") 
+        c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+"_no"+VETO+"veto.png") 
+    else:
+        c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+".pdf") 
+        c1.Print("plots/Efficiency/"+year+"_"+BTAGGING+".png") 
 
     # print
     print "category",
@@ -671,19 +684,26 @@ def acceptance(year):
     eff.GetXaxis().SetRangeUser(1500, 8000)
     c1.SetTopMargin(0.05)
     #drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
-    drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
+    #drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
+    drawCMS(-1, "", year=year, suppressCMS=True)
     drawAnalysis("")
 
     c1.Print("plots/Efficiency/"+year+"_Acceptance.pdf") 
     c1.Print("plots/Efficiency/"+year+"_Acceptance.png") 
 
 
-def trigger_efficiency(year): 
+def trigger_efficiency(year, separate=False): 
     from root_numpy import root2array, fill_hist
-    from aliases import triggers   
+    from aliases import triggers, triggers_PFHT, triggers_Jet, triggers_BTag 
     import numpy as np
+    #spec_triggers = {"PFHT": triggers_PFHT, "Jet": triggers_Jet, "BTag": triggers_BTag}
+    spec_triggers = {"HT/Jet": "("+triggers_PFHT+" || "+triggers_Jet+")", "BTag": triggers_BTag}
+    spec_triggers_colors = {"PFHT": 418, "Jet": 4, "BTag": 6, "HT/Jet": 4, "total": 2}
 
     hist_pass = TH1F("pass", "pass", 100, 0., 10000.)
+    if separate:
+        hist_pass_spec = {}
+        for trig in spec_triggers.keys(): hist_pass_spec[trig] = TH1F("pass_"+trig, "pass_"+trig, 100, 0., 10000.)
     hist_all = TH1F("all", "all", 100, 0., 10000.)
 
     file_list = []
@@ -714,8 +734,12 @@ def trigger_efficiency(year):
         fill_hist(hist_all, temp_array)
         temp_array = root2array(file_name, treename='tree', branches='jj_mass_widejet', selection="jj_deltaEta_widejet<1.1 && "+triggers)
         fill_hist(hist_pass, temp_array)
-        temp_array=None 
-   
+        if separate:
+            for trig in spec_triggers.keys():
+                temp_array = root2array(file_name, treename='tree', branches='jj_mass_widejet', selection="jj_deltaEta_widejet<1.1 && "+spec_triggers[trig])
+                fill_hist(hist_pass_spec[trig], temp_array)
+        temp_array=None
+
     import array
     from aliases import dijet_bins 
     binning=[]
@@ -725,17 +749,36 @@ def trigger_efficiency(year):
     binning_ = array.array('d', binning)
     hist_pass2 = hist_pass.Rebin(len(binning_)-1, "hist_pass_rebinned", binning_)
     hist_all2 = hist_all.Rebin(len(binning_)-1, "hist_all_rebinned", binning_)
+
+    if separate:
+        hist_pass_spec2 = {}
+        for trig in spec_triggers.keys():
+            hist_pass_spec2[trig] = hist_pass_spec[trig].Rebin(len(binning_)-1, "hist_pass_"+trig+"_rebinned", binning_)      
    
     hist_pass2.Sumw2()
     hist_all2.Sumw2()        
     eff = TGraphAsymmErrors()
     eff.Divide(hist_pass2, hist_all2)
 
-    eff.SetMarkerColor(2)
-    eff.SetMarkerStyle(1)
-    eff.SetLineColor(2)
+    eff.SetMarkerColor(spec_triggers_colors["total"])
+    if separate:
+        eff.SetMarkerStyle(5)
+    else:
+        eff.SetMarkerStyle(1)
+    eff.SetLineColor(spec_triggers_colors["total"])
     eff.SetLineWidth(2)
 
+    if separate:
+        eff_spec = {}
+        for trig in spec_triggers.keys():
+            hist_pass_spec2[trig].Sumw2()
+            eff_spec[trig] = TGraphAsymmErrors()
+            eff_spec[trig].Divide(hist_pass_spec2[trig], hist_all2)
+            eff_spec[trig].SetMarkerColor(spec_triggers_colors[trig])
+            eff_spec[trig].SetMarkerStyle(1)
+            eff_spec[trig].SetLineColor(spec_triggers_colors[trig])
+            eff_spec[trig].SetLineWidth(2)
+       
     one_line = TGraph()
     one_line.SetPoint(0, 0., 1.)
     one_line.SetPoint(1, 10000., 1.)
@@ -749,6 +792,29 @@ def trigger_efficiency(year):
     eff.SetMinimum(0.)
     eff.SetMaximum(1.4) #0.65
 
+    ## new
+    dijet_bin_centers = []
+    for b, lthr in enumerate(dijet_bins[:-1]):
+        if lthr<1200 or lthr > 2500: continue
+        dijet_bin_centers.append(0.5*(dijet_bins[b]+dijet_bins[b+1]))
+    print "total trigger efficiency:"
+    for cval in dijet_bin_centers:
+         print cval,":", eff.Eval(cval)
+    ## end new
+
+    if separate:
+        leg = TLegend(0.65,0.75, 0.9, 0.95)
+        leg.AddEntry(eff, "total")
+        for trig in spec_triggers.keys():
+            leg.AddEntry(eff_spec[trig], trig+"-based")
+            eff_spec[trig].Draw("P SAME")
+            ## new
+            print trig, "trigger efficiency"
+            for cval in dijet_bin_centers:
+                print cval,":", eff_spec[trig].Eval(cval)
+            ## end new
+        leg.Draw()
+
     eff.GetXaxis().SetTitleSize(0.045)
     eff.GetYaxis().SetTitleSize(0.045)
     eff.GetYaxis().SetTitleOffset(1.1)
@@ -756,11 +822,15 @@ def trigger_efficiency(year):
     eff.GetXaxis().SetLimits(700., 5000.)
     c1.SetTopMargin(0.05)
     #drawCMS(-1, "Preliminary", year=year) #Preliminary
-    drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
+    #drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
+    drawCMS(-1, "", year=year, suppressCMS=True)
     drawAnalysis("")
 
-    c1.Print("plots/Efficiency/trigger_"+year+".pdf") 
-    c1.Print("plots/Efficiency/trigger_"+year+".png") 
+    suffix = ""
+    if separate: suffix = "_sep"
+
+    c1.Print("plots/Efficiency/trigger_"+year+suffix+".pdf") 
+    c1.Print("plots/Efficiency/trigger_"+year+suffix+".png") 
 
 def btag_efficiency(cut, year, pT_range=None):
     ### Preliminary Operations ###
@@ -894,7 +964,10 @@ if options.efficiency:
 elif options.acceptance:
     acceptance(options.year)
 elif options.trigger:
-    trigger_efficiency(options.year)
+    if not SEPARATE:
+        trigger_efficiency(options.year, separate=False)
+    else:
+        trigger_efficiency(options.year, separate=True)
 elif options.btagging_eff:
     pt_ranges = [(30,200),(200,400),(400,600),(600,800),(800,1000),(1000,1400),(1400,1800),(1800,2200),(2200,2600),(2600,3000)]
     for pt_range in pt_ranges:

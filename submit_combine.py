@@ -39,7 +39,7 @@ else:
 
 YEAR=args.year
 if YEAR=='run2c':
-    print "Pring running combine on separate fits for each year of run2..."
+    print "Running combine on separate fits for each year of run2..."
     YEAR='run2'
     separate_years=True
 else:

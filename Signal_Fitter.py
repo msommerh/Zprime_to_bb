@@ -421,6 +421,7 @@ def signal(category):
 
 
     # ====== CONTROL PLOT ======
+    color_scheme = [636, 635, 634, 633, 632, 633, 636, 635, 634, 633, 632, 633, 636, 635, 634, 633, 632, 633, 636, 635, 634, 633, 632, 633, 636, 635, 634, 633, 632, 633, 636, 635, 634, 633, 632, 633, 636, 635, 634, 633, 632, 633]
     c_signal = TCanvas("c_signal", "c_signal", 800, 600)
     c_signal.cd()
     frame_signal = X_mass.frame()
@@ -429,11 +430,12 @@ def signal(category):
             #print "color:",(j%9)+1
             #print "signalNorm[m].getVal() =", signalNorm[m].getVal()
             #print "RooAbsReal.NumEvent =", RooAbsReal.NumEvent
-            signal[m].plotOn(frame_signal, RooFit.LineColor((j%9)+1), RooFit.Normalization(signalNorm[m].getVal(), RooAbsReal.NumEvent), RooFit.Range("X_reasonable_range"))
+            signal[m].plotOn(frame_signal, RooFit.LineColor(color_scheme[j]), RooFit.Normalization(signalNorm[m].getVal(), RooAbsReal.NumEvent), RooFit.Range("X_reasonable_range"))
     frame_signal.GetXaxis().SetRangeUser(0, 10000)
     frame_signal.Draw()
     #drawCMS(-1, "Simulation Preliminary", year=YEAR)
-    drawCMS(-1, "Work in Progress", year=YEAR, suppressCMS=True)
+    #drawCMS(-1, "Work in Progress", year=YEAR, suppressCMS=True)
+    drawCMS(-1, "", year=YEAR, suppressCMS=True)
     drawAnalysis(category)
     drawRegion(category)
 
@@ -681,7 +683,8 @@ def signal(category):
     gnorm.GetXaxis().SetRangeUser(genPoints[0]-100, genPoints[-1]+100)
     gnorm.GetYaxis().SetRangeUser(0., gnorm.GetMaximum()*1.25)
     #drawCMS(-1, "Simulation Preliminary", year=YEAR)
-    drawCMS(-1, "Work in Progress", year=YEAR, suppressCMS=True) 
+    #drawCMS(-1, "Work in Progress", year=YEAR, suppressCMS=True) 
+    drawCMS(-1, "", year=YEAR, suppressCMS=True) 
     drawAnalysis(category)
     drawRegion(category)
     c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.pdf")
@@ -787,7 +790,8 @@ def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=No
     frame.GetYaxis().SetTitleOffset(1.4)
     frame.Draw()
     #drawCMS(LUMI, cmsLabel)
-    drawCMS(LUMI, "Work in Progress", suppressCMS=True)
+    #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
+    drawCMS(LUMI, "", suppressCMS=True)
     drawAnalysis(channel)
     drawRegion(channel + ("" if isData and not isCategory else ('SR' if 'SR' in name else ('SB' if 'SB' in name else ""))), True)
     if isSignal: drawMass("M_{Z'} = "+mass+" GeV")

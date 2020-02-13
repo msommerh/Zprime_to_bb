@@ -60,6 +60,8 @@ ISMC        = options.isMC
 CATEGORY    = options.category
 INCLUDEACC  = options.Acceptance
 
+CAT_LABELS  = {'bb': "2 b tag", 'bq': "1 b tag", 'mumu': "2 #mu"}
+
 if YEAR not in ['2016', '2017', '2018', 'run2', 'run2c']:
     print "unknown year:", YEAR
     sys.exit()
@@ -122,7 +124,7 @@ def limit():
         particleP = "X"
     else:
         particleP = "Z'"
-    particle = channel
+    particle = 'b#bar{b}'
     multF = ZPTOBB
     THEORY = ['A1', 'B3']
     if INCLUDEACC: THEORY.append('SSM')
@@ -137,8 +139,11 @@ def limit():
         filename = "./combine/limits/" + BTAGGING + "/combined_run2/"+ YEAR + "_M%d.txt"
     else:
         filename = "./combine/limits/" + BTAGGING + "/"+ YEAR + "_M%d.txt"
-    if CATEGORY!="": 
-        filename = filename.replace(BTAGGING + "/", BTAGGING + "/single_category/"+CATEGORY+"_")
+    if CATEGORY!="":
+        if SY:
+            filename = filename.replace(BTAGGING + "/combined_run2/", BTAGGING + "/single_category/combined_run2/"+CATEGORY+"_")
+        else:
+            filename = filename.replace(BTAGGING + "/", BTAGGING + "/single_category/"+CATEGORY+"_")
         suffix += "_"+CATEGORY
     if ISMC: filename = filename.replace(".txt", "_MC.txt")
     mass, val = fillValues(filename)
@@ -186,8 +191,10 @@ def limit():
                 acc_factor = ACCEPTANCE[m]
             else:
                 acc_factor = 1.
-            if m < mass[0] or m > mass[-1]: continue
-            if t!= 'SSM' and m>4500: continue ## I don't have the higher mass xs
+            if m < SIGNALS[0] or m > SIGNALS[-1]: continue
+            #if m < mass[0] or m > mass[-1]: continue
+            #if t!= 'SSM' and m>4500: continue ## I don't have the higher mass xs
+            if m>4500: continue
             XsZ, XsZ_Up, XsZ_Down = 0., 0., 0.
             if t!='SSM':
                 XsZ = 1000.*HVT[t]['Z']['XS'][m]*SSM["BrZ"][m] #assuming the same BR as the SSM Z' one
@@ -195,8 +202,8 @@ def limit():
                 XsZ_Down = XsZ*(1.-math.hypot(1.-HVT[t]['Z']['QCD'][m][0], 1.-HVT[t]['Z']['PDF'][m][0]))
             else:
                 XsZ = 1000.*SSM['Z'][m]*SSM["BrZ"][m]
-                XsZ_Up = XsZ
-                XsZ_Down = XsZ
+                XsZ_Up = XsZ*(1.+math.hypot(HVT['A1']['Z']['QCD'][m][0]-1., HVT['A1']['Z']['PDF'][m][0]-1.))
+                XsZ_Down = XsZ*(1.-math.hypot(1.-HVT['A1']['Z']['QCD'][m][0], 1.-HVT['A1']['Z']['PDF'][m][0]))
      
             n = Theory[t].GetN()
             Theory[t].SetPoint(n, m, XsZ*acc_factor)
@@ -289,7 +296,12 @@ def limit():
     #drawRegion(channel, True)
     drawRegion("", True)
     #drawCMS(LUMI, "Simulation Preliminary") #Preliminary
-    drawCMS(LUMI, "Work in Progress", suppressCMS=True)
+    if CATEGORY=="": 
+        #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
+        drawCMS(LUMI, "", suppressCMS=True)
+    else:
+         #drawCMS(LUMI, "Work in Progress, "+CAT_LABELS[CATEGORY], suppressCMS=True)       
+         drawCMS(LUMI, CAT_LABELS[CATEGORY], suppressCMS=True)       
 
     # legend
     top = 0.9

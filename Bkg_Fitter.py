@@ -340,27 +340,31 @@ def dijet(category):
         CL_high = False
         for o1 in range(1, 5):
             o2 = min(o1 + 1, 5)
-            fout.write( "%d par & %.2f & %.2f & %d & " % (o1+1, RSS[o1]["chi2"], RSS[o1]["rss"], RSS[o1]["nbins"]-RSS[o1]["npar"]))
             if o2 > len(RSS):
+                fout.write( "%d par & %.2f & %.2f & %d & " % (o1+1, RSS[o1]["chi2"], RSS[o1][
+"rss"], RSS[o1]["nbins"]-RSS[o1]["npar"]))
                 fout.write(r"\\")
                 fout.write("\n")
                 continue #order==0 and 
+
             CL = fisherTest(RSS[o1]['rss'], RSS[o2]['rss'], o1+1., o2+1., RSS[o1]["nbins"])
-            fout.write("CL=%.3f " % (CL))
             if CL > 0.10: # The function with less parameters is enough
                 if not CL_high:
                     order = o1
-                    #fout.write( "%d par are sufficient " % (o1+1))
+                    fout.write( "\\rowcolor{MarkerColor}\n")
                     CL_high=True
             else:
                 #fout.write( "%d par are needed " % (o2+1))
                 if not CL_high:
                     order = o2
+            fout.write( "%d par & %.2f & %.2f & %d & " % (o1+1, RSS[o1]["chi2"], RSS[o1]["rss"], RSS[o1]["nbins"]-RSS[o1]["npar"]))
+            fout.write("CL=%.3f " % (CL))
             fout.write(r"\\")
             fout.write("\n")
         fout.write("\hline")
         fout.write("\n")
         fout.write(r"\end{tabular}")
+
     print "saved F-test table as", PLOTDIR+"/Fisher_"+category+".tex"
 
     #print "-"*25
@@ -479,7 +483,8 @@ def dijet(category):
     drawAnalysis(category)
     drawRegion(category, True)
     #drawCMS(LUMI, "Simulation Preliminary")
-    drawCMS(LUMI, "Work in Progress", suppressCMS=True)
+    #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
+    drawCMS(LUMI, "", suppressCMS=True)
 
     leg = TLegend(0.575, 0.6, 0.95, 0.9)
     leg.SetBorderSize(0)
@@ -610,7 +615,8 @@ def drawFit(name, category, variable, model, dataset, binning, fitRes=[], norm=-
     drawAnalysis(category)
     drawRegion(category, True)
     #drawCMS(LUMI, "Simulation Preliminary")
-    drawCMS(LUMI, "Work in Progress", suppressCMS=True)
+    #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
+    drawCMS(LUMI, "", suppressCMS=True)
 
     c.cd(2)
     frame_res = variable.frame()
