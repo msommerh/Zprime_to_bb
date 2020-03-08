@@ -30,7 +30,7 @@ parser = optparse.OptionParser(usage)
 parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC")
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
-parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="tight")
+parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
 (options, args) = parser.parse_args()
 gROOT.SetBatch(True) #suppress immediate graphic output
 
@@ -54,7 +54,6 @@ if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
 #categories = ['bb', 'bq']
 categories = ['bb', 'bq', 'mumu']
 
-#massPoints = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 massPoints = [x for x in range(1600, 8000+1, 100)]
 genPoints = [1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
 
@@ -142,11 +141,13 @@ def uncertainty_interpolation(year, category):
 
 ######## syst uncert #########
 
+SYST_LUMI = {'2016':0.025, '2017':0.023, '2018':0.025, 'run2':0.026}
+
 syst_sig = {}
 syst_sig["lnN"] = {}
 syst_sig["param"] = {}
 
-syst_sig["lnN"]["lumi"] = 0.026
+syst_sig["lnN"]["lumi"] = SYST_LUMI[YEAR]
 syst_sig["param"]["CMS"+YEAR+"sig_p1_jes"] = (0., 1.)
 syst_sig["param"]["CMS"+YEAR+"sig_p2_jer"] = (0., 1.)
 

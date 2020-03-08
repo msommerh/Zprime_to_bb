@@ -28,8 +28,8 @@ print "packages imported"
 usage = "usage: %prog [options]"
 parser = optparse.OptionParser(usage)
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
-parser.add_option("-c", "--category", action="store", type="string", dest="category", default="bb")
-parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
+parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
+parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="loose")
 (options, args) = parser.parse_args()
 gROOT.SetBatch(True) #suppress immediate graphic output
 
@@ -167,9 +167,9 @@ def generate_datacard(year, category, masspoint, btagging, outname):
     card += "jmax 1\n"
     card += "kmax *\n"
     card += "-----------------------------------------------------------------------------------\n"
-    card += "shapes         {sname}  *    workspace/MANtag_study/{btagging}/MC_signal_{year}_{category}.root     Zprime_{year}:{sname}\n".format(sname=signalName, year=year, category=category, btagging=btagging)
-    card += "shapes         {bname}  *    workspace/MANtag_study/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:{bname}\n".format(bname=backgroundName, data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging)
-    card += "shapes         data_obs  *    workspace/MANtag_study/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:data_obs\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging)
+    card += "shapes         {sname}  {category}    workspace/MANtag_study/{btagging}/MC_signal_{year}_{category}.root     Zprime_{year}:{sname}\n".format(sname=signalName, year=year, category=category, btagging=btagging)
+    card += "shapes         {bname}  {category}    workspace/MANtag_study/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:{bname}\n".format(bname=backgroundName, data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging)
+    card += "shapes         data_obs  {category}    workspace/MANtag_study/{btagging}/{data_type}_{year}_{category}.root    Zprime_{year}:data_obs\n".format(data_type="MC_QCD_TTbar" if ISMC else "data", year=year, category=category, btagging=btagging)
     card += "-----------------------------------------------------------------------------------\n"
     card += "bin                              {}\n".format(category)
     card += "observation                      -1\n"
@@ -194,12 +194,13 @@ def generate_datacard(year, category, masspoint, btagging, outname):
 
 
 if __name__ == "__main__":
-    datacards(options.category)
-    #else:
-    #    jobs=[]
-    #    for c in categories:
-    #        p = multiprocessing.Process(target=datacards, args=(c,))
-    #        jobs.append(p)
-    #        p.start()
+    if options.category!='':
+        datacards(options.category)
+    else:
+        jobs=[]
+        for c in categories:
+            p = multiprocessing.Process(target=datacards, args=(c,))
+            jobs.append(p)
+            p.start()
 
 

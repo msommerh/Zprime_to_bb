@@ -140,7 +140,14 @@ variable = {
         'max' : 3.5,
         'log' : False,
     },
-    
+    'jnmuons_loose_1': {
+        'title' : "jet 1 number of loose muons",
+        'nbins' : 6,
+        'min' : -0.5,
+        'max' : 5.5,
+        'log' : True,
+    },
+   
     'jchf_2': {
         'title' : "jet 2 charged hadron fraction",
         'nbins' : 30,
@@ -204,7 +211,14 @@ variable = {
         'max' : 3.5,
         'log' : False,
     },
-    
+    'jnmuons_loose_2': {
+        'title' : "jet 2 number of loose muons",
+        'nbins' : 6,
+        'min' : -0.5,
+        'max' : 5.5,
+        'log' : True,
+    },
+
     'jmuonpt_1/jpt_1': {
         'title' : "jet 1 muon p_{T} / jet p_{T}",
         'nbins' : 50,

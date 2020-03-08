@@ -181,7 +181,7 @@ def limit():
         if len(val[m]) > 7: pVal.SetPoint(n, m, val[m][7])
         if len(val[m]) > 8: Best.SetPoint(n, m, val[m][8])
         if len(val[m]) > 10: Best.SetPointError(n, 0., 0., abs(val[m][9]), val[m][10])
-
+        print "m =", m, " --> Xsec*Br =", val[m][3]
 
     for t in THEORY:
         Theory[t] = TGraphAsymmErrors()

@@ -54,6 +54,7 @@ ACCEPTANCEDIR = "acceptance/"
 TRIGGERDIR = global_paths.SKIMMEDDIR+"TriggerStudy"
 SIGNAL      = 1 # Signal magnification factor
 RATIO       = 4 # 0: No ratio plot; !=0: ratio between the top and bottom pads
+#RATIO       = 0 
 if options.blind: RATIO = 0
 NORM        = options.norm
 PARALLELIZE = False
@@ -386,8 +387,8 @@ def efficiency(year):
     from aliases import AK8veto, electronVeto, muonVeto
     genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
     eff = {}
-    vetoes = {"AK8":AK8veto, "electron": electronVeto, "muon": muonVeto}
-    VETO = "AK8" ##could change the veto to investigate here
+    vetoes = {"AK8":AK8veto, "electron": electronVeto, "muon": muonVeto, "lepton": electronVeto+muonVeto}
+    VETO = "lepton" ##could change the veto to investigate here
     if SEPARATE: eff_add = {}
     
     #channels = ['none', 'qq', 'bq', 'bb', 'mumu']

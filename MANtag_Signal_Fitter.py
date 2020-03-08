@@ -32,7 +32,7 @@ parser = optparse.OptionParser(usage)
 
 parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose")
 parser.add_option("-y", "--year", action="store", type="string", dest="year",default="2017")
-parser.add_option("-c", "--category", action="store", type="string", dest="category", default="bb")
+parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
 (options, args) = parser.parse_args()
 gROOT.SetBatch(True)
@@ -71,7 +71,7 @@ RATIO       = 4
 YEAR        = options.year
 VERBOSE     = options.verbose
 READTREE    = True
-VARBINS     = True #FIXME
+VARBINS     = False #FIXME
 
 X_MIN = 1530.
 X_MAX = 9067.
@@ -272,8 +272,10 @@ def signal(category):
             
             for ss in pd:
 
-                if os.path.exists(NTUPLEDIR + ss +   "_"+BTAGGING+ ".root"):
-                    treeSign[m].Add(NTUPLEDIR + ss + "_"+BTAGGING+ ".root")
+                #if os.path.exists(NTUPLEDIR + ss +   "_"+BTAGGING+ ".root"):
+                #    treeSign[m].Add(NTUPLEDIR + ss + "_"+BTAGGING+ ".root")
+                if os.path.exists(NTUPLEDIR + ss +   "_"+BTAGGING+ "_" + category + ".root"):
+                    treeSign[m].Add(NTUPLEDIR + ss + "_"+BTAGGING+ "_" + category + ".root")
                 else:
                     print "found no file for sample:", ss
             
@@ -739,9 +741,10 @@ def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=No
 
 
 if __name__ == "__main__":
-    signal(options.category)
-    #else:
-    #    for c in categories:
-    #        p = multiprocessing.Process(target=signal, args=(c,)) 
-    #        jobs.append(p)
-    #        p.start()
+    if options.category != "":
+        signal(options.category)
+    else:
+        for c in categories:
+            p = multiprocessing.Process(target=signal, args=(c,)) 
+            jobs.append(p)
+            p.start()

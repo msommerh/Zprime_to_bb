@@ -43,7 +43,8 @@ models_color = {'A1' : 616-3, 'B3' : 629}
 models_style = {'A1' : 34, 'B3' : 20}
 models_name = {'A1' : "HVT model A", 'A3' : "model A (g_{V} = 3) ", 'B3' : "HVT model B"}
 # This is sigma x Br(X->bb) [pb]
-observed = {2000 : 19., 2500 : 19., 3000 : 13., 4000 : 6.}
+#observed = {2000 : 19., 2500 : 19., 3000 : 13., 4000 : 6.}
+observed = {2000 : 30.375, 2500 : 18.3125, 3000 : 12.6875, 4000 : 7.4688}
 width = 0.05
 
 
@@ -130,7 +131,7 @@ def hvt(benchmark = ['B3', 'A1']):
     mg.GetYaxis().SetNdivisions(505)
 #    hxs[3500].Draw("CONTZ")
     
-    drawCMS(LUMI, "", False) #Preliminary
+    drawCMS(LUMI, "", False, suppressCMS=True) #Preliminary
 #    drawAnalysis("XVH"+category, False)
 #    latex = TLatex()
 #    latex.SetNDC()
@@ -158,7 +159,8 @@ def hvt(benchmark = ['B3', 'A1']):
     latex.SetTextColor(920+2)
     latex.DrawLatex(-2.8, -0.875, "#frac{#Gamma_{Z'}}{m_{Z'}} > %.0f%%" % (width*100, ))
     
-    leg = TLegend(0.68, 0.60, 0.95, 0.94)
+    #leg = TLegend(0.68, 0.60, 0.95, 0.94)
+    leg = TLegend(0.68, 0.34, 0.95, 0.66)
     leg.SetBorderSize(1)
     leg.SetFillStyle(1001)
     leg.SetFillColor(0)

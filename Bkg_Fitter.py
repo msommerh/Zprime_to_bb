@@ -41,6 +41,7 @@ parser.add_option("-c", "--category", action="store", type="string", dest="categ
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
 parser.add_option("-u", "--unskimmed", action="store_true", default=False, dest="unskimmed")
 parser.add_option("-s", "--selection", action="store", type="string", dest="selection", default="")
+parser.add_option("-f", "--force", action="store", type="int", dest="force", default=0)
 (options, args) = parser.parse_args()
 gROOT.SetBatch(True) #suppress immediate graphic output
 if options.test: print "performing test run on small QCD MC sample"
@@ -76,6 +77,15 @@ BIAS        = options.bias
 YEAR        = options.year
 ISMC        = options.isMC
 ADDSELECTION= options.selection!=""
+
+if options.force == 0:
+    FORCE_PARAMS=False
+else:
+    if options.force not in [2,3,4,5]:
+        print "cannot enforce parameter number:", options.force, "  --> Aborting!!"
+        sys.exit()
+    FORCE_PARAMS=True
+    print "Enforcing a parameter number of:", options.force
 
 X_MIN = 1530.
 X_MAX = 9067.
@@ -184,12 +194,12 @@ def dijet(category):
     HLT_PFJet550            = RooRealVar("HLT_PFJet550"            , "" , -1., 1.    )
     HLT_CaloJet550_NoJetID  = RooRealVar("HLT_CaloJet550_NoJetID"  , "" , -1., 1.    )
     HLT_PFHT1050            = RooRealVar("HLT_PFHT1050"            , "" , -1., 1.    )
-    HLT_DoublePFJets100_CaloBTagDeepCSV_p71                 =RooRealVar("HLT_DoublePFJets100_CaloBTagDeepCSV_p71"                , "", -1., 1. ) 
-    HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71 =RooRealVar("HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71", "", -1., 1. ) 
-    HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71 =RooRealVar("HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71", "", -1., 1. ) 
-    HLT_DoublePFJets200_CaloBTagDeepCSV_p71                 =RooRealVar("HLT_DoublePFJets200_CaloBTagDeepCSV_p71"                , "", -1., 1. ) 
-    HLT_DoublePFJets350_CaloBTagDeepCSV_p71                 =RooRealVar("HLT_DoublePFJets350_CaloBTagDeepCSV_p71"                , "", -1., 1. ) 
-    HLT_DoublePFJets40_CaloBTagDeepCSV_p71                  =RooRealVar("HLT_DoublePFJets40_CaloBTagDeepCSV_p71"                 , "", -1., 1. ) 
+    #HLT_DoublePFJets100_CaloBTagDeepCSV_p71                 =RooRealVar("HLT_DoublePFJets100_CaloBTagDeepCSV_p71"                , "", -1., 1. ) 
+    #HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71 =RooRealVar("HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71", "", -1., 1. ) 
+    #HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71 =RooRealVar("HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71", "", -1., 1. ) 
+    #HLT_DoublePFJets200_CaloBTagDeepCSV_p71                 =RooRealVar("HLT_DoublePFJets200_CaloBTagDeepCSV_p71"                , "", -1., 1. ) 
+    #HLT_DoublePFJets350_CaloBTagDeepCSV_p71                 =RooRealVar("HLT_DoublePFJets350_CaloBTagDeepCSV_p71"                , "", -1., 1. ) 
+    #HLT_DoublePFJets40_CaloBTagDeepCSV_p71                  =RooRealVar("HLT_DoublePFJets40_CaloBTagDeepCSV_p71"                 , "", -1., 1. ) 
 
 
     weight = RooRealVar(        "eventWeightLumi",      "",             -1.e9,  1.e9    )
@@ -198,7 +208,7 @@ def dijet(category):
     variables.add(RooArgSet(jbtag_WP_1, jbtag_WP_2, fatjetmass_1, fatjetmass_2, jnmuons_1, jnmuons_2, nmuons, nelectrons, weight))
     variables.add(RooArgSet(j1_pt, jj_deltaEta, jid_1, jid_2, jmuonpt_1, jmuonpt_2))
     variables.add(RooArgSet(HLT_AK8PFJet500, HLT_PFJet500, HLT_CaloJet500_NoJetID, HLT_PFHT900, HLT_AK8PFJet550, HLT_PFJet550, HLT_CaloJet550_NoJetID, HLT_PFHT1050))
-    variables.add(RooArgSet(HLT_DoublePFJets100_CaloBTagDeepCSV_p71, HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets200_CaloBTagDeepCSV_p71, HLT_DoublePFJets350_CaloBTagDeepCSV_p71, HLT_DoublePFJets40_CaloBTagDeepCSV_p71))
+    #variables.add(RooArgSet(HLT_DoublePFJets100_CaloBTagDeepCSV_p71, HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71, HLT_DoublePFJets200_CaloBTagDeepCSV_p71, HLT_DoublePFJets350_CaloBTagDeepCSV_p71, HLT_DoublePFJets40_CaloBTagDeepCSV_p71))
 
     if VARBINS: 
         binsXmass = RooBinning(len(abins)-1, abins)
@@ -396,6 +406,9 @@ def dijet(category):
     
     #order = min(3, order)
     #order = 2
+
+    if FORCE_PARAMS: order=options.force-1
+
     if order==1:
         modelBkg = modelBkg1#.Clone("Bkg")
         modelAlt = modelBkg2#.Clone("BkgAlt")
