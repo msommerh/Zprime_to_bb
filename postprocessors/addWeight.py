@@ -221,7 +221,7 @@ def processFile(sample, origin, target, verbose=False):
             # Weights
             if isMC:
                 eventWeightLumi[0] = tree.GenWeight * Leq
-                if isSignal: eventWeightLumi[0] = Leq
+                if isSignal: eventWeightLumi[0] = Leq  ## FIXME FIXME check if this is sufficient!! FIXME FIXME
 
             # Fill the branches
             eventWeightLumiBranch.Fill()
