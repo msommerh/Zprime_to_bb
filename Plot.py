@@ -41,6 +41,7 @@ parser.add_option("-t", "--trigger", action="store_true", default=False, dest="t
 parser.add_option("", "--separate", action="store_true", default=False, dest="separate")
 parser.add_option("", "--btagging_eff", action="store_true", default=False, dest="btagging_eff")
 parser.add_option("", "--sync", action="store_true", default=False, dest="sync")
+parser.add_option("", "--recal", action="store_true", default=False, dest="recal")
 (options, args) = parser.parse_args()
 
 ########## SETTINGS ##########
@@ -62,6 +63,7 @@ BLIND       = False
 LUMI        = {"run2" : 137190, "2016" : 35920, "2017" : 41530, "2018" : 59740}
 ADDSELECTION= options.selection!=""
 SYNC        = options.sync
+RECAL       = options.recal
 BTAGGEFFVARS= ["jCSV", "jdeepCSV", "jdeepFlavour"]
 SEPARATE    = options.separate
 
@@ -145,7 +147,10 @@ def plot(var, cut, year, norm=False, nm1=False):
             for j, ss in enumerate(sample[s]['files']):
                 if not 'data' in s or ('data' in s and ss in pd):
                     if year=="run2" or year in ss:
-                        tree[s].Add(NTUPLEDIR + ss + ".root")
+                        if RECAL and 'data' in s: 
+                            tree[s].Add(NTUPLEDIR + "Recal/" + ss + "_Recal.root")
+                        else:
+                            tree[s].Add(NTUPLEDIR + ss + ".root")
             if variable[var]['nbins']>0: hist[s] = TH1F(s, ";"+variable[var]['title']+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+unit+" );"+('log' if variable[var]['log'] else ''), variable[var]['nbins'], variable[var]['min'], variable[var]['max'])
             else: hist[s] = TH1F(s, ";"+variable[var]['title']+";Events"+('log' if variable[var]['log'] else ''), len(variable[var]['bins'])-1, array('f', variable[var]['bins']))
             hist[s].Sumw2()

@@ -125,6 +125,9 @@ def submitJobs(title, infiles, outdir, jobflavour):
         fout.write("./postprocessors/Zprime_to_bb_Recal.py -t {} -i {} -o {} -y {}{} -n {} -r {}{}{}\n".format(title, infiles, '${worknode}', args.year, ' -MC' if args.isMC else '', args.nFiles, '$file_nr' if args.multinode else args.resubmit_file, " -mp" if args.cores>1 else "", ""))
         fout.write("ls ${worknode}\n")
         fout.write("./postprocessors/Zprime_to_bb_Recal_DijetMass.py -t {} -I {} -i {} -o {} -y {}{} -n {} -r {}{}{}\n".format(title, '${worknode}', infiles, outdir+title, args.year, ' -MC' if args.isMC else '', args.nFiles, '$file_nr' if args.multinode else args.resubmit_file, " -mp" if args.cores>1 else "", ""))
+        fout.write("echo\n")
+        fout.write("echo 'removing temporary files..'\n")
+        fout.write("rm ${worknode}/*.root\n")
         fout.write("echo 'STOP---------------'\n")
         fout.write("echo\n")
         fout.write("echo\n")
@@ -149,6 +152,7 @@ def makeSubmitFileCondor(exe, jobname, jobflavour, infiles):
     submitfile.write("output                = "+jobname+".$(ClusterId).$(ProcId).out\n")
     submitfile.write("error                 = "+jobname+".$(ClusterId).$(ProcId).err\n")
     submitfile.write("log                   = "+jobname+".$(ClusterId).log\n")
+    submitfile.write('transfer_output_files = ""\n')
     submitfile.write('+JobFlavour           = "'+jobflavour+'"\n')
     if args.cores>1: submitfile.write('RequestCpus           = {}\n'.format(args.cores))
     if args.multinode and args.resubmit_file==-1:

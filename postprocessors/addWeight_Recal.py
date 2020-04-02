@@ -318,12 +318,12 @@ else:
         print "unknown year"
         sys.exit()
     for letter in letters:
-        sample_names.append("data_{}_{}".format(year, letter))
+        sample_names.append("data_{}_{}_Recal".format(year, letter))
 
 jobs = []
 for d in sample_names:
-    origin = global_paths.WEIGHTEDDIR[:-1]  
-    target = global_paths.SKIMMEDDIR[:-1]
+    origin = global_paths.WEIGHTEDDIR[:-1]+"/Recal" 
+    target = global_paths.SKIMMEDDIR[:-1]+"/Recal"
  
     print "working on",origin
     print "output will be stored in", target

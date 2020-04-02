@@ -45,7 +45,7 @@ if __name__ == "__main__":
                     print line
             if clean_file: print "c l e a n"
         elif args.out:
-            if not "--- endJob ---" in lines[-5]: 
+            if not ("--- endJob ---" in lines[-5] or ("--- endJob ---" in lines[-7] and "removing temporary files.." in lines[-4])): 
                 if lines == []:
                     print "empty output"
                 else:
@@ -56,6 +56,7 @@ if __name__ == "__main__":
 
     elif args.filenumber:
         number_string = lines[6].replace("queue ","").replace("queue","")
+        if "+JobFlavour" in number_string: number_string = lines[7].replace("queue ","").replace("queue","")
         if number_string=='':
             print 1
         else:

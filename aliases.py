@@ -30,8 +30,8 @@ alias = {
     "preselection" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto,
     "2b" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1>={WP} && jbtag_WP_2>={WP}",
     "1b" : preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && ((jbtag_WP_1>={WP} && jbtag_WP_2<{WP}) || (jbtag_WP_1<{WP} && jbtag_WP_2>={WP}))",
-    #"2mu": preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1<{WP} && jbtag_WP_2<{WP} && jnmuons_1>0 && jnmuons_2>0"
-    "2mu": preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1<{WP} && jbtag_WP_2<{WP} && (jnmuons_loose_1>0 || jnmuons_loose_2>0)"
+    "2mu": preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1<{WP} && jbtag_WP_2<{WP} && jnmuons_1>0 && jnmuons_2>0"
+    #"2mu": preselection+triggers+tight_jetID+AK8veto+electronVeto+muonVeto+" && jbtag_WP_1<{WP} && jbtag_WP_2<{WP} && (jnmuons_loose_1>0 || jnmuons_loose_2>0)"
 }
 
 aliasSM = { ## a new btagging category that is semi medium, semi loose.

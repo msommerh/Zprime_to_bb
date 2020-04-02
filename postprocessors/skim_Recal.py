@@ -13,7 +13,7 @@ from aliases import triggers
 #inDir = global_paths.WEIGHTEDDIR[:-1]
 #outDir = global_paths.SKIMMEDDIR[:-1]
 inDir = global_paths.PRODUCTIONDIR[:-1] 
-outDir = global_paths.WEIGHTEDDIR[:-1]
+outDir = global_paths.WEIGHTEDDIR[:-1]+"/Recal"
 
 blacklist = ["backup","weighted","parallel_execution", "Recal_V7"]
 cutstring = "jj_mass_widejet>1530 && "+triggers
@@ -46,6 +46,6 @@ def skim(sample):
     chain.Reset()
 
 
-dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'SingleMuon' in x and not 'Recal' in x]
+dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'SingleMuon' in x and 'Recal' in x and '2017' in x]
 for d in dirList:
     skim(d)
