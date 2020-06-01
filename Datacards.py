@@ -31,6 +31,7 @@ parser.add_option("-M", "--isMC", action="store_true", default=False, dest="isMC
 parser.add_option('-y', '--year', action='store', type='string', dest='year',default='2016')
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
+parser.add_option("-d", "--test", action="store_true", default=False, dest="bias")
 (options, args) = parser.parse_args()
 gROOT.SetBatch(True) #suppress immediate graphic output
 
@@ -40,6 +41,7 @@ BTAGGING    = options.btagging
 CARDDIR     = "datacards/"+BTAGGING+"/"
 YEAR        = options.year
 ISMC        = options.isMC
+BIAS        = options.bias
 ABSOLUTEPATH= "."
 PLOTDIR     = "plots/datacards/"
 LUMI        = {'2016': 35920. , '2017': 41530., '2018': 59740., 'run2': 137190.}
@@ -50,6 +52,10 @@ if YEAR not in ['2016', '2017', '2018', 'run2']:
 if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
     print "unknown btagging requirement:", BTAGGING
     sys.exit()
+
+if BIAS:
+    CARDDIR += "bias/"
+    print "running in BIAS mode"
 
 #categories = ['bb', 'bq']
 categories = ['bb', 'bq', 'mumu']
@@ -194,12 +200,19 @@ def generate_datacard(year, category, masspoint, btagging, outname):
     #JES and JER
     for syst_unc in sorted(syst_sig["param"].keys()):
         card += "{:<25}{:<6}  {:<25}{:<25}\n".format(syst_unc.replace('sig_', 'sig_'+category+'_'), 'param', syst_sig["param"][syst_unc][0], syst_sig["param"][syst_unc][1])
+
+    if BIAS:
+        #card = card.replace(backgroundName, "roomultipdf")
+        card = card.replace(backgroundName, "multipdf_"+backgroundName)
+        card = card.replace("workspace/{btagging}/{data_type}".format(btagging=btagging, data_type="data"), "workspace/{btagging}/bias/{data_type}".format(btagging=btagging, data_type="data"))
+        #card = card.replace("rate                             {:25}{:25}\n".format("1", "1"), "rate                             {:25}{:25}\n".format("10", "1") )
+        #card += "{:<23}  discrete\n".format("pdf_index")
+        card += "{:<23}  discrete\n".format("index_"+backgroundName)
    
     cardfile = open(outname, 'w')
     cardfile.write(card)
     cardfile.close()
     print "Datacards for mass", masspoint, "in category", category, "saved in", outname
-
 
 
 if __name__ == "__main__":
