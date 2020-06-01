@@ -78,6 +78,9 @@ YEAR        = options.year
 ISMC        = options.isMC
 ADDSELECTION= options.selection!=""
 
+if BIAS:
+    WORKDIR += "bias/"
+
 if options.force == 0:
     FORCE_PARAMS=False
 else:
@@ -317,17 +320,17 @@ def dijet(category):
     RSS[4] = drawFit("Bkg4", category, X_mass, modelBkg4, setData, binsXmass, [fitRes4], normzBkg4.getVal())
     
     # Normalization parameters are should be set constant, but shape ones should not
-#    if BIAS:
-#        p1_1.setConstant(True)
-#        p2_1.setConstant(True)
-#        p2_2.setConstant(True)
-#        p3_1.setConstant(True)
-#        p3_2.setConstant(True)
-#        p3_3.setConstant(True)
-#        p4_1.setConstant(True)
-#        p4_2.setConstant(True)
-#        p4_3.setConstant(True)
-#        p4_4.setConstant(True)
+    if BIAS: ## FIXME uncommented for a test FIXME
+        p1_1.setConstant(True)
+        p2_1.setConstant(True)
+        p2_2.setConstant(True)
+        p3_1.setConstant(True)
+        p3_2.setConstant(True)
+        p3_3.setConstant(True)
+        p4_1.setConstant(True)
+        p4_2.setConstant(True)
+        p4_3.setConstant(True)
+        p4_4.setConstant(True)
     normzBkg1.setConstant(True)
     normzBkg2.setConstant(True)
     normzBkg3.setConstant(True)
@@ -413,21 +416,25 @@ def dijet(category):
         modelBkg = modelBkg1#.Clone("Bkg")
         modelAlt = modelBkg2#.Clone("BkgAlt")
         normzBkg = normzBkg1#.Clone("Bkg_norm")
+        normzAlt = normzBkg2#.Clone("Bkg_norm")
         fitRes = fitRes1
     elif order==2:
         modelBkg = modelBkg2#.Clone("Bkg")
         modelAlt = modelBkg3#.Clone("BkgAlt")
         normzBkg = normzBkg2#.Clone("Bkg_norm")
+        normzAlt = normzBkg3#.Clone("Bkg_norm")
         fitRes = fitRes2
     elif order==3:
         modelBkg = modelBkg3#.Clone("Bkg")
         modelAlt = modelBkg4#.Clone("BkgAlt")
         normzBkg = normzBkg3#.Clone("Bkg_norm")
+        normzAlt = normzBkg4#.Clone("Bkg_norm")
         fitRes = fitRes3
     elif order==4:
         modelBkg = modelBkg4#.Clone("Bkg")
         modelAlt = modelBkg3#.Clone("BkgAlt")
         normzBkg = normzBkg4#.Clone("Bkg_norm")
+        normzAlt = normzBkg3#.Clone("Bkg_norm")
         fitRes = fitRes4
     else:
         print "Functions with", order+1, "or more parameters are needed to fit the background"
@@ -436,7 +443,8 @@ def dijet(category):
     modelBkg.SetName("Bkg_"+YEAR+"_"+category)
     modelAlt.SetName("Alt_"+YEAR+"_"+category)
     normzBkg.SetName("Bkg_"+YEAR+"_"+category+"_norm")
-    
+    normzAlt.SetName("Alt_"+YEAR+"_"+category+"_norm")   
+ 
     print "-"*25
     
     # Generate pseudo data
@@ -549,12 +557,16 @@ def dijet(category):
     if BIAS:
         gSystem.Load("libHiggsAnalysisCombinedLimit.so")
         from ROOT import RooMultiPdf
-        cat = RooCategory("pdf_index", "Index of Pdf which is active");
+        #cat = RooCategory("pdf_index", "Index of Pdf which is active"); ##FIXME test FIXME
+        cat = RooCategory("index_"+modelBkg.GetName(), "Index of Pdf which is active");
         pdfs = RooArgList(modelBkg, modelAlt)
-        roomultipdf = RooMultiPdf("roomultipdf", "All Pdfs", cat, pdfs)
-        normulti = RooRealVar("roomultipdf_norm", "Number of background events", nevents, 0., 1.e6)
+        #roomultipdf = RooMultiPdf("roomultipdf", "All Pdfs", cat, pdfs) ##FIXME test FIXME
+        roomultipdf = RooMultiPdf("multipdf_"+modelBkg.GetName(), "All Pdfs", cat, pdfs)
+        normulti = RooRealVar("multipdf_"+modelBkg.GetName()+"_norm", "Number of background events", nevents, 0., max(5*nevents, 1.e6)) ##FIXME test FIXME
+        normulti = RooRealVar("multipdf_"+modelBkg.GetName()+"_norm", "Number of background events", nevents, 0., max(5*nevents, 1.e6)) ##FIXME test FIXME
    
-    normzBkg.setConstant(False)  ## newly put here to ensure it's freely floating in the combine fit
+    normzBkg.setConstant(False)  ## ensure it's freely floating in the combine fit
+    normzAlt.setConstant(False)
 
     # create workspace
     w = RooWorkspace("Zprime_"+YEAR, "workspace")
@@ -563,12 +575,17 @@ def dijet(category):
     else: getattr(w, "import")(setToys, RooFit.Rename("data_obs"))
     #getattr(w, "import")(setData, RooFit.Rename("data_obs")) 
     if BIAS:
+        normzBkg.setConstant(True)    
+        normzAlt.setConstant(True)
         getattr(w, "import")(cat, RooFit.Rename(cat.GetName()))
         getattr(w, "import")(normulti, RooFit.Rename(normulti.GetName()))
         getattr(w, "import")(roomultipdf, RooFit.Rename(roomultipdf.GetName()))
-    getattr(w, "import")(modelBkg, RooFit.Rename(modelBkg.GetName()))
-    getattr(w, "import")(modelAlt, RooFit.Rename(modelAlt.GetName()))
-    getattr(w, "import")(normzBkg, RooFit.Rename(normzBkg.GetName()))
+        getattr(w, "import")(normzBkg, RooFit.Rename(normzBkg.GetName()))
+        getattr(w, "import")(normzAlt, RooFit.Rename(normzAlt.GetName()))
+    else:
+        getattr(w, "import")(modelBkg, RooFit.Rename(modelBkg.GetName()))
+        getattr(w, "import")(normzBkg, RooFit.Rename(normzBkg.GetName()))
+        getattr(w, "import")(modelAlt, RooFit.Rename(modelAlt.GetName()))
     w.writeToFile(WORKDIR+"%s_%s%s.root" % (DATA_TYPE+"_"+YEAR, category, "_test" if options.test else ""), True)
     print "Workspace", WORKDIR+"%s_%s%s.root" % (DATA_TYPE+"_"+YEAR, category, "_test" if options.test else ""), "saved successfully"
     if VERBOSE: raw_input("Press Enter to continue...")
