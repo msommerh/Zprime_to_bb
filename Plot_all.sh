@@ -18,6 +18,7 @@ plot_type=$1
 ### all
 ### trig
 ### btag
+### sync
 
 ################################################################
 
@@ -355,5 +356,10 @@ if [[ $plot_type == 'btag' ]]; then
     ./Plot.py -y 2018 --btagging_eff
 fi
 
+### sync exercise:
 
+if [[ $plot_type == 'sync' ]]; then
+    echo "plotting framework sync study"
+    ./Plot.py -v jj_mass_widejet -c preselection_noveto -y 2017 --sync --recal
+fi
 

@@ -302,11 +302,11 @@ def plot(var, cut, year, norm=False, nm1=False):
         #bkg.GetYaxis().SetMoreLogLabels(True)
     bkg.GetXaxis().SetRangeUser(variable[var]['min'], variable[var]['max'])  
  
-    #if log: bkg.SetMinimum(1)
+    if log: bkg.SetMinimum(1) ##FIXME uncommented for a test
     leg.Draw()
-    #drawCMS(LUMI[year], "Preliminary")
+    drawCMS(LUMI[year], "Preliminary")
     #drawCMS(LUMI[year], "Work in Progress", suppressCMS=True)
-    drawCMS(LUMI[year], "", suppressCMS=True)
+    #drawCMS(LUMI[year], "", suppressCMS=True)
     drawRegion('XVH'+channel, True)
     drawAnalysis(channel)
     
@@ -393,7 +393,8 @@ def efficiency(year):
     genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
     eff = {}
     vetoes = {"AK8":AK8veto, "electron": electronVeto, "muon": muonVeto, "lepton": electronVeto+muonVeto}
-    VETO = "lepton" ##could change the veto to investigate here
+    #VETO = "AK8" ##could change the veto to investigate here
+    VETO = "lepton" 
     if SEPARATE: eff_add = {}
     
     #channels = ['none', 'qq', 'bq', 'bb', 'mumu']
@@ -526,7 +527,7 @@ def efficiency(year):
     legS.SetBorderSize(0)
     legS.SetFillStyle(0) #1001
     legS.SetFillColor(0)
-    legS.AddEntry(eff['sum'], "Total b tag efficiency (1 b tag + 2 b tag + 2 #mu)", "pl")
+    legS.AddEntry(eff['sum'], "Total b tag efficiency (1 b tag + 2 b tag + 1 #mu)", "pl")
     if SEPARATE: legS.AddEntry(eff_add['sum'], "Total b tag efficiency, no "+VETO+"-veto", "pl")
     c1 = TCanvas("c1", "Signal Efficiency", 1200, 800)
     c1.cd(1)
@@ -552,9 +553,9 @@ def efficiency(year):
     eff["sum"].GetXaxis().SetTitleOffset(1.05)
     eff["sum"].GetXaxis().SetRangeUser(1500, 8000)
     c1.SetTopMargin(0.05)
-    #drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
     #drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
-    drawCMS(-1, "", year=year, suppressCMS=True)
+    #drawCMS(-1, "", year=year, suppressCMS=True)
     drawAnalysis("")
 
     if SEPARATE:
@@ -689,9 +690,9 @@ def acceptance(year):
     eff.GetXaxis().SetTitleOffset(1.05)
     eff.GetXaxis().SetRangeUser(1500, 8000)
     c1.SetTopMargin(0.05)
-    #drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
     #drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
-    drawCMS(-1, "", year=year, suppressCMS=True)
+    #drawCMS(-1, "", year=year, suppressCMS=True)
     drawAnalysis("")
 
     c1.Print("plots/Efficiency/"+year+"_Acceptance.pdf") 
@@ -827,9 +828,9 @@ def trigger_efficiency(year, separate=False):
     eff.GetXaxis().SetTitleOffset(1.05)
     eff.GetXaxis().SetLimits(700., 5000.)
     c1.SetTopMargin(0.05)
-    #drawCMS(-1, "Preliminary", year=year) #Preliminary
+    drawCMS(-1, "Preliminary", year=year) #Preliminary
     #drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
-    drawCMS(-1, "", year=year, suppressCMS=True)
+    #drawCMS(-1, "", year=year, suppressCMS=True)
     drawAnalysis("")
 
     suffix = ""

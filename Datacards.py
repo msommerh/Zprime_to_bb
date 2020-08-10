@@ -22,6 +22,7 @@ from rooUtils import *
 import optparse
 
 from samples import sample
+from aliases import bias_functions, bias_pulls
 
 print "packages imported"
 
@@ -32,6 +33,7 @@ parser.add_option('-y', '--year', action='store', type='string', dest='year',def
 parser.add_option("-c", "--category", action="store", type="string", dest="category", default="")
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
 parser.add_option("-d", "--test", action="store_true", default=False, dest="bias")
+parser.add_option("-s", "--sigma", action="store", type="string", dest="sigma", default="")
 (options, args) = parser.parse_args()
 gROOT.SetBatch(True) #suppress immediate graphic output
 
@@ -55,6 +57,10 @@ if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
 
 if BIAS:
     CARDDIR += "bias/"
+    SIGMA = str(options.sigma)
+    if SIGMA not in ['', '2', '5']:
+        print "sigma value not regnognized"
+        sys.exit()
     print "running in BIAS mode"
 
 #categories = ['bb', 'bq']
@@ -202,12 +208,13 @@ def generate_datacard(year, category, masspoint, btagging, outname):
         card += "{:<25}{:<6}  {:<25}{:<25}\n".format(syst_unc.replace('sig_', 'sig_'+category+'_'), 'param', syst_sig["param"][syst_unc][0], syst_sig["param"][syst_unc][1])
 
     if BIAS:
-        #card = card.replace(backgroundName, "roomultipdf")
         card = card.replace(backgroundName, "multipdf_"+backgroundName)
         card = card.replace("workspace/{btagging}/{data_type}".format(btagging=btagging, data_type="data"), "workspace/{btagging}/bias/{data_type}".format(btagging=btagging, data_type="data"))
-        #card = card.replace("rate                             {:25}{:25}\n".format("1", "1"), "rate                             {:25}{:25}\n".format("10", "1") )
-        #card += "{:<23}  discrete\n".format("pdf_index")
-        card += "{:<23}  discrete\n".format("index_"+backgroundName)
+        if SIGMA != '':
+            card = card.replace("rate                             {:25}{:25}\n".format("1", "1"), "rate                             {:25}{:25}\n".format(str(int(bias_pulls[SIGMA+"sigma"][masspoint])), "1") ) 
+        card += bias_functions[year][category]
+        card += "{:<23}  flatParam\n".format("multipdf_Bkg_"+year+"_"+category+"_norm")
+        card += "{:<23}  discrete".format("index_"+backgroundName)
    
     cardfile = open(outname, 'w')
     cardfile.write(card)

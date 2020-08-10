@@ -141,6 +141,10 @@ class TreeProducerZprimetobb(TreeProducerCommon):
             self.addBranch('BTagAK4Weight_deepJet_up'    , float)
             self.addBranch('BTagAK4Weight_deepJet_down'  , float)
 
+        if isMC:
+            self.addBranch('jnmuons_gen_1'               , int) ##FIXME new entry
+            self.addBranch('jnmuons_gen_2'               , int) ##FIXME new entry
+
     def endJob(self):
         self.outputfile.Write()
         self.outputfile.Close()
@@ -343,6 +347,18 @@ class ZprimetobbProducer(Module):
         nIsoMuons = 0.
         for imu in range(event.nMuon):
             if event.Muon_pt[imu] > 50. and abs(event.Muon_eta[imu]) < 2.4 and event.Muon_highPtId[imu]>=2 and event.Muon_tkRelIso[imu]<0.1: nIsoMuons += 1
+
+        ##FIXME new entry
+        if self.isMC:
+            nGenMuons_1 = 0
+            nGenMuons_2 = 0
+            for igen in range(event.nGenPart):
+                if abs(event.GenPart_pdgId[igen]) == 13:
+                    if ( (event.GenPart_eta[igen] - event.Jet_eta[jetIds[0]])**2 + (event.GenPart_phi[igen] - event.Jet_phi[jetIds[0]])**2 )**0.5  < 0.4:
+                        nGenMuons_1 += 1
+                    if ( (event.GenPart_eta[igen] - event.Jet_eta[jetIds[1]])**2 + (event.GenPart_phi[igen] - event.Jet_phi[jetIds[1]])**2 )**0.5  < 0.4:
+                        nGenMuons_2 += 1
+        ##FIXME new entry
        
         nLooseMuons1, nLooseMuons2 = 0, 0 
         ptMuons1, ptMuons2 = 0., 0.
@@ -384,7 +400,8 @@ class ZprimetobbProducer(Module):
         self.out.jnelectrons_1[0] = event.Jet_nElectrons[jetIds[0]]
         self.out.jnmuons_1[0] = event.Jet_nMuons[jetIds[0]]
         self.out.jnmuons_loose_1[0] = nLooseMuons1
-        if self.isMC: 
+        if self.isMC:
+            self.out.jnmuons_gen_1[0] = nGenMuons_1 ##FIXME new entry
             self.out.jflavour_1[0] = event.Jet_hadronFlavour[jetIds[0]]
         else:
             self.out.jflavour_1[0] = -1
@@ -410,6 +427,7 @@ class ZprimetobbProducer(Module):
         self.out.jnmuons_2[0] = event.Jet_nMuons[jetIds[1]]
         self.out.jnmuons_loose_2[0] = nLooseMuons2
         if self.isMC:
+            self.out.jnmuons_gen_2[0] = nGenMuons_2 ##FIXME new entry
             self.out.jflavour_2[0] = event.Jet_hadronFlavour[jetIds[1]]
         else:
             self.out.jflavour_2[0] = -1

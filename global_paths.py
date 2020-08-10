@@ -28,6 +28,9 @@ CMSSWDIR = "/afs/cern.ch/user/m/msommerh/CMSSW_10_3_3/"
 ## exact location of GRID certificate to be sent to HTCondor
 GRIDCERTIFICATE = "/afs/cern.ch/user/m/msommerh/x509up_msommerh"
 
+## space to store fit diagnostic files for bias study
+BIASDIR = "/afs/cern.ch/work/m/msommerh/public/Zprime_to_bb_Analysis/bias_study/"
+
 if __name__ == "__main__":
     from argparse import ArgumentParser 
     parser = ArgumentParser()

@@ -3,7 +3,6 @@ keep * # start with all
 drop *SoftActivity*
 drop *Photon*
 drop *GenJet*
-drop *GenPart*
 drop *Dressed*
 drop *TrigObj*
 drop SV*

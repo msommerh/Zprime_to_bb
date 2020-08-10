@@ -1,10 +1,10 @@
 void HVT()
 {
 //=========Macro generated from canvas: c1/HVT Exclusion Limits
-//=========  (Fri Feb 21 10:49:26 2020) by ROOT version 6.12/07
-   TCanvas *c1 = new TCanvas("c1", "HVT Exclusion Limits",0,0,800,600);
+//=========  (Mon Jul 27 17:02:24 2020) by ROOT version 6.12/07
+   TCanvas *c1 = new TCanvas("c1", "HVT Exclusion Limits",216,239,800,600);
    c1->SetHighLightColor(2);
-   c1->Range(-3.728612,-1.238095,3.373506,1.142857);
+   c1->Range(-3.728612,-1.485714,3.373506,1.371429);
    c1->SetFillColor(0);
    c1->SetBorderMode(0);
    c1->SetBorderSize(2);
@@ -2975,7 +2975,11 @@ tex->SetNDC();
    tex->SetTextSize(0.045);
    tex->SetLineWidth(2);
    tex->Draw();
-      tex = new TLatex(0.15,0.84,"");
+      tex = new TLatex(0.15,0.88,"CMS");
+tex->SetNDC();
+   tex->SetLineWidth(2);
+   tex->Draw();
+      tex = new TLatex(0.15,0.84,"Preliminary");
 tex->SetNDC();
    tex->SetTextFont(52);
    tex->SetTextSize(0.04);

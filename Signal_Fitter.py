@@ -376,7 +376,8 @@ def signal(category):
  
             else:
                 print "  WARNING: signal", stype, "and mass point", m, "in category", category, "has 0 entries or does not exist"
-                        
+
+ 
             # Remove HVT cross sections
             #xs = getCrossSection(stype, channel, m)
             xs = 1.    
@@ -433,9 +434,9 @@ def signal(category):
             signal[m].plotOn(frame_signal, RooFit.LineColor(color_scheme[j]), RooFit.Normalization(signalNorm[m].getVal(), RooAbsReal.NumEvent), RooFit.Range("X_reasonable_range"))
     frame_signal.GetXaxis().SetRangeUser(0, 10000)
     frame_signal.Draw()
-    #drawCMS(-1, "Simulation Preliminary", year=YEAR)
+    drawCMS(-1, "Simulation Preliminary", year=YEAR)
     #drawCMS(-1, "Work in Progress", year=YEAR, suppressCMS=True)
-    drawCMS(-1, "", year=YEAR, suppressCMS=True)
+    #drawCMS(-1, "", year=YEAR, suppressCMS=True)
     drawAnalysis(category)
     drawRegion(category)
 
@@ -642,31 +643,37 @@ def signal(category):
     gmean.Draw("APL")
     imean.Draw("P, SAME")
     drawRegion(category)
+    drawCMS(-1, "Simulation Preliminary", year=YEAR) ## new FIXME
     c1.cd(2)
     gsigma.SetMinimum(0.)
     gsigma.Draw("APL")
     isigma.Draw("P, SAME")
     drawRegion(category)
+    drawCMS(-1, "Simulation Preliminary", year=YEAR) ## new FIXME
     c1.cd(3)
     galpha1.Draw("APL")
     ialpha1.Draw("P, SAME")
     drawRegion(category)
+    drawCMS(-1, "Simulation Preliminary", year=YEAR) ## new FIXME
     galpha1.GetYaxis().SetRangeUser(0., 1.1) #adjusted upper limit from 5 to 2
     c1.cd(4)
     gslope1.Draw("APL")
     islope1.Draw("P, SAME")
     drawRegion(category)
+    drawCMS(-1, "Simulation Preliminary", year=YEAR) ## new FIXME
     gslope1.GetYaxis().SetRangeUser(0., 150.) #adjusted upper limit from 125 to 60
     if True: #isAH:
         c1.cd(5)
         galpha2.Draw("APL")
         ialpha2.Draw("P, SAME")
         drawRegion(category)
+        drawCMS(-1, "Simulation Preliminary", year=YEAR) ## new FIXME
         galpha2.GetYaxis().SetRangeUser(0., 2.)
         c1.cd(6)
         gslope2.Draw("APL")
         islope2.Draw("P, SAME")
         drawRegion(category)
+        drawCMS(-1, "Simulation Preliminary", year=YEAR) ## new FIXME
         gslope2.GetYaxis().SetRangeUser(0., 20.)
 
     c1.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalShape.pdf")
@@ -682,9 +689,9 @@ def signal(category):
     inorm.Draw("P, SAME")
     gnorm.GetXaxis().SetRangeUser(genPoints[0]-100, genPoints[-1]+100)
     gnorm.GetYaxis().SetRangeUser(0., gnorm.GetMaximum()*1.25)
-    #drawCMS(-1, "Simulation Preliminary", year=YEAR)
+    drawCMS(-1, "Simulation Preliminary", year=YEAR)
     #drawCMS(-1, "Work in Progress", year=YEAR, suppressCMS=True) 
-    drawCMS(-1, "", year=YEAR, suppressCMS=True) 
+    #drawCMS(-1, "", year=YEAR, suppressCMS=True) 
     drawAnalysis(category)
     drawRegion(category)
     c2.Print(PLOTDIR+"MC_signal_"+YEAR+"/"+stype+"_"+category+"_SignalNorm.pdf")
@@ -791,7 +798,8 @@ def drawPlot(name, channel, variable, model, dataset, fitRes=[], norm=-1, reg=No
     frame.Draw()
     #drawCMS(LUMI, cmsLabel)
     #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
-    drawCMS(LUMI, "", suppressCMS=True)
+    drawCMS(LUMI, "Simulation Preliminary")
+    #drawCMS(LUMI, "", suppressCMS=True)
     drawAnalysis(channel)
     drawRegion(channel + ("" if isData and not isCategory else ('SR' if 'SR' in name else ('SB' if 'SB' in name else ""))), True)
     if isSignal: drawMass("M_{Z'} = "+mass+" GeV")

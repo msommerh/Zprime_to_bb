@@ -127,11 +127,11 @@ def hvt(benchmark = ['B3', 'A1']):
     mg.GetYaxis().SetLabelSize(0.045)
     mg.GetYaxis().SetTitleSize(0.045)
     mg.GetYaxis().SetTitleOffset(1.)
-    mg.GetYaxis().SetRangeUser(-1., 1.)
+    mg.GetYaxis().SetRangeUser(-1.2, 1.2)
     mg.GetYaxis().SetNdivisions(505)
 #    hxs[3500].Draw("CONTZ")
     
-    drawCMS(LUMI, "", False, suppressCMS=True) #Preliminary
+    drawCMS(LUMI, "Preliminary", False)
 #    drawAnalysis("XVH"+category, False)
 #    latex = TLatex()
 #    latex.SetNDC()

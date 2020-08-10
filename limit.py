@@ -60,7 +60,7 @@ ISMC        = options.isMC
 CATEGORY    = options.category
 INCLUDEACC  = options.Acceptance
 
-CAT_LABELS  = {'bb': "2 b tag", 'bq': "1 b tag", 'mumu': "2 #mu"}
+CAT_LABELS  = {'bb': "2 b tag", 'bq': "1 b tag", 'mumu': "1 #mu"}
 
 if YEAR not in ['2016', '2017', '2018', 'run2', 'run2c']:
     print "unknown year:", YEAR
@@ -298,10 +298,12 @@ def limit():
     #drawCMS(LUMI, "Simulation Preliminary") #Preliminary
     if CATEGORY=="": 
         #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
-        drawCMS(LUMI, "", suppressCMS=True)
+        drawCMS(LUMI, "Preliminary")
+        #drawCMS(LUMI, "", suppressCMS=True)
     else:
-         #drawCMS(LUMI, "Work in Progress, "+CAT_LABELS[CATEGORY], suppressCMS=True)       
-         drawCMS(LUMI, CAT_LABELS[CATEGORY], suppressCMS=True)       
+        #drawCMS(LUMI, "Work in Progress, "+CAT_LABELS[CATEGORY], suppressCMS=True)       
+        drawCMS(LUMI, "Preliminary   "+CAT_LABELS[CATEGORY])       
+        #drawCMS(LUMI, CAT_LABELS[CATEGORY], suppressCMS=True)       
 
     # legend
     top = 0.9
@@ -346,7 +348,8 @@ def limit():
     for t in THEORY:
         print "Model", t, ":",
         for m in range(mass[0], mass[-1], 1):
-            if not (Theory[t].Eval(m) > Obs0s.Eval(m)) == (Theory[t].Eval(m+1) > Obs0s.Eval(m+1)): print m,
+            if not (Theory[t].Eval(m) > Obs0s.Eval(m)) == (Theory[t].Eval(m+1) > Obs0s.Eval(m+1)): print m, "(obs)",
+            if not (Theory[t].Eval(m) > Exp0s.Eval(m)) == (Theory[t].Eval(m+1) > Exp0s.Eval(m+1)): print m, "(exp)",
         print ""
 
     return ##FIXME
@@ -362,8 +365,8 @@ def limit():
     c2.GetPad(0).SetGridy()
     Sign.GetYaxis().SetRangeUser(0., 5.)
     Sign.Draw("AL3")
-    #drawCMS(LUMI, "Preliminary")
-    drawCMS(LUMI, "Work in Progress", suppressCMS=True)
+    drawCMS(LUMI, "Preliminary")
+    #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
     drawAnalysis(channel[1:3])
     c2.Print("combine/plotsLimit/Significance/"+YEAR+suffix+".png")
     c2.Print("combine/plotsLimit/Significance/"+YEAR+suffix+".pdf")
@@ -394,8 +397,8 @@ def limit():
         line.DrawLine(pVal.GetXaxis().GetXmin(), ci[i]/2, pVal.GetXaxis().GetXmax(), ci[i]/2);
         text.DrawLatex(pVal.GetXaxis().GetXmax()*1.01, ci[i]/2, "%d #sigma" % i);
 
-    #drawCMS(LUMI, "Preliminary")
-    drawCMS(LUMI, "Work in Progress", suppressCMS=True)
+    drawCMS(LUMI, "Preliminary")
+    #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
     drawAnalysis(channel[1:3])
     c3.Print("combine/plotsLimit/pValue/"+YEAR+suffix+".png")
     c3.Print("combine/plotsLimit/pValue/"+YEAR+suffix+".pdf")
@@ -411,8 +414,8 @@ def limit():
     c4.GetPad(0).SetGridx()
     c4.GetPad(0).SetGridy()
     Best.Draw("AL3")
-    #drawCMS(LUMI, "Preliminary")
-    drawCMS(LUMI, "Work in Progress", suppressCMS=True)
+    drawCMS(LUMI, "Preliminary")
+    #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
     drawAnalysis(channel[1:3])
     c4.Print("combine/plotsLimit/BestFit/"+YEAR+suffix+".png")
     c4.Print("combine/plotsLimit/BestFit/"+YEAR+suffix+".pdf")
@@ -566,8 +569,8 @@ def limit2HDM():
     Exp2s.GetXaxis().SetRangeUser(mass[0], mass[-1])
     drawAnalysis('AZh')
     drawRegion('AZHsl', True)
-    #drawCMS(LUMI, "") #Preliminary
-    drawCMS(LUMI, "Work in Progress", suppressCMS=True)
+    drawCMS(LUMI, "") #Preliminary
+    #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
 
     # legend
     leg = TLegend(0.6, 0.90, 0.99, 0.90)
@@ -650,8 +653,8 @@ def limitCompare(method):
     graphs[channels[0]].GetYaxis().SetTitle("#sigma("+particleP+") #bf{#it{#Beta}}("+particleP+" #rightarrow "+particle+"H) #bf{#it{#Beta}}(H #rightarrow bb) (fb)")
     drawAnalysis(signal)
     #drawRegion(signal, True)
-    #drawCMS(LUMI, "Preliminary")
-    drawCMS(LUMI, "Work in Progress", suppressCMS=True)
+    drawCMS(LUMI, "Preliminary")
+    #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
 
     # legend
     top = 0.9
