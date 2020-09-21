@@ -116,7 +116,7 @@ variable = {
         'title' : "jet 1 muon p_{T} (GeV)",
         'nbins' : 50,
         'min' : 0.,
-        'max' : 200.,
+        'max' : 1000.,
         'log' : True,
     },
     'jptRel_1': {
@@ -187,7 +187,7 @@ variable = {
         'title' : "jet 2 muon p_{T} (GeV)",
         'nbins' : 50,
         'min' : 0.,
-        'max' : 100.,
+        'max' : 1000.,
         'log' : True,
     },
     'jptRel_2': {
@@ -223,15 +223,15 @@ variable = {
         'title' : "jet 1 muon p_{T} / jet p_{T}",
         'nbins' : 50,
         'min' : 0.,
-        'max' : 0.25,
-        'log' : False,
+        'max' : 0.8,
+        'log' : True,
     },
     'jmuonpt_2/jpt_2': {
         'title' : "jet 2 muon p_{T} / jet p_{T}",
         'nbins' : 50,
         'min' : 0,
-        'max' : 0.25,
-        'log' : False,
+        'max' : 0.8,
+        'log' : True,
     },
     
     
@@ -302,6 +302,20 @@ variable = {
     },  
     'fatjetmass_1':{
         'title' : "m_{fatjet}",
+        'nbins' : 100,
+        'min'   : 0.,
+        'max'   : 2000.,
+        'log'   : True,
+    },
+    'jnmuons_gen_pt_1':{
+        'title' : "#mu p_{T}",
+        'nbins' : 100,
+        'min'   : 0.,
+        'max'   : 2000.,
+        'log'   : True,
+    },
+    'jnmuons_gen_pt_2':{
+        'title' : "#mu p_{T}",
         'nbins' : 100,
         'min'   : 0.,
         'max'   : 2000.,

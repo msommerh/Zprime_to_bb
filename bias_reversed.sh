@@ -160,17 +160,18 @@ shape1="CMS2016_bb_p3_1,CMS2016_bb_p3_2,CMS2016_bb_p3_3,CMS2016_bq_p3_1,CMS2016_
 shape2="CMS2016_bb_exp_p2_1,CMS2016_bb_exp_p2_2,CMS2016_bq_exp_p2_1,CMS2016_bq_exp_p2_2,CMS2016_mumu_exp_p3_1,CMS2016_mumu_exp_p3_2,CMS2016_mumu_exp_p3_3,CMS2017_bb_exp_p3_1,CMS2017_bb_exp_p3_2,CMS2017_bb_exp_p3_3,CMS2017_bq_exp_p2_1,CMS2017_bq_exp_p2_2,CMS2017_mumu_exp_p2_1,CMS2017_mumu_exp_p2_2,CMS2018_bb_exp_p2_1,CMS2018_bb_exp_p2_2,CMS2018_bq_exp_p2_1,CMS2018_bq_exp_p2_2,CMS2018_mumu_exp_p2_1,CMS2018_mumu_exp_p2_2"
 shape3="CMS2016_bb_atlas_p2_1,CMS2016_bb_atlas_p2_2,CMS2016_bq_atlas_p2_1,CMS2016_bq_atlas_p2_2,CMS2016_mumu_atlas_p3_1,CMS2016_mumu_atlas_p3_2,CMS2016_mumu_atlas_p3_3,CMS2017_bb_atlas_p3_1,CMS2017_bb_atlas_p3_2,CMS2017_bb_atlas_p3_3,CMS2017_bq_atlas_p2_1,CMS2017_bq_atlas_p2_2,CMS2017_mumu_atlas_p2_1,CMS2017_mumu_atlas_p2_2,CMS2018_bb_atlas_p2_1,CMS2018_bb_atlas_p2_2,CMS2018_bq_atlas_p2_1,CMS2018_bq_atlas_p2_2,CMS2018_mumu_atlas_p2_1,CMS2018_mumu_atlas_p2_2"
 
-set_params0=$index0
+set_params1=$index0
 if [[ $function_index -eq 1 ]]; then
-    set_params1=$index1
-    freeze_params=$indexList,$shape0,$shape2,$shape3
+    set_params0=$index1
+    #freeze_params=$indexList,$shape0,$shape2,$shape3
 elif [[ $function_index -eq 2 ]]; then
-    set_params1=$index2
-    freeze_params=$indexList,$shape0,$shape1,$shape3
+    set_params0=$index2
+    #freeze_params=$indexList,$shape0,$shape1,$shape3
 elif [[ $function_index -eq 3 ]]; then
-    set_params1=$index3
-    freeze_params=$indexList,$shape0,$shape1,$shape2
+    set_params0=$index3
+    #freeze_params=$indexList,$shape0,$shape1,$shape2
 fi    
+freeze_params=$indexList,$shape1,$shape2,$shape3
 
 echo
 echo "  " >> $tempfile

@@ -345,7 +345,7 @@ def dijet(category):
 
         # 1 parameter mod exp
         print "fitting 1 parameter model modified exponential"
-        exp_p1_1 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p1_1", "exp_p1", -1., -2000., 2000.)
+        exp_p1_1 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p1_1", "exp_p1", -1., -200., 200.)
         exp_modelBkg1 = RooGenericPdf("exp_Bkg1", "Modified Exponential Bkg. fit (2 par.)", "exp(@1*@0/13000)", RooArgList(X_mass, exp_p1_1))
         exp_normzBkg1 = RooRealVar(exp_modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents) 
         exp_modelExt1 = RooExtendPdf(exp_modelBkg1.GetName()+"_ext", exp_modelBkg1.GetTitle(), exp_modelBkg1, exp_normzBkg1)
@@ -355,8 +355,8 @@ def dijet(category):
 
         # 2 parameters mod exp
         print "fitting 2 parameter model modified exponential"
-        exp_p2_1 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p2_1", "exp_p1", exp_p1_1.getVal(), -2000., 2000.)
-        exp_p2_2 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p2_2", "exp_p2", 1., -2000., 2000.)
+        exp_p2_1 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p2_1", "exp_p1", exp_p1_1.getVal(), -200., 200.)
+        exp_p2_2 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p2_2", "exp_p2", 1., -200., 200.)
         exp_modelBkg2 = RooGenericPdf("exp_Bkg2", "Modified Exponential Bkg. fit (3 par.)", "exp(@1*pow(@0/13000, @2))", RooArgList(X_mass, exp_p2_1, exp_p2_2))
         exp_normzBkg2 = RooRealVar(exp_modelBkg2.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
         exp_modelExt2 = RooExtendPdf(exp_modelBkg2.GetName()+"_ext", exp_modelBkg2.GetTitle(), exp_modelBkg2, exp_normzBkg2)
@@ -366,9 +366,9 @@ def dijet(category):
         
         # 3 parameters mod exp
         print "fitting 3 parameter model modified exponential"
-        exp_p3_1 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p3_1", "exp_p1", exp_p2_1.getVal(), -2000., 2000.)
-        exp_p3_2 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p3_2", "exp_p2", exp_p2_2.getVal(), -2000., 2000.)
-        exp_p3_3 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p3_3", "exp_p3", 0., -2000., 2000.)
+        exp_p3_1 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p3_1", "exp_p1", exp_p2_1.getVal(), -200., 200.)
+        exp_p3_2 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p3_2", "exp_p2", exp_p2_2.getVal(), -200., 200.)
+        exp_p3_3 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p3_3", "exp_p3", 0., -200., 200.)
         exp_modelBkg3 = RooGenericPdf("exp_Bkg3", "Modified Exponenial Bkg. fit (4 par.)", "exp(@1*pow(@0/13000, @2)+@3*(1-@0/13000))", RooArgList(X_mass, exp_p3_1, exp_p3_2, exp_p3_3))
         exp_normzBkg3 = RooRealVar(exp_modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
         exp_modelExt3 = RooExtendPdf(exp_modelBkg3.GetName()+"_ext", exp_modelBkg3.GetTitle(), exp_modelBkg3, exp_normzBkg3)
@@ -378,7 +378,7 @@ def dijet(category):
 
         # 1 parameter mod ATLAS
         print "fitting 1 parameter model ATLAS"
-        atlas_p1_1 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p1_1", "atlas_p1", 1., -2000., 2000.)
+        atlas_p1_1 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p1_1", "atlas_p1", 1., -200., 200.)
         atlas_modelBkg1 = RooGenericPdf("atlas_Bkg1", "Atlas Bkg. fit (2 par.)", "1 / pow(@0/13000, @1)", RooArgList(X_mass, atlas_p1_1))
         atlas_normzBkg1 = RooRealVar(atlas_modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
         atlas_modelExt1 = RooExtendPdf(atlas_modelBkg1.GetName()+"_ext", atlas_modelBkg1.GetTitle(), atlas_modelBkg1, atlas_normzBkg1)
@@ -388,8 +388,8 @@ def dijet(category):
 
         # 2 parameters ATLAS
         print "fitting 2 parameter model ATLAS"
-        atlas_p2_1 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p2_1", "atlas_p1", atlas_p1_1.getVal(), -1000., 1000.)
-        atlas_p2_2 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p2_2", "atlas_p2", 0., -2000., 2000.)
+        atlas_p2_1 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p2_1", "atlas_p1", atlas_p1_1.getVal(), -200., 200.)
+        atlas_p2_2 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p2_2", "atlas_p2", 0., -200., 200.)
         atlas_modelBkg2 = RooGenericPdf("atlas_Bkg2", "Atlas Bkg. fit (3 par.)", "exp(-@2*@0/13000) / pow(@0/13000, @1)", RooArgList(X_mass, atlas_p2_1, atlas_p2_2))
         atlas_normzBkg2 = RooRealVar(atlas_modelBkg2.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
         atlas_modelExt2 = RooExtendPdf(atlas_modelBkg2.GetName()+"_ext", atlas_modelBkg2.GetTitle(), atlas_modelBkg2, atlas_normzBkg2)
@@ -399,9 +399,9 @@ def dijet(category):
         
         # 3 parameters ATLAS
         print "fitting 3 parameter model ATLAS"
-        atlas_p3_1 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p3_1", "atlas_p1", atlas_p2_1.getVal(), -2000., 2000.)
-        atlas_p3_2 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p3_2", "atlas_p2", atlas_p2_2.getVal(), -2000., 2000.)
-        atlas_p3_3 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p3_3", "atlas_p3", 0., -2000., 2000.)
+        atlas_p3_1 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p3_1", "atlas_p1", atlas_p2_1.getVal(), -200., 200.)
+        atlas_p3_2 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p3_2", "atlas_p2", atlas_p2_2.getVal(), -200., 200.)
+        atlas_p3_3 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p3_3", "atlas_p3", 0., -200., 200.)
         atlas_modelBkg3 = RooGenericPdf("atlas_Bkg3", "Atlas Bkg. fit (4 par.)", "exp(-@2*@0/13000-@3*pow(@0/13000, 2)) / pow(@0/13000, @1)", RooArgList(X_mass, atlas_p3_1, atlas_p3_2, atlas_p3_3))
         atlas_normzBkg3 = RooRealVar(atlas_modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
         atlas_modelExt3 = RooExtendPdf(atlas_modelBkg3.GetName()+"_ext", atlas_modelBkg3.GetTitle(), atlas_modelBkg3, atlas_normzBkg3)
@@ -668,7 +668,81 @@ def dijet(category):
     else:
         c.SaveAs(PLOTDIR+"/BkgSR_"+category+".pdf")
         c.SaveAs(PLOTDIR+"/BkgSR_"+category+".png")
- 
+
+    if BIAS: ##FIXME newly added FIXME
+        print "starting to plot" 
+        c = TCanvas("c_"+category, category, 800, 800)
+        c.Divide(1, 2)
+        setTopPad(c.GetPad(1), RATIO)
+        setBotPad(c.GetPad(2), RATIO)
+        c.cd(1)
+        frame = X_mass.frame()
+        setPadStyle(frame, 1.25, True)
+        if VARBINS: frame.GetXaxis().SetRangeUser(X_mass.getMin(), lastBin)
+        signal = getSignal(category, stype, 2000)  #replacing Alberto's getSignal by own dummy function
+
+        graphData = setData.plotOn(frame, RooFit.Binning(plot_binning), RooFit.Scaling(False), RooFit.Invisible())
+        modelBkg.plotOn(frame, RooFit.VisualizeError(fitRes, 1, False), RooFit.LineColor(602), RooFit.FillColor(590), RooFit.FillStyle(1001), RooFit.DrawOption("FL"), RooFit.Name("1sigma"))
+        modelBkg.plotOn(frame, RooFit.LineColor(602), RooFit.FillColor(590), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(modelBkg.GetName()))
+        #modelAlt.plotOn(frame, RooFit.LineStyle(7), RooFit.LineColor(613), RooFit.FillColor(609), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(modelAlt.GetName()))
+        modelExp.plotOn(frame, RooFit.LineStyle(7), RooFit.LineColor(613), RooFit.FillColor(609), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(modelExp.GetName()))
+        modelAtlas.plotOn(frame, RooFit.LineStyle(7), RooFit.LineColor(419), RooFit.FillColor(417), RooFit.FillStyle(1001), RooFit.DrawOption("L"), RooFit.Name(modelAtlas.GetName()))
+        if not isSB and signal[0] is not None: # FIXME remove /(2./3.)
+            signal[0].plotOn(frame, RooFit.Normalization(signal[1]*signal[2], RooAbsReal.NumEvent), RooFit.LineStyle(3), RooFit.LineWidth(6), RooFit.LineColor(629), RooFit.DrawOption("L"), RooFit.Name("Signal"))
+        graphData = setData.plotOn(frame, RooFit.Binning(plot_binning), RooFit.Scaling(False), RooFit.XErrorSize(0 if not VARBINS else 1), RooFit.DataError(RooAbsData.Poisson if isData else RooAbsData.SumW2), RooFit.DrawOption("PE0"), RooFit.Name(setData.GetName()))
+        fixData(graphData.getHist(), True, True, not isData)
+        pulls = frame.pullHist(setData.GetName(), modelBkg.GetName(), True)  
+        chi = frame.chiSquare(setData.GetName(), modelBkg.GetName(), True)
+        frame.GetYaxis().SetTitle("Events / ( 100 GeV )")
+        frame.GetYaxis().SetTitleOffset(1.05)   
+        frame.Draw()
+        
+        frame.SetMaximum(frame.GetMaximum()*10)
+        frame.SetMinimum(max(frame.GetMinimum(), 1.e-1))
+        c.GetPad(1).SetLogy()
+
+        drawAnalysis(category)
+        drawRegion(category, True)
+        drawCMS(LUMI, "Preliminary")
+
+        leg = TLegend(0.575, 0.6, 0.95, 0.9)
+        leg.SetBorderSize(0)
+        leg.SetFillStyle(0) #1001
+        leg.SetFillColor(0)
+        leg.AddEntry(setData.GetName(), setData.GetTitle()+" (%d events)" % nevents, "PEL")
+        leg.AddEntry(modelBkg.GetName(), modelBkg.GetTitle(), "FL")#.SetTextColor(629)
+        leg.AddEntry(modelExp.GetName(), modelExp.GetTitle(), "L")
+        leg.AddEntry(modelAtlas.GetName(), modelAtlas.GetTitle(), "L")
+        if not isSB and signal[0] is not None: leg.AddEntry("Signal", signal[0].GetTitle(), "L")
+        leg.SetY1(0.9-leg.GetNRows()*0.05)
+        leg.Draw()
+
+        latex = TLatex()
+        latex.SetNDC()
+        latex.SetTextSize(0.04)
+        latex.SetTextFont(42)
+        if not isSB: latex.DrawLatex(leg.GetX1()*1.16, leg.GetY1()-0.04, "HVT model B (g_{V}=3)")
+
+        c.cd(2)
+        frame_res = X_mass.frame()
+        setPadStyle(frame_res, 1.25)
+        frame_res.addPlotable(pulls, "P")
+        setBotStyle(frame_res, RATIO, False)
+        if VARBINS: frame_res.GetXaxis().SetRangeUser(X_mass.getMin(), lastBin)
+        frame_res.GetYaxis().SetRangeUser(-5, 5)
+        frame_res.GetYaxis().SetTitle("pulls(#sigma)")
+        frame_res.GetYaxis().SetTitleOffset(0.3)
+        frame_res.Draw()
+        fixData(pulls, False, True, False)
+
+        drawChi2(RSS[order]["chi2"], RSS[order]["nbins"]-(order+1), True)
+        line = drawLine(X_mass.getMin(), 0, lastBin, 0)
+
+        c.SaveAs(PLOTDIR+"/BkgSR_bias_"+category+".pdf")
+        c.SaveAs(PLOTDIR+"/BkgSR_bias_"+category+".png")
+        bias_outfile = TFile(PLOTDIR+"/BkgSR_bias_"+category+".root", "RECREATE") 
+        c.Write()
+        bias_outfile.Close()
      
     #*******************************************************#
     #                                                       #
@@ -680,10 +754,11 @@ def dijet(category):
         gSystem.Load("libHiggsAnalysisCombinedLimit.so")
         from ROOT import RooMultiPdf
         cat = RooCategory("index_"+modelBkg.GetName(), "Index of Pdf which is active");
-        #pdfs = RooArgList(modelBkg, modelAlt)
-        pdfs = RooArgList(modelBkg, modelAlt, modelExp, modelAtlas)
+        pdfs = RooArgList(modelBkg, modelAlt)
+        pdfs.add(modelExp)
+        pdfs.add(modelAtlas)
+        #pdfs = RooArgList(modelBkg, modelAlt, modelExp, modelAtlas)
         roomultipdf = RooMultiPdf("multipdf_"+modelBkg.GetName(), "All Pdfs", cat, pdfs)
-        #normulti = RooRealVar("multipdf_"+modelBkg.GetName()+"_norm", "Number of background events", nevents, 0., max(5*nevents, 1.e6)) ##FIXME test FIXME
         normulti = RooRealVar("multipdf_"+modelBkg.GetName()+"_norm", "Number of background events", nevents, 0., max(5*nevents, 1.e6)) ##FIXME test FIXME
         normzExp.setConstant(False)   
         normzAtlas.setConstant(False)

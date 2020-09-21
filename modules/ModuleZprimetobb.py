@@ -44,6 +44,7 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('jnelectrons_1'  , int)
         self.addBranch('jnmuons_1'      , int)
         self.addBranch('jnmuons_loose_1', int)
+        self.addBranch('jnmuons_medium_1', int) ##FIXME new entry
         self.addBranch('jflavour_1'     , int)
         self.addBranch('jmask_1'        , bool)
         self.addBranch('jid_1'          , int)
@@ -67,6 +68,7 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('jnelectrons_2'  , int)
         self.addBranch('jnmuons_2'      , int)
         self.addBranch('jnmuons_loose_2', int)
+        self.addBranch('jnmuons_medium_2', int) ## FIXME new entry
         self.addBranch('jflavour_2'     , int)
         self.addBranch('jmask_2'        , bool)
         self.addBranch('jid_2'          , int)
@@ -121,7 +123,7 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71' , int)
         self.addBranch('HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71' , int)
         self.addBranch('HLT_DoublePFJets40_CaloBTagDeepCSV_p71'                  , int)
-        self.addBranch('HLT_DoublePFJets100_CaloBTagDeepCSV_p71'                  , int)
+        self.addBranch('HLT_DoublePFJets100_CaloBTagDeepCSV_p71'                 , int)
         self.addBranch('HLT_DoublePFJets200_CaloBTagDeepCSV_p71'                 , int)
         self.addBranch('HLT_DoublePFJets350_CaloBTagDeepCSV_p71'                 , int)
 
@@ -144,6 +146,9 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         if isMC:
             self.addBranch('jnmuons_gen_1'               , int) ##FIXME new entry
             self.addBranch('jnmuons_gen_2'               , int) ##FIXME new entry
+            self.addBranch('jnmuons_gen_pt_1'            , float) ##FIXME new entry
+            self.addBranch('jnmuons_gen_pt_2'            , float) ##FIXME new entry
+
 
     def endJob(self):
         self.outputfile.Write()
@@ -348,17 +353,23 @@ class ZprimetobbProducer(Module):
         for imu in range(event.nMuon):
             if event.Muon_pt[imu] > 50. and abs(event.Muon_eta[imu]) < 2.4 and event.Muon_highPtId[imu]>=2 and event.Muon_tkRelIso[imu]<0.1: nIsoMuons += 1
 
-        ##FIXME new entry
+        ##FIXME new entry start
         if self.isMC:
             nGenMuons_1 = 0
             nGenMuons_2 = 0
+            genMuon_pt_1 = 0.
+            genMuon_pt_2 = 0.
             for igen in range(event.nGenPart):
                 if abs(event.GenPart_pdgId[igen]) == 13:
                     if ( (event.GenPart_eta[igen] - event.Jet_eta[jetIds[0]])**2 + (event.GenPart_phi[igen] - event.Jet_phi[jetIds[0]])**2 )**0.5  < 0.4:
+                        if event.GenPart_pt[igen]>genMuon_pt_1:
+                            genMuon_pt_1 = event.GenPart_pt[igen]
                         nGenMuons_1 += 1
                     if ( (event.GenPart_eta[igen] - event.Jet_eta[jetIds[1]])**2 + (event.GenPart_phi[igen] - event.Jet_phi[jetIds[1]])**2 )**0.5  < 0.4:
+                        if event.GenPart_pt[igen]>genMuon_pt_2:
+                            genMuon_pt_2 = event.GenPart_pt[igen]
                         nGenMuons_2 += 1
-        ##FIXME new entry
+        ##FIXME new entry end
        
         nLooseMuons1, nLooseMuons2 = 0, 0 
         ptMuons1, ptMuons2 = 0., 0.
@@ -374,6 +385,18 @@ class ZprimetobbProducer(Module):
         if event.Jet_muonIdx2[jetIds[1]] >=0 and event.Muon_looseId[event.Jet_muonIdx2[jetIds[1]]]: 
             nLooseMuons2 += 1  
             ptMuons2 += event.Muon_pt[event.Jet_muonIdx2[jetIds[1]]]
+
+        ##FIXME new entry start
+        nMediumMuons1, nMediumMuons2 = 0, 0
+        if event.Jet_muonIdx1[jetIds[0]] >=0 and event.Muon_mediumId[event.Jet_muonIdx1[jetIds[0]]]:
+            nMediumMuons1 += 1 
+        if event.Jet_muonIdx2[jetIds[0]] >=0 and event.Muon_mediumId[event.Jet_muonIdx2[jetIds[0]]]:
+            nMediumMuons1 += 1  
+        if event.Jet_muonIdx1[jetIds[1]] >=0 and event.Muon_mediumId[event.Jet_muonIdx1[jetIds[1]]]: 
+            nMediumMuons2 += 1  
+        if event.Jet_muonIdx2[jetIds[1]] >=0 and event.Muon_mediumId[event.Jet_muonIdx2[jetIds[1]]]: 
+            nMediumMuons2 += 1  
+        ##FIXME new entry end
         
         ptRel1, ptRel2 = 0., 0.
         if event.Jet_muonIdx1[jetIds[0]] >=0: ptRel1 = event.Muon_jetPtRelv2[event.Jet_muonIdx1[jetIds[0]]]
@@ -400,8 +423,10 @@ class ZprimetobbProducer(Module):
         self.out.jnelectrons_1[0] = event.Jet_nElectrons[jetIds[0]]
         self.out.jnmuons_1[0] = event.Jet_nMuons[jetIds[0]]
         self.out.jnmuons_loose_1[0] = nLooseMuons1
+        self.out.jnmuons_medium_1[0] = nMediumMuons1 ##FIXME new entry
         if self.isMC:
             self.out.jnmuons_gen_1[0] = nGenMuons_1 ##FIXME new entry
+            self.out.jnmuons_gen_pt_1[0] = genMuon_pt_1 ##FIXME new entry
             self.out.jflavour_1[0] = event.Jet_hadronFlavour[jetIds[0]]
         else:
             self.out.jflavour_1[0] = -1
@@ -426,8 +451,10 @@ class ZprimetobbProducer(Module):
         self.out.jnelectrons_2[0] = event.Jet_nElectrons[jetIds[1]]
         self.out.jnmuons_2[0] = event.Jet_nMuons[jetIds[1]]
         self.out.jnmuons_loose_2[0] = nLooseMuons2
+        self.out.jnmuons_medium_2[0] = nMediumMuons2 ##FIXME new entry
         if self.isMC:
             self.out.jnmuons_gen_2[0] = nGenMuons_2 ##FIXME new entry
+            self.out.jnmuons_gen_pt_2[0] = genMuon_pt_2 ##FIXME new entry
             self.out.jflavour_2[0] = event.Jet_hadronFlavour[jetIds[1]]
         else:
             self.out.jflavour_2[0] = -1

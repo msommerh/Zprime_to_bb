@@ -34,7 +34,7 @@ ZpToBB = 0.1293
 # model B: g = 0.646879, cH = 0.976246, cF = 1.02433 
 # model A: g = 0.648943, cH = -0.555969, cF = -1.3159
 
-massPoints = [2000, 2500, 3000]
+massPoints = [2000, 2500]#, 3000, 4000]
 massColors = {2000 : 798, 2500 : 625, 3000: 856, 4000: 856 }
 massFill = {2000 : 3013, 2500 : 3005, 3000: 3004, 4000: 3004 }
 massLabels = {2000 : [1.1, 0.04], 2500 : [1.1, 0.04], 3000 : [1.3, 0.25], 4000 : [2, 0.45]}
@@ -87,7 +87,8 @@ def hvt(benchmark = ['B3', 'A1']):
             g.SetLineWidth(503*(1 if i<2 else -1))
             mg.Add(g)
         
-        if m==3000:
+        #if m==3000:
+        if m==massPoints[-1]:
             gw[m] = getCurve(hw[m])
             for i, g in enumerate(gw[m]):
                 g.SetPoint(0, 0., g.GetY()[0])

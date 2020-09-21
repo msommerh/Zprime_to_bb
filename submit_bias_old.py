@@ -26,10 +26,6 @@ if __name__ == "__main__":
                                        help="number of toys to produce." )
   parser.add_argument('-s', '--seed',    dest='seed', type=int, default=123456, action='store',
                                        help="random seed for combine." )
-  parser.add_argument('-f', '--function',    dest='function_index', type=int, default=1, action='store',
-                                       help="index of alternative function: 1: +1 param, 2: modified exp, 3: atlas." )
-  parser.add_argument('-S', '--signal',    dest='signal_strength', type=str, default='0', action='store',
-                                       help="signal strength: 0, 2sigma, 5sigma or some custom strength." )
   #parser.add_argument("-c", "--category", action="store", type=str, dest="category", default="", choices=['', 'bb', 'bq', 'mumu'],
   #                                       help="Choose b-tagging category (bb, bq or mumu) if combine should run merely on a single category.")
 
@@ -53,7 +49,8 @@ if YEAR=='run2c':
 else:
     separate_years=False
 
-mass_points = range(1600,8001,100)
+#mass_points = range(1600,8001,100)
+mass_points = range(1600,4001,100) ##FIXME FIXME
 nJobs = len(mass_points)
 
 if separate_years and not YEAR=='run2':
@@ -62,7 +59,7 @@ if separate_years and not YEAR=='run2':
 
 def submitJobs():
     path = global_paths.MAINDIR[:-1]
-    workdir = global_paths.SUBMISSIONLOGS+"tmp_bias_{year}_{btagging}{suffix}_r{signal}_{function}_{seed}".format(year=YEAR+'c' if separate_years else YEAR, btagging=args.btagging, suffix="_MC" if args.isMC else "", seed=args.seed, signal=args.signal_strength, function=args.function_index)
+    workdir = global_paths.SUBMISSIONLOGS+"tmp_bias_{year}_{btagging}{suffix}_{seed}".format(year=YEAR+'c' if separate_years else YEAR, btagging=args.btagging, suffix="_MC" if args.isMC else "", seed=args.seed)
     if not os.path.exists(workdir):
         os.makedirs(workdir)
         print "Directory "+workdir+" created."
@@ -72,8 +69,7 @@ def submitJobs():
 
     #submit job
 
-    #exefile = open(global_paths.MAINDIR+"bias.sh", "r")
-    exefile = open(global_paths.MAINDIR+"bias_reversed.sh", "r") ##FIXME FIXME FIXME reversed here FIXME FIXME FIXME
+    exefile = open(global_paths.MAINDIR+"bias.sh", "r")
     execontents = exefile.readlines()
     exefile.close()
     execontents[7] = "main_dir='"+global_paths.MAINDIR+"'\n"
@@ -94,7 +90,7 @@ def makeSubmitFileCondor(jobflavour, nJobs):
     if separate_years: input_year+='c'
     submitfile = open("submit.sub", "w")
     submitfile.write("executable            = bias_{}_{}.sh\n".format(YEAR, args.btagging))
-    submitfile.write("arguments             = "+str(int(args.isMC))+" "+input_year+" "+args.btagging+" $(ProcId)"+suffix+" "+str(args.ntoys)+" "+args.signal_strength+" "+str(args.function_index)+" "+str(args.seed)+"\n")
+    submitfile.write("arguments             = "+str(int(args.isMC))+" "+input_year+" "+args.btagging+" $(ProcId)"+suffix+" "+str(args.ntoys)+" "+str(args.seed)+"\n")
     submitfile.write("output                = "+str(YEAR)+"_"+args.btagging+".$(ClusterId).$(ProcId).out\n")
     submitfile.write("error                 = "+str(YEAR)+"_"+args.btagging+".$(ClusterId).$(ProcId).err\n")
     submitfile.write("log                   = "+str(YEAR)+"_"+args.btagging+".$(ClusterId).log\n")
