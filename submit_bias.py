@@ -30,6 +30,8 @@ if __name__ == "__main__":
                                        help="index of alternative function: 1: +1 param, 2: modified exp, 3: atlas." )
   parser.add_argument('-S', '--signal',    dest='signal_strength', type=str, default='0', action='store',
                                        help="signal strength: 0, 2sigma, 5sigma or some custom strength." )
+  parser.add_argument('-r', '--reverse',   dest='reverse',  action='store_true', default=False,
+                                         help="Reverted bias study. Generate toys with the best function and fit with the alternative one.")
   #parser.add_argument("-c", "--category", action="store", type=str, dest="category", default="", choices=['', 'bb', 'bq', 'mumu'],
   #                                       help="Choose b-tagging category (bb, bq or mumu) if combine should run merely on a single category.")
 
@@ -72,8 +74,10 @@ def submitJobs():
 
     #submit job
 
-    #exefile = open(global_paths.MAINDIR+"bias.sh", "r")
-    exefile = open(global_paths.MAINDIR+"bias_reversed.sh", "r") ##FIXME FIXME FIXME reversed here FIXME FIXME FIXME
+    if args.reverse:
+        exefile = open(global_paths.MAINDIR+"bias_reversed.sh", "r")
+    else:
+        exefile = open(global_paths.MAINDIR+"bias.sh", "r")
     execontents = exefile.readlines()
     exefile.close()
     execontents[7] = "main_dir='"+global_paths.MAINDIR+"'\n"

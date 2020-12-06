@@ -238,6 +238,7 @@ if [[ $plot_type == 'components' || $plot_type == 'all' ]]; then
     ./Plot.py -v jptRel_1 -c "preselection" -y run2 &
     ./Plot.py -v jnelectrons_1 -c "preselection" -y run2 &
     ./Plot.py -v jnmuons_1 -c "preselection" -y run2 &
+    ./Plot.py -v jnmuons_loose_1 -c "preselection" -y run2 &
     ./Plot.py -v "jmuonpt_1/jpt_1" -c "preselection" -y run2 &
     ./Plot.py -v jchf_2 -c "preselection" -y run2 &
     ./Plot.py -v jnhf_2 -c "preselection" -y run2 &
@@ -248,6 +249,7 @@ if [[ $plot_type == 'components' || $plot_type == 'all' ]]; then
     ./Plot.py -v jptRel_2 -c "preselection" -y run2 &
     ./Plot.py -v jnelectrons_2 -c "preselection" -y run2 &
     ./Plot.py -v jnmuons_2 -c "preselection" -y run2 &
+    ./Plot.py -v jnmuons_loose_2 -c "preselection" -y run2 &
     ./Plot.py -v "jmuonpt_2/jpt_2" -c "preselection" -y run2 &
 fi
 wait

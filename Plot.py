@@ -38,6 +38,8 @@ parser.add_option("-e", "--efficiency", action="store_true", default=False, dest
 parser.add_option("-s", "--selection", action="store", type="string", dest="selection", default="")
 parser.add_option("-a", "--acceptance", action="store_true", default=False, dest="acceptance")
 parser.add_option("-t", "--trigger", action="store_true", default=False, dest="trigger")
+parser.add_option("-S", "--signal_only", action="store_true", default=False, dest="signal_only")
+parser.add_option("", "--fraction_above", action="store", type="float", dest="fraction_above", default=0.)
 parser.add_option("", "--separate", action="store_true", default=False, dest="separate")
 parser.add_option("", "--btagging_eff", action="store_true", default=False, dest="btagging_eff")
 parser.add_option("", "--sync", action="store_true", default=False, dest="sync")
@@ -67,6 +69,9 @@ SYNC        = options.sync
 RECAL       = options.recal
 BTAGGEFFVARS= ["jCSV", "jdeepCSV", "jdeepFlavour"]
 SEPARATE    = options.separate
+SIGNAL_ONLY = options.signal_only
+
+if SIGNAL_ONLY: RATIO = 0
 
 color = {'none': 920, 'qq': 1, 'bq': 632, 'bb': 600, 'mumu': 418}
 color_shift = {'none': 2, 'qq': 922, 'bq': 2, 'bb': 2, 'mumu':2}
@@ -77,9 +82,14 @@ btag_colors = {"jdeepFlavour":801, "jdeepCSV":6, "jCSV":4}
 btag_titles = {"jCSV": "CSVv2", "jdeepCSV": "DeepCSV", "jdeepFlavour": "DeepJet"}
 
 ########## SAMPLES ##########
-data = ["data_obs"]
-back = ["TTbar", "QCD"]
-sign = ['ZpBB_M2000', 'ZpBB_M4000', 'ZpBB_M6000']#, 'ZpBB_M8000']
+if SIGNAL_ONLY:
+    data = []
+    back = []
+else:
+    data = ["data_obs"]
+    back = ["TTbar", "QCD"]
+#sign = ['ZpBB_M2000', 'ZpBB_M4000', 'ZpBB_M6000']#, 'ZpBB_M8000']
+sign = ['ZpBB_M2000', 'ZpBB_M4000', 'ZpBB_M6000', 'ZpBB_M8000']
 ########## ######## ##########
 
 if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
@@ -88,7 +98,7 @@ if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
 
 jobs = []
 
-def plot(var, cut, year, norm=False, nm1=False):
+def plot(var, cut, year, norm=False, fraction_above=0):
     ### Preliminary Operations ###
     treeRead = not cut in ["nnqq", "en", "enqq", "mn", "mnqq", "ee", "eeqq", "mm", "mmqq", "em", "emqq", "qqqq"] # Read from tree
     channel = cut
@@ -178,25 +188,33 @@ def plot(var, cut, year, norm=False, nm1=False):
     if channel.endswith('TR') and channel.replace('TR', '') in topSF:
         hist['TTbarSL'].Scale(topSF[channel.replace('TR', '')][0])
         hist['ST'].Scale(topSF[channel.replace('TR', '')][0])
+
+    if SIGNAL_ONLY:
+        hist['BkgSum'] = None
+    else:    
+        hist['BkgSum'] = hist['data_obs'].Clone("BkgSum") if 'data_obs' in hist else hist[back[0]].Clone("BkgSum")
+        hist['BkgSum'].Reset("MICES")
+        hist['BkgSum'].SetFillStyle(3003)
+        hist['BkgSum'].SetFillColor(1)
+        for i, s in enumerate(back): hist['BkgSum'].Add(hist[s])
     
-    hist['BkgSum'] = hist['data_obs'].Clone("BkgSum") if 'data_obs' in hist else hist[back[0]].Clone("BkgSum")
-    hist['BkgSum'].Reset("MICES")
-    hist['BkgSum'].SetFillStyle(3003)
-    hist['BkgSum'].SetFillColor(1)
-    for i, s in enumerate(back): hist['BkgSum'].Add(hist[s])
-    
-    if options.norm:
+    if options.norm and not SIGNAL_ONLY:
         for i, s in enumerate(back + ['BkgSum']): hist[s].Scale(hist[data[0]].Integral()/hist['BkgSum'].Integral())
 
     # Create data and Bkg sum histograms
-    if options.blind or 'SR' in channel:
-        hist['data_obs'] = hist['BkgSum'].Clone("data_obs")
-        hist['data_obs'].Reset("MICES")
-    # Set histogram style
-    hist['data_obs'].SetMarkerStyle(20)
-    hist['data_obs'].SetMarkerSize(1.25)
+    if not SIGNAL_ONLY:
+        if options.blind or 'SR' in channel:
+            hist['data_obs'] = hist['BkgSum'].Clone("data_obs")
+            hist['data_obs'].Reset("MICES")
+        # Set histogram style
+        hist['data_obs'].SetMarkerStyle(20)
+        hist['data_obs'].SetMarkerSize(1.25)
     
-    for i, s in enumerate(data+back+sign+['BkgSum']): addOverflow(hist[s], False) # Add overflow
+        for i, s in enumerate(data+back+sign+['BkgSum']): addOverflow(hist[s], False) # Add overflow
+    else:
+        for i, s in enumerate(sign): 
+            if not "jmuon_gen_reco_dR" in var:
+                addOverflow(hist[s], False)
     for i, s in enumerate(sign): hist[s].SetLineWidth(3)
     for i, s in enumerate(sign): sample[s]['plot'] = True#sample[s]['plot'] and s.startswith(channel[:2])
     
@@ -241,11 +259,12 @@ def plot(var, cut, year, norm=False, nm1=False):
         print "Imported and drawing sync file"
     
     # Create stack
-    if variable[var]['nbins']>0: 
-        bkg = THStack("Bkg", ";"+hist['BkgSum'].GetXaxis().GetTitle()+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+unit+" )")
-    else: 
-        bkg = THStack("Bkg", ";"+hist['BkgSum'].GetXaxis().GetTitle()+";Events; " )
-    for i, s in enumerate(back): bkg.Add(hist[s])
+    if not SIGNAL_ONLY:
+        if variable[var]['nbins']>0: 
+            bkg = THStack("Bkg", ";"+hist['BkgSum'].GetXaxis().GetTitle()+";Events / ( "+str((variable[var]['max']-variable[var]['min'])/variable[var]['nbins'])+unit+" )")
+        else: 
+            bkg = THStack("Bkg", ";"+hist['BkgSum'].GetXaxis().GetTitle()+";Events; " )
+        for i, s in enumerate(back): bkg.Add(hist[s])
     
     
     # Legend
@@ -255,8 +274,9 @@ def plot(var, cut, year, norm=False, nm1=False):
     leg.SetFillColor(0)
     if len(data) > 0:
         leg.AddEntry(hist[data[0]], sample[data[0]]['label'], "pe")
-    for i, s in reversed(list(enumerate(['BkgSum']+back))):
-        leg.AddEntry(hist[s], sample[s]['label'], "f")
+    if not SIGNAL_ONLY:
+        for i, s in reversed(list(enumerate(['BkgSum']+back))):
+            leg.AddEntry(hist[s], sample[s]['label'], "f")
     if showSignal:
         for i, s in enumerate(sign):
             if sample[s]['plot']: leg.AddEntry(hist[s], sample[s]['label'], "fl")
@@ -266,55 +286,69 @@ def plot(var, cut, year, norm=False, nm1=False):
     
     # --- Display ---
     c1 = TCanvas("c1", hist.values()[0].GetXaxis().GetTitle(), 800, 800 if RATIO else 600)
-    
-    if RATIO:
-        c1.Divide(1, 2)
-        setTopPad(c1.GetPad(1), RATIO)
-        setBotPad(c1.GetPad(2), RATIO)
-    c1.cd(1)
+   
+    if not SIGNAL_ONLY: 
+        if RATIO:
+            c1.Divide(1, 2)
+            setTopPad(c1.GetPad(1), RATIO)
+            setBotPad(c1.GetPad(2), RATIO)
+        c1.cd(1)
     c1.GetPad(bool(RATIO)).SetTopMargin(0.06)
     c1.GetPad(bool(RATIO)).SetRightMargin(0.05)
     c1.GetPad(bool(RATIO)).SetTicks(1, 1)
+    #else:
+    #    c1.GetPad(0).SetTopMargin(0.06)
+    #    c1.GetPad(0).SetRightMargin(0.05)
+    #    c1.GetPad(0).SetTicks(1, 1)
+
     
     log = variable[var]['log'] #"log" in hist['BkgSum'].GetZaxis().GetTitle()
     if log: c1.GetPad(bool(RATIO)).SetLogy()
         
     # Draw
-    bkg.Draw("HIST") # stack
-    hist['BkgSum'].Draw("SAME, E2") # sum of bkg
-    if not isBlind and len(data) > 0: hist['data_obs'].Draw("SAME, PE") # data
+    if not SIGNAL_ONLY:
+        bkg.Draw("HIST") # stack
+        hist['BkgSum'].Draw("SAME, E2") # sum of bkg
+        if not isBlind and len(data) > 0: hist['data_obs'].Draw("SAME, PE") # data
     if 'sync' in hist: hist['sync'].Draw("SAME, PE")
-    #data_graph.Draw("SAME, PE")
     if showSignal:
         smagn = 1. #if treeRead else 1.e2 #if log else 1.e2
         for i, s in enumerate(sign):
-    #        if sample[s]['plot']:
                 hist[s].Scale(smagn)
                 hist[s].Draw("SAME, HIST") # signals Normalized, hist[s].Integral()*sample[s]['weight']
         textS = drawText(0.80, 0.9-leg.GetNRows()*0.05 - 0.02, stype+" (x%d)" % smagn, True)
-    #bkg.GetYaxis().SetTitleOffset(bkg.GetYaxis().GetTitleOffset()*1.075)
-    bkg.GetYaxis().SetTitleOffset(0.9)
-    #bkg.GetYaxis().SetTitleOffset(2.)
-    bkg.SetMaximum((5. if log else 1.25)*max(bkg.GetMaximum(), hist['data_obs'].GetBinContent(hist['data_obs'].GetMaximumBin())+hist['data_obs'].GetBinError(hist['data_obs'].GetMaximumBin())))
-    #if bkg.GetMaximum() < max(hist[sign[0]].GetMaximum(), hist[sign[-1]].GetMaximum()): bkg.SetMaximum(max(hist[sign[0]].GetMaximum(), hist[sign[-1]].GetMaximum())*1.25)
-    bkg.SetMinimum(max(min(hist['BkgSum'].GetBinContent(hist['BkgSum'].GetMinimumBin()), hist['data_obs'].GetMinimum()), 5.e-1)  if log else 0.)
-    if log:
-        bkg.GetYaxis().SetNoExponent(bkg.GetMaximum() < 1.e4)
-        #bkg.GetYaxis().SetMoreLogLabels(True)
-    bkg.GetXaxis().SetRangeUser(variable[var]['min'], variable[var]['max'])  
+    if not SIGNAL_ONLY:
+        bkg.GetYaxis().SetTitleOffset(0.9)
+        bkg.SetMaximum((5. if log else 1.25)*max(bkg.GetMaximum(), hist['data_obs'].GetBinContent(hist['data_obs'].GetMaximumBin())+hist['data_obs'].GetBinError(hist['data_obs'].GetMaximumBin())))
+        bkg.SetMinimum(max(min(hist['BkgSum'].GetBinContent(hist['BkgSum'].GetMinimumBin()), hist['data_obs'].GetMinimum()), 5.e-1)  if log else 0.)
+        if log:
+            bkg.GetYaxis().SetNoExponent(bkg.GetMaximum() < 1.e4)
+        bkg.GetXaxis().SetRangeUser(variable[var]['min'], variable[var]['max'])  
  
-    if log: bkg.SetMinimum(1) 
+        if log: bkg.SetMinimum(1) 
+    else:
+        hist[sign[0]].GetYaxis().SetTitleOffset(0.9)
+        signal_maxima = []
+        for sig in sign:
+            signal_maxima.append(hist[sig].GetMaximum())
+        hist[sign[0]].SetMaximum(1.1*max(signal_maxima))
+        #hist[sign[0]].SetMaximum((5. if log else 1.25)*max(bkg.GetMaximum(), hist['data_obs'].GetBinContent(hist['data_obs'].GetMaximumBin())+hist['data_obs'].GetBinError(hist['data_obs'].GetMaximumBin())))
+        #hist[sign[0]].SetMinimum(max(min(hist['BkgSum'].GetBinContent(hist['BkgSum'].GetMinimumBin()), hist['data_obs'].GetMinimum()), 5.e-1)  if log else 0.)
+        #if log:
+        #    bkg.GetYaxis().SetNoExponent(bkg.GetMaximum() < 1.e4)
+        hist[sign[0]].GetXaxis().SetRangeUser(variable[var]['min'], variable[var]['max'])  
+ 
+        if log: hist[sign[0]].SetMinimum(1) 
+
     leg.Draw()
     drawCMS(LUMI[year], "Preliminary")
-    #drawCMS(LUMI[year], "Work in Progress", suppressCMS=True)
-    #drawCMS(LUMI[year], "", suppressCMS=True)
     drawRegion('XVH'+channel, True)
     drawAnalysis(channel)
-    
-    setHistStyle(bkg, 1.2 if RATIO else 1.1)
-    setHistStyle(hist['BkgSum'], 1.2 if RATIO else 1.1)
+    if not SIGNAL_ONLY:
+        setHistStyle(bkg, 1.2 if RATIO else 1.1)
+        setHistStyle(hist['BkgSum'], 1.2 if RATIO else 1.1)
        
-    if RATIO:
+    if RATIO and not SIGNAL_ONLY:
         c1.cd(2)
         err = hist['BkgSum'].Clone("BkgErr;")
         err.SetTitle("")
@@ -373,7 +407,8 @@ def plot(var, cut, year, norm=False, nm1=False):
         c1.Print("plots/"+channel+"/"+varname.replace("/","_")+"_"+year+suffix+".pdf")
     
     # Print table
-    printTable(hist, sign)
+    if not SIGNAL_ONLY:
+        printTable(hist, sign, fraction_above=fraction_above)
     
 #    if True:
 #        sFile = TFile("sync/data_2016.root", "RECREATE")
@@ -394,8 +429,8 @@ def efficiency(year):
     genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
     eff = {}
     vetoes = {"AK8":AK8veto, "electron": electronVeto, "muon": muonVeto, "lepton": electronVeto+muonVeto}
-    #VETO = "AK8" ##could change the veto to investigate here
-    VETO = "lepton" 
+    VETO = "AK8" ##could change the veto to investigate here
+    #VETO = "lepton" 
     if SEPARATE: eff_add = {}
     
     #channels = ['none', 'qq', 'bq', 'bb', 'mumu']
@@ -967,79 +1002,75 @@ def btag_efficiency(cut, year, pT_range=None):
     canv.Print("plots/btag_eff/ROC_{}_{}.pdf".format(year,pt_suff))
 
 
-def muon_efficiency(year):
+def muon_efficiency(year, x_variable="jet_pt", gen_point="all"):
     import numpy as np
     from root_numpy import tree2array, fill_hist
     from aliases import AK8veto, electronVeto, muonVeto
-    genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+    if gen_point=="all":
+        genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+    else: 
+        genPoints = [gen_point]
     eff = {}
     treeSign = {}
-    #ngenMu = {}
-    #nlooseMu = {}
-    #eff = TGraphErrors()
     wp = "loose"
     #wp = "medium"
-    n_bins = 200
-    pt_range = (0,4200)
+    n_bins = 100
+    if gen_point!="all":
+        n_bins = 50
+    if x_variable=="gen_mu_pt":
+        pt_range = (0,1800) #(0,1500)
+        x_var = "jnmuons_gen_pt"
+        x_label = "gen muon p_{T} (GeV)"
+    elif x_variable=="reco_mu_pt":
+        pt_range = (0,1800)
+        x_label = "reco muon p_{T} (GeV)"
+        x_var = "jmuonpt"
+    else:
+        pt_range = (0,4200)
+        x_var = "jpt"
+        x_label = "jet p_{T} (GeV)"
     min_gen_muon_pt = 5.
     bins = np.linspace(pt_range[0], pt_range[1], n_bins+1)
     hist_gen = TH1F("generated muons", "generated muons", n_bins, pt_range[0], pt_range[1])
     hist_loose = TH1F("loose muons", "loose muons", n_bins, pt_range[0], pt_range[1])
-    #for b in range(n_bins):
-    #    nlooseMu[b] = 0.
-    #    ngenMu[b] = 0.
+    hist_loose_genmatched = TH1F("loose genmatched muons", "loose genmatched muons", n_bins, pt_range[0], pt_range[1])
 
     for i, m in enumerate(genPoints):
         signName = "ZpBB_M"+str(m)
-        #ngenMu[m] = 0.
-        #nlooseMu[m] = 0.
         for j, ss in enumerate(sample[signName]['files']):
             if year=="run2" or year in ss:
                 sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
                 treeSign[m] = sfile.Get("tree")
-                temp_array = tree2array(treeSign[m], branches=['eventWeightLumi', 'jpt_1', 'jpt_2', 'jnmuons_gen_pt_1', 'jnmuons_gen_1', 'jnmuons_'+wp+'_1', 'jnmuons_gen_pt_2', 'jnmuons_gen_2', 'jnmuons_'+wp+'_2'])
-                #gen_mask = ( (temp_array['jnmuons_gen_1'] >= 1) | (temp_array['jnmuons_gen_2'] >= 1) )            
-                #loose_mask = ( ( (temp_array['jnmuons_loose_1'] >= 1) | (temp_array['jnmuons_loose_2'] >= 1) ) & gen_mask )           
-                #ngenMu[m]      += np.dot(temp_array['eventWeightLumi'], gen_mask) 
-                #nlooseMu[m]    += np.dot(temp_array['eventWeightLumi'], loose_mask)
+                branches = ['eventWeightLumi', x_var+'_1', x_var+'_2', 'jnmuons_gen_1', 'jnmuons_'+wp+'_1', 'jnmuons_loose_genmatched_1', 'jnmuons_gen_2', 'jnmuons_'+wp+'_2', 'jnmuons_loose_genmatched_2', ]
+                for additional_var in ['jmuonpt_genmatched_1', 'jmuonpt_genmatched_2', 'jnmuons_gen_pt_1', 'jnmuons_gen_pt_2']:
+                    if additional_var not in branches: branches.append(additional_var)
 
-                gen_mask_1 =    ( (temp_array['jnmuons_gen_1'] >= 1) & (temp_array['jnmuons_gen_pt_1'] >= min_gen_muon_pt) )
-                loose_mask_1 =  ( (temp_array['jnmuons_'+wp+'_1'] >= 1) & gen_mask_1 )
-                gen_mask_2 =    ( (temp_array['jnmuons_gen_2'] >= 1) & (temp_array['jnmuons_gen_pt_2'] >= min_gen_muon_pt) )
-                loose_mask_2 =  ( (temp_array['jnmuons_'+wp+'_2'] >= 1) & gen_mask_2 )
+                temp_array = tree2array(treeSign[m], branches=branches)
 
-                fill_hist(hist_gen,   temp_array['jpt_1'], weights=np.multiply(temp_array['eventWeightLumi'], gen_mask_1  ))
-                fill_hist(hist_gen,   temp_array['jpt_2'], weights=np.multiply(temp_array['eventWeightLumi'], gen_mask_2  ))
-                fill_hist(hist_loose, temp_array['jpt_1'], weights=np.multiply(temp_array['eventWeightLumi'], loose_mask_1))
-                fill_hist(hist_loose, temp_array['jpt_2'], weights=np.multiply(temp_array['eventWeightLumi'], loose_mask_2))
+                gen_mask_1 =                ( (temp_array['jnmuons_gen_1'] >= 1) & (temp_array['jnmuons_gen_pt_1'] >= min_gen_muon_pt) )
+                loose_mask_1 =              ( (temp_array['jnmuons_'+wp+'_1'] >= 1) & gen_mask_1 )
+                loose_genmatched_mask_1 =   ( (temp_array['jnmuons_loose_genmatched_1'] >= 1) & (temp_array['jmuonpt_genmatched_1'] >= min_gen_muon_pt) & loose_mask_1 )
+                gen_mask_2 =                ( (temp_array['jnmuons_gen_2'] >= 1) & (temp_array['jnmuons_gen_pt_2'] >= min_gen_muon_pt) )
+                loose_mask_2 =              ( (temp_array['jnmuons_'+wp+'_2'] >= 1) & gen_mask_2 )
+                loose_genmatched_mask_2 =   ( (temp_array['jnmuons_loose_genmatched_2'] >= 1) & (temp_array['jmuonpt_genmatched_2'] >= min_gen_muon_pt) & loose_mask_2 )
 
-                #for b in range(n_bins):
-                #    jet_pt_mask_1 = ( (temp_array['jpt_1'] >= bins[b]) & (temp_array['jpt_1'] < bins[b+1]) )
-                #    jet_pt_mask_2 = ( (temp_array['jpt_2'] >= bins[b]) & (temp_array['jpt_2'] < bins[b+1]) )
-                #    ngenMu[b]      += np.dot(temp_array['eventWeightLumi'], np.multiply(gen_mask_1, jet_pt_mask_1))
-                #    nlooseMu[b]    += np.dot(temp_array['eventWeightLumi'], np.multiply(loose_mask_1, jet_pt_mask_1))
-                #    ngenMu[b]      += np.dot(temp_array['eventWeightLumi'], np.multiply(gen_mask_2, jet_pt_mask_2))                 
-                #    nlooseMu[b]    += np.dot(temp_array['eventWeightLumi'], np.multiply(loose_mask_2, jet_pt_mask_2))
+                fill_hist(hist_gen,              temp_array[x_var+'_1'], weights=np.multiply(temp_array['eventWeightLumi'], gen_mask_1             ))
+                fill_hist(hist_gen,              temp_array[x_var+'_2'], weights=np.multiply(temp_array['eventWeightLumi'], gen_mask_2             ))
+                fill_hist(hist_loose,            temp_array[x_var+'_1'], weights=np.multiply(temp_array['eventWeightLumi'], loose_mask_1           ))
+                fill_hist(hist_loose,            temp_array[x_var+'_2'], weights=np.multiply(temp_array['eventWeightLumi'], loose_mask_2           ))
+                fill_hist(hist_loose_genmatched, temp_array[x_var+'_1'], weights=np.multiply(temp_array['eventWeightLumi'], loose_genmatched_mask_1))
+                fill_hist(hist_loose_genmatched, temp_array[x_var+'_2'], weights=np.multiply(temp_array['eventWeightLumi'], loose_genmatched_mask_2))
 
                 temp_array=None
                 sfile.Close()
-        #if ngenMu[m] <= 0: continue
-        #eff_val = nlooseMu[m]/ngenMu[m]
-        #n = eff.GetN()
-        #eff.SetPoint(n, m, eff_val)
-        #total_err = math.sqrt((nlooseMu[m]*ngenMu[m] + nlooseMu[m]**2) / ngenMu[m]**3) 
-        ##print "m =", m
-        ##print "total_err =", total_err
-        #eff.SetPointError(n, 0, total_err)
-    #for b in range(n_bins):
-    #    if ngenMu[b] <= 0: continue
-    #    eff_val = nlooseMu[b]/ngenMu[b]
-    #    n = eff.GetN()
-    #    eff.SetPoint(n, bins[b]+0.5*(bins[b+1]-bins[b]), eff_val)
-    #    total_err = math.sqrt((nlooseMu[b]*ngenMu[b] + nlooseMu[b]**2) / ngenMu[b]**3)
-    #    eff.SetPointError(n, 0, total_err)
+
+    n_loose = hist_loose.Integral() 
+    n_loose_genmatched = hist_loose_genmatched.Integral()
+    print "fraction of genmatched jets =", 100.*n_loose_genmatched/n_loose, "%"
+
     hist_gen.Sumw2()
     hist_loose.Sumw2()
+    hist_loose_genmatched.Sumw2()
     eff = TGraphAsymmErrors()
     eff.Divide(hist_loose, hist_gen)
 
@@ -1048,14 +1079,22 @@ def muon_efficiency(year):
     eff.SetLineColor(2)
     eff.SetLineWidth(2)
 
+    eff_matched = TGraphAsymmErrors()
+    eff_matched.Divide(hist_loose_genmatched, hist_gen)
+
+    eff_matched.SetMarkerColor(4)
+    eff_matched.SetMarkerStyle(20)
+    eff_matched.SetLineColor(4)
+    eff_matched.SetLineWidth(2)
+
     c1 = TCanvas("c1", "Muon Efficiency", 1200, 800)
     c1.cd(1)
     eff.Draw("APL")
+    eff_matched.Draw("PL") 
     #setHistStyle(eff, 1.1)
-    #eff.SetTitle(";m_{Z'} (GeV);Muon efficiency")
-    eff.SetTitle(";jet p_{T} (GeV);"+"{} Muon efficiency".format("Medium" if wp=="medium" else "Loose"))
+    eff.SetTitle(";"+x_label+";"+"{} Muon efficiency".format("Medium" if wp=="medium" else "Loose"))
     eff.SetMinimum(0.)
-    eff.SetMaximum(1.) 
+    eff.SetMaximum(1.1) 
     eff.GetXaxis().SetTitleSize(0.045)
     eff.GetYaxis().SetTitleSize(0.045)
     eff.GetYaxis().SetTitleOffset(1.1)
@@ -1063,14 +1102,26 @@ def muon_efficiency(year):
     eff.GetXaxis().SetRangeUser(pt_range[0], pt_range[1])
     c1.SetTopMargin(0.05)
     drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
-    #drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
-    #drawCMS(-1, "", year=year, suppressCMS=True)
     drawAnalysis("")
 
-    c1.Print("plots/Efficiency/muons_efficiency_"+year+"_"+wp+".pdf") 
-    c1.Print("plots/Efficiency/muons_efficiency_"+year+"_"+wp+".png") 
+    #if muon_pt:
+    #    leg = TLegend(0.6, 0.425, 0.9, 0.575)
+    #else:
+    #    leg = TLegend(0.6, 0.80, 0.9, 0.95)
+    leg = TLegend(0.6, 0.80, 0.9, 0.95)
+    leg.AddEntry(eff, "muon effiency")
+    leg.AddEntry(eff_matched, "genmatched muon effiency")
+    leg.Draw()
 
-def muon_purity(year):
+    if gen_point=="all":
+        gen_point_info = ""
+    else:
+        gen_point_info = "_"+str(gen_point)
+
+    c1.Print("plots/Efficiency/muons_efficiency_"+year+"_"+wp+"_vs_"+x_var+gen_point_info+".pdf") 
+    c1.Print("plots/Efficiency/muons_efficiency_"+year+"_"+wp+"_vs_"+x_var+gen_point_info+".png") 
+
+def muon_purity(year, x_variable="jet_pt"):
     import numpy as np
     from root_numpy import tree2array, fill_hist
     from aliases import AK8veto, electronVeto, muonVeto
@@ -1082,8 +1133,19 @@ def muon_purity(year):
     #eff = TGraphErrors()
     wp = "loose"
     #wp = "medium"
-    n_bins = 200
-    pt_range = (0,4200)
+    n_bins = 100
+    if x_variable=="gen_mu_pt":
+        pt_range = (0,1800) #(0,1500)
+        x_var = "jnmuons_gen_pt"
+        x_label = "gen muon p_{T} (GeV)"
+    elif x_variable=="reco_mu_pt":
+        pt_range = (0,1800)
+        x_label = "reco muon p_{T} (GeV)"
+        x_var = "jmuonpt"
+    else:
+        pt_range = (0,4200)
+        x_var = "jpt"
+        x_label = "jet p_{T} (GeV)"
     min_gen_muon_pt = 5.
     bins = np.linspace(pt_range[0], pt_range[1], n_bins+1)
     hist_gen = TH1F("generated muons", "generated muons", n_bins, pt_range[0], pt_range[1])
@@ -1097,7 +1159,12 @@ def muon_purity(year):
             if year=="run2" or year in ss:
                 sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
                 treeSign[m] = sfile.Get("tree")
-                temp_array = tree2array(treeSign[m], branches=['eventWeightLumi', 'jpt_1', 'jpt_2', 'jnmuons_gen_pt_1', 'jnmuons_gen_1', 'jnmuons_'+wp+'_1', 'jnmuons_gen_pt_2', 'jnmuons_gen_2', 'jnmuons_'+wp+'_2'])
+
+                branches = ['eventWeightLumi', x_var+'_1', x_var+'_2', 'jnmuons_gen_1', 'jnmuons_'+wp+'_1', 'jnmuons_loose_genmatched_1', 'jnmuons_gen_2', 'jnmuons_'+wp+'_2', 'jnmuons_loose_genmatched_2', ]
+                for additional_var in ['jmuonpt_genmatched_1', 'jmuonpt_genmatched_2', 'jnmuons_gen_pt_1', 'jnmuons_gen_pt_2']:
+                    if additional_var not in branches: branches.append(additional_var)
+  
+                temp_array = tree2array(treeSign[m], branches=branches)
                 
                 #loose_mask = ( (temp_array['jnmuons_loose_1'] >= 1) | (temp_array['jnmuons_loose_2'] >= 1) )            
                 #gen_mask = ( ( (temp_array['jnmuons_gen_1'] >= 1) | (temp_array['jnmuons_gen_2'] >= 1) )  & loose_mask )           
@@ -1106,10 +1173,10 @@ def muon_purity(year):
                 loose_mask_2 =  (temp_array['jnmuons_'+wp+'_2'] >= 1) 
                 gen_mask_2 =    ( (temp_array['jnmuons_gen_2'] >= 1) & (temp_array['jnmuons_gen_pt_2'] >= min_gen_muon_pt) & loose_mask_2 )
 
-                fill_hist(hist_gen,   temp_array['jpt_1'], weights=np.multiply(temp_array['eventWeightLumi'], gen_mask_1  ))
-                fill_hist(hist_gen,   temp_array['jpt_2'], weights=np.multiply(temp_array['eventWeightLumi'], gen_mask_2  ))
-                fill_hist(hist_loose, temp_array['jpt_1'], weights=np.multiply(temp_array['eventWeightLumi'], loose_mask_1))
-                fill_hist(hist_loose, temp_array['jpt_2'], weights=np.multiply(temp_array['eventWeightLumi'], loose_mask_2))
+                fill_hist(hist_gen,   temp_array[x_var+'_1'], weights=np.multiply(temp_array['eventWeightLumi'], gen_mask_1  ))
+                fill_hist(hist_gen,   temp_array[x_var+'_2'], weights=np.multiply(temp_array['eventWeightLumi'], gen_mask_2  ))
+                fill_hist(hist_loose, temp_array[x_var+'_1'], weights=np.multiply(temp_array['eventWeightLumi'], loose_mask_1))
+                fill_hist(hist_loose, temp_array[x_var+'_2'], weights=np.multiply(temp_array['eventWeightLumi'], loose_mask_2))
  
                 #ngenMu[m]      += np.dot(temp_array['BTagAK4Weight_deepJet'], gen_mask) 
                 #nlooseMu[m]    += np.dot(temp_array['BTagAK4Weight_deepJet'], loose_mask)
@@ -1139,7 +1206,7 @@ def muon_purity(year):
     eff.Draw("APL")
     #setHistStyle(eff, 1.1)
     #eff.SetTitle(";m_{Z'} (GeV);Muon purity")
-    eff.SetTitle(";jet p_{T} (GeV);"+"{} Muon purity".format("Medium" if wp=="medium" else "Loose"))
+    eff.SetTitle(";"+x_label+";"+"{} Muon purity".format("Medium" if wp=="medium" else "Loose"))
     eff.SetMinimum(0.)
     eff.SetMaximum(1.1) 
     eff.GetXaxis().SetTitleSize(0.045)
@@ -1153,8 +1220,8 @@ def muon_purity(year):
     #drawCMS(-1, "", year=year, suppressCMS=True)
     drawAnalysis("")
 
-    c1.Print("plots/Efficiency/muons_purity_"+year+"_"+wp+".pdf") 
-    c1.Print("plots/Efficiency/muons_purity_"+year+"_"+wp+".png") 
+    c1.Print("plots/Efficiency/muons_purity_"+year+"_"+wp+"_vs_"+x_var+".pdf") 
+    c1.Print("plots/Efficiency/muons_purity_"+year+"_"+wp+"_vs_"+x_var+".png") 
 
 def gen_muon_pt(year):
     import numpy as np
@@ -1214,8 +1281,14 @@ if __name__ == "__main__":
         for pt_range in pt_ranges:
             btag_efficiency(options.cut, options.year, pT_range=pt_range)
     elif options.muon_eff:
-        muon_efficiency(options.year)
-        muon_purity(options.year)
+        muon_efficiency(options.year, x_variable="jet_pt")
+        muon_efficiency(options.year, x_variable="gen_mu_pt")
+        #muon_efficiency(options.year, x_variable="reco_mu_pt")
+        muon_purity(options.year, x_variable="jet_pt")
+        #muon_purity(options.year, x_variable="gen_mu_pt")
+        muon_purity(options.year, x_variable="reco_mu_pt")
+        for gen_point in [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]:
+            muon_efficiency(options.year, x_variable="jet_pt", gen_point=gen_point)
     else:
-        plot(options.variable, options.cut, options.year)
+        plot(options.variable, options.cut, options.year, fraction_above=options.fraction_above)
 

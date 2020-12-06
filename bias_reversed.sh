@@ -78,7 +78,7 @@ else
     subfolder=""
 fi
 
-echo "expectSignal = ${signal_strength}"
+echo "signal_strength = ${signal_strength}"
 echo "function_index = ${function_index}"
 echo "isMC = ${isMC}"
 echo "year = ${year}"
@@ -132,23 +132,23 @@ ls workspace/${btagging}/bias/
 if [[ $combined -eq 1 ]]; then
     inputfile="datacards/${btagging}/bias/combined/fully_combined_${year}_M${mass}${suffix}"
     outputfile="${bias_dir}${btagging}/combined_run2_r${signal_strength}_${function_index}/fitDiagnostics_M${mass}_${seed}.root"
-    tempfile="${bias_dir}logs/combined_run2_M${mass}_${seed}.log"
+    #tempfile="${bias_dir}logs/combined_run2_M${mass}_${seed}.log"
     #set_params1="index_Bkg_2016_bb=1,index_Bkg_2016_bq=1,index_Bkg_2016_mumu=1,index_Bkg_2017_bb=1,index_Bkg_2017_bq=1,index_Bkg_2017_mumu=1,index_Bkg_2018_bb=1,index_Bkg_2018_bq=1,index_Bkg_2018_mumu=1"
 else ## not implemented!!
     echo "not implemented!!"
     inputfile="datacards/${btagging}/bias/combined/combined_${year}_M${mass}${suffix}"
     outputfile="${bias_dir}${btagging}/fitDiagnostics_M${mass}_${seed}.root"
-    tempfile="${bias_dir}logs/${year}_M${mass}_${seed}.log"
+    #tempfile="${bias_dir}logs/${year}_M${mass}_${seed}.log"
     #set_params1="index_Bkg_run2_bb=1,index_Bkg_run2_bq=1,index_Bkg_run2_mumu=1"   
 fi
 
 echo "inputfile = ${inputfile}"
 echo "outputfile = ${outputfile}"
-echo "tempfile = ${tempfile}"
+#echo "tempfile = ${tempfile}"
 
-echo "starting to run main commands" > $tempfile
-echo "inputfile = ${inputfile}" >> $tempfile
-echo "outputfile = ${outputfile}" >> $tempfile
+echo "starting to run main commands" #> $tempfile
+echo "inputfile = ${inputfile}" #>> $tempfile
+echo "outputfile = ${outputfile}" #>> $tempfile
 
 index0="index_Bkg_2016_bb=0,index_Bkg_2016_bq=0,index_Bkg_2016_mumu=0,index_Bkg_2017_bb=0,index_Bkg_2017_bq=0,index_Bkg_2017_mumu=0,index_Bkg_2018_bb=0,index_Bkg_2018_bq=0,index_Bkg_2018_mumu=0"
 index1="index_Bkg_2016_bb=1,index_Bkg_2016_bq=1,index_Bkg_2016_mumu=1,index_Bkg_2017_bb=1,index_Bkg_2017_bq=1,index_Bkg_2017_mumu=1,index_Bkg_2018_bb=1,index_Bkg_2018_bq=1,index_Bkg_2018_mumu=1"
@@ -157,8 +157,11 @@ index3="index_Bkg_2016_bb=3,index_Bkg_2016_bq=3,index_Bkg_2016_mumu=3,index_Bkg_
 indexList="index_Bkg_2016_bb,index_Bkg_2016_bq,index_Bkg_2016_mumu,index_Bkg_2017_bb,index_Bkg_2017_bq,index_Bkg_2017_mumu,index_Bkg_2018_bb,index_Bkg_2018_bq,index_Bkg_2018_mumu"
 shape0="CMS2016_bb_p2_1,CMS2016_bb_p2_2,CMS2016_bq_p2_1,CMS2016_bq_p2_2,CMS2016_mumu_p3_1,CMS2016_mumu_p3_2,CMS2016_mumu_p3_3,CMS2017_bb_p3_1,CMS2017_bb_p3_2,CMS2017_bb_p3_3,CMS2017_bq_p2_1,CMS2017_bq_p2_2,CMS2017_mumu_p2_1,CMS2017_mumu_p2_2,CMS2018_bb_p2_1,CMS2018_bb_p2_2,CMS2018_bq_p2_1,CMS2018_bq_p2_2,CMS2018_mumu_p2_1,CMS2018_mumu_p2_2"
 shape1="CMS2016_bb_p3_1,CMS2016_bb_p3_2,CMS2016_bb_p3_3,CMS2016_bq_p3_1,CMS2016_bq_p3_2,CMS2016_bq_p3_3,CMS2016_mumu_p4_1,CMS2016_mumu_p4_2,CMS2016_mumu_p4_3,CMS2016_mumu_p4_4,CMS2017_bb_p4_1,CMS2017_bb_p4_2,CMS2017_bb_p4_3,CMS2017_bb_p4_4,CMS2017_bq_p3_1,CMS2017_bq_p3_2,CMS2017_bq_p3_3,CMS2017_mumu_p3_1,CMS2017_mumu_p3_2,CMS2017_mumu_p3_3,CMS2018_bb_p3_1,CMS2018_bb_p3_2,CMS2018_bb_p3_3,CMS2018_bq_p3_1,CMS2018_bq_p3_2,CMS2018_bq_p3_3,CMS2018_mumu_p3_1,CMS2018_mumu_p3_2,CMS2018_mumu_p3_3"
-shape2="CMS2016_bb_exp_p2_1,CMS2016_bb_exp_p2_2,CMS2016_bq_exp_p2_1,CMS2016_bq_exp_p2_2,CMS2016_mumu_exp_p3_1,CMS2016_mumu_exp_p3_2,CMS2016_mumu_exp_p3_3,CMS2017_bb_exp_p3_1,CMS2017_bb_exp_p3_2,CMS2017_bb_exp_p3_3,CMS2017_bq_exp_p2_1,CMS2017_bq_exp_p2_2,CMS2017_mumu_exp_p2_1,CMS2017_mumu_exp_p2_2,CMS2018_bb_exp_p2_1,CMS2018_bb_exp_p2_2,CMS2018_bq_exp_p2_1,CMS2018_bq_exp_p2_2,CMS2018_mumu_exp_p2_1,CMS2018_mumu_exp_p2_2"
-shape3="CMS2016_bb_atlas_p2_1,CMS2016_bb_atlas_p2_2,CMS2016_bq_atlas_p2_1,CMS2016_bq_atlas_p2_2,CMS2016_mumu_atlas_p3_1,CMS2016_mumu_atlas_p3_2,CMS2016_mumu_atlas_p3_3,CMS2017_bb_atlas_p3_1,CMS2017_bb_atlas_p3_2,CMS2017_bb_atlas_p3_3,CMS2017_bq_atlas_p2_1,CMS2017_bq_atlas_p2_2,CMS2017_mumu_atlas_p2_1,CMS2017_mumu_atlas_p2_2,CMS2018_bb_atlas_p2_1,CMS2018_bb_atlas_p2_2,CMS2018_bq_atlas_p2_1,CMS2018_bq_atlas_p2_2,CMS2018_mumu_atlas_p2_1,CMS2018_mumu_atlas_p2_2"
+#shape2="CMS2016_bb_exp_p2_1,CMS2016_bb_exp_p2_2,CMS2016_bq_exp_p2_1,CMS2016_bq_exp_p2_2,CMS2016_mumu_exp_p3_1,CMS2016_mumu_exp_p3_2,CMS2016_mumu_exp_p3_3,CMS2017_bb_exp_p3_1,CMS2017_bb_exp_p3_2,CMS2017_bb_exp_p3_3,CMS2017_bq_exp_p2_1,CMS2017_bq_exp_p2_2,CMS2017_mumu_exp_p2_1,CMS2017_mumu_exp_p2_2,CMS2018_bb_exp_p2_1,CMS2018_bb_exp_p2_2,CMS2018_bq_exp_p2_1,CMS2018_bq_exp_p2_2,CMS2018_mumu_exp_p2_1,CMS2018_mumu_exp_p2_2"
+#shape3="CMS2016_bb_atlas_p2_1,CMS2016_bb_atlas_p2_2,CMS2016_bq_atlas_p2_1,CMS2016_bq_atlas_p2_2,CMS2016_mumu_atlas_p3_1,CMS2016_mumu_atlas_p3_2,CMS2016_mumu_atlas_p3_3,CMS2017_bb_atlas_p3_1,CMS2017_bb_atlas_p3_2,CMS2017_bb_atlas_p3_3,CMS2017_bq_atlas_p2_1,CMS2017_bq_atlas_p2_2,CMS2017_mumu_atlas_p2_1,CMS2017_mumu_atlas_p2_2,CMS2018_bb_atlas_p2_1,CMS2018_bb_atlas_p2_2,CMS2018_bq_atlas_p2_1,CMS2018_bq_atlas_p2_2,CMS2018_mumu_atlas_p2_1,CMS2018_mumu_atlas_p2_2"
+#shape2="CMS2016_bb_exp_p4_1,CMS2016_bb_exp_p4_2,CMS2016_bb_exp_p4_3,CMS2016_bb_exp_p4_4,CMS2016_bq_exp_p3_1,CMS2016_bq_exp_p3_2,CMS2016_bq_exp_p3_3,CMS2016_mumu_exp_p3_1,CMS2016_mumu_exp_p3_2,CMS2016_mumu_exp_p3_3,CMS2017_bb_exp_p2_1,CMS2017_bb_exp_p2_2,CMS2017_bq_exp_p2_1,CMS2017_bq_exp_p2_2,CMS2017_mumu_exp_p2_1,CMS2017_mumu_exp_p2_2,CMS2018_bb_exp_p2_1,CMS2018_bb_exp_p2_2,CMS2018_bq_exp_p2_1,CMS2018_bq_exp_p2_2,CMS2018_mumu_exp_p3_1,CMS2018_mumu_exp_p3_2,CMS2018_mumu_exp_p3_3"
+shape2="CMS2016_bb_exp_p4_1,CMS2016_bb_exp_p4_2,CMS2016_bb_exp_p4_3,CMS2016_bb_exp_p4_4,CMS2016_bq_exp_p2_1,CMS2016_bq_exp_p2_2,CMS2016_mumu_exp_p2_1,CMS2016_mumu_exp_p2_2,CMS2017_bb_exp_p2_1,CMS2017_bb_exp_p2_2,CMS2017_bq_exp_p3_1,CMS2017_bq_exp_p3_2,CMS2017_bq_exp_p3_3,CMS2017_mumu_exp_p3_1,CMS2017_mumu_exp_p3_2,CMS2017_mumu_exp_p3_3,CMS2018_bb_exp_p2_1,CMS2018_bb_exp_p2_2,CMS2018_bq_exp_p2_1,CMS2018_bq_exp_p2_2,CMS2018_mumu_exp_p2_1,CMS2018_mumu_exp_p2_2"
+shape3="CMS2016_bb_atlas_p2_1,CMS2016_bb_atlas_p2_2,CMS2016_bq_atlas_p3_1,CMS2016_bq_atlas_p3_2,CMS2016_bq_atlas_p3_3,CMS2016_mumu_atlas_p4_1,CMS2016_mumu_atlas_p4_2,CMS2016_mumu_atlas_p4_3,CMS2016_mumu_atlas_p4_4,CMS2017_bb_atlas_p3_1,CMS2017_bb_atlas_p3_2,CMS2017_bb_atlas_p3_3,CMS2017_bq_atlas_p3_1,CMS2017_bq_atlas_p3_2,CMS2017_bq_atlas_p3_3,CMS2017_mumu_atlas_p3_1,CMS2017_mumu_atlas_p3_2,CMS2017_mumu_atlas_p3_3,CMS2018_bb_atlas_p3_1,CMS2018_bb_atlas_p3_2,CMS2018_bb_atlas_p3_3,CMS2018_bq_atlas_p3_1,CMS2018_bq_atlas_p3_2,CMS2018_bq_atlas_p3_3,CMS2018_mumu_atlas_p3_1,CMS2018_mumu_atlas_p3_2,CMS2018_mumu_atlas_p3_3"
 
 set_params1=$index0
 if [[ $function_index -eq 1 ]]; then
@@ -170,36 +173,29 @@ elif [[ $function_index -eq 2 ]]; then
 elif [[ $function_index -eq 3 ]]; then
     set_params0=$index3
     #freeze_params=$indexList,$shape0,$shape1,$shape2
-fi    
+fi
 freeze_params=$indexList,$shape1,$shape2,$shape3
 
-echo
-echo "  " >> $tempfile
-echo "combine ${inputfile} -M GenerateOnly --setParameters ${set_params0} --toysFrequentist -t ${ntoys} --expectSignal ${expectSignal} --saveToys -s ${seed} -m ${mass} --freezeParameters ${indexList} >> ${tempfile}"
-echo "combine ${inputfile} -M GenerateOnly --setParameters ${set_params0} --toysFrequentist -t ${ntoys} --expectSignal ${expectSignal} --saveToys -s ${seed} -m ${mass} --freezeParameters ${indexList} >> ${tempfile}" >> $tempfile
-combine ${inputfile} -M GenerateOnly --setParameters ${set_params0} --toysFrequentist -t ${ntoys} --expectSignal $expectSignal --saveToys -s ${seed} -m ${mass} --freezeParameters ${indexList} >> $tempfile
 echo
 echo
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "combine toy generation output:"
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo
-cat $tempfile
+echo "combine ${inputfile} -M GenerateOnly --setParameters ${set_params0} --toysFrequentist -t ${ntoys} --expectSignal ${expectSignal} --saveToys -s ${seed} -m ${mass} --freezeParameters ${indexList},${shape0},${shape1},${shape2},${shape3}" 
+combine ${inputfile} -M GenerateOnly --setParameters ${set_params0} --toysFrequentist -t ${ntoys} --expectSignal $expectSignal --saveToys -s ${seed} -m ${mass} --freezeParameters ${indexList},${shape0},${shape1},${shape2},${shape3}
 echo
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo
 echo
-echo "  " >> $tempfile
-echo "combine ${inputfile} -M FitDiagnostics --setParameters ${set_params1} --toysFile higgsCombineTest.GenerateOnly.mH${mass}.${seed}.root -s ${seed} -t ${ntoys} --rMin ${rmin} --rMax ${rmax} --freezeParameters ${freeze_params} --cminDefaultMinimizerStrategy=0 --toysFrequentist --expectSignal ${expectSignal} >> ${tempfile}"
-echo "combine ${inputfile} -M FitDiagnostics --setParameters ${set_params1} --toysFile higgsCombineTest.GenerateOnly.mH${mass}.${seed}.root -s ${seed} -t ${ntoys} --rMin ${rmin} --rMax ${rmax} --freezeParameters ${freeze_params} --cminDefaultMinimizerStrategy=0 --toysFrequentist --expectSignal ${expectSignal} >> ${tempfile}" >> $tempfile
-combine ${inputfile} -M FitDiagnostics --setParameters ${set_params1} --toysFile higgsCombineTest.GenerateOnly.mH${mass}.${seed}.root -s ${seed} -t ${ntoys} --rMin $rmin --rMax $rmax --freezeParameters ${freeze_params} --cminDefaultMinimizerStrategy=0 --toysFrequentist --expectSignal $expectSignal >> $tempfile
 echo
 echo
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "combine toy fit output:"
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo
-cat $tempfile
+echo "combine ${inputfile} -M FitDiagnostics --setParameters ${set_params1} --toysFile higgsCombineTest.GenerateOnly.mH${mass}.${seed}.root -s ${seed} -t ${ntoys} --rMin ${rmin} --rMax ${rmax} --freezeParameters ${freeze_params} --cminDefaultMinimizerStrategy=0 --toysFrequentist --expectSignal ${expectSignal}"
+combine ${inputfile} -M FitDiagnostics --setParameters ${set_params1} --toysFile higgsCombineTest.GenerateOnly.mH${mass}.${seed}.root -s ${seed} -t ${ntoys} --rMin $rmin --rMax $rmax --freezeParameters ${freeze_params} --cminDefaultMinimizerStrategy=0 --toysFrequentist --expectSignal $expectSignal
 echo
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo

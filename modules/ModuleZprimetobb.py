@@ -39,12 +39,12 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('jcef_1'         , float)
         self.addBranch('jnef_1'         , float)
         self.addBranch('jmuf_1'         , float)
-        self.addBranch('jmuonpt_1'      , float)
+        self.addBranch('jmuonpt_1'      , float) ## incorporates the loose and 3-station requirements
         self.addBranch('jptRel_1'       , float)
         self.addBranch('jnelectrons_1'  , int)
         self.addBranch('jnmuons_1'      , int)
         self.addBranch('jnmuons_loose_1', int)
-        self.addBranch('jnmuons_medium_1', int) ##FIXME new entry
+        self.addBranch('jnmuons_medium_1', int)
         self.addBranch('jflavour_1'     , int)
         self.addBranch('jmask_1'        , bool)
         self.addBranch('jid_1'          , int)
@@ -68,7 +68,7 @@ class TreeProducerZprimetobb(TreeProducerCommon):
         self.addBranch('jnelectrons_2'  , int)
         self.addBranch('jnmuons_2'      , int)
         self.addBranch('jnmuons_loose_2', int)
-        self.addBranch('jnmuons_medium_2', int) ## FIXME new entry
+        self.addBranch('jnmuons_medium_2', int)
         self.addBranch('jflavour_2'     , int)
         self.addBranch('jmask_2'        , bool)
         self.addBranch('jid_2'          , int)
@@ -142,13 +142,23 @@ class TreeProducerZprimetobb(TreeProducerCommon):
             self.addBranch('BTagAK4Weight_deepJet'       , float)
             self.addBranch('BTagAK4Weight_deepJet_up'    , float)
             self.addBranch('BTagAK4Weight_deepJet_down'  , float)
+            self.addBranch('MuonWeight'                  , float)
+            self.addBranch('MuonWeight_up'               , float)
+            self.addBranch('MuonWeight_down'             , float)
+
 
         if isMC:
-            self.addBranch('jnmuons_gen_1'               , int) ##FIXME new entry
-            self.addBranch('jnmuons_gen_2'               , int) ##FIXME new entry
-            self.addBranch('jnmuons_gen_pt_1'            , float) ##FIXME new entry
-            self.addBranch('jnmuons_gen_pt_2'            , float) ##FIXME new entry
+            self.addBranch('jnmuons_gen_1'               , int) 
+            self.addBranch('jnmuons_gen_2'               , int) 
+            self.addBranch('jnmuons_gen_pt_1'            , float) 
+            self.addBranch('jnmuons_gen_pt_2'            , float) 
 
+            self.addBranch('jnmuons_loose_genmatched_1'  , int) 
+            self.addBranch('jnmuons_loose_genmatched_2'  , int) 
+            self.addBranch('jmuonpt_genmatched_1'        , float) 
+            self.addBranch('jmuonpt_genmatched_2'        , float)
+            self.addBranch('jmuon_gen_reco_dR_1'         , float) 
+            self.addBranch('jmuon_gen_reco_dR_2'         , float) 
 
     def endJob(self):
         self.outputfile.Write()
@@ -353,7 +363,6 @@ class ZprimetobbProducer(Module):
         for imu in range(event.nMuon):
             if event.Muon_pt[imu] > 50. and abs(event.Muon_eta[imu]) < 2.4 and event.Muon_highPtId[imu]>=2 and event.Muon_tkRelIso[imu]<0.1: nIsoMuons += 1
 
-        ##FIXME new entry start
         if self.isMC:
             nGenMuons_1 = 0
             nGenMuons_2 = 0
@@ -369,34 +378,94 @@ class ZprimetobbProducer(Module):
                         if event.GenPart_pt[igen]>genMuon_pt_2:
                             genMuon_pt_2 = event.GenPart_pt[igen]
                         nGenMuons_2 += 1
-        ##FIXME new entry end
        
         nLooseMuons1, nLooseMuons2 = 0, 0 
         ptMuons1, ptMuons2 = 0., 0.
-        if event.Jet_muonIdx1[jetIds[0]] >=0 and event.Muon_looseId[event.Jet_muonIdx1[jetIds[0]]]:
+        MuonWeight_central_1, MuonWeight_central_2 = 1., 1.
+        MuonWeight_up_1, MuonWeight_up_2 = 1., 1.
+        MuonWeight_down_1, MuonWeight_down_2 = 1., 1.       
+
+        ################################################################################ 
+        n_gen_matched_muons_1, n_gen_matched_muons_2 = 0, 0
+        gen_matched_muon_pt_1, gen_matched_muon_pt_2 = 0., 0.
+        smallest_muon_dR_gen_reco_1, smallest_muon_dR_gen_reco_2 = 100., 100.
+        ################################################################################ 
+
+        if event.Jet_muonIdx1[jetIds[0]] >=0 and event.Muon_looseId[event.Jet_muonIdx1[jetIds[0]]] and event.Muon_nStations[event.Jet_muonIdx1[jetIds[0]]] >=3:
             nLooseMuons1 += 1 
             ptMuons1 += event.Muon_pt[event.Jet_muonIdx1[jetIds[0]]]
-        if event.Jet_muonIdx2[jetIds[0]] >=0 and event.Muon_looseId[event.Jet_muonIdx2[jetIds[0]]]:
+            MuonWeight_central_1 = 1. + (event.Muon_pt[event.Jet_muonIdx1[jetIds[0]]] / 13000.)*(-7)
+            MuonWeight_up_1 = 1. + (event.Muon_pt[event.Jet_muonIdx1[jetIds[0]]] / 13000.)*(-7 + 28)
+            MuonWeight_down_1 = 1. + (event.Muon_pt[event.Jet_muonIdx1[jetIds[0]]] / 13000.)*(-7 - 28)
+            ################################################################################ 
+            if self.isMC:
+                for igen in range(event.nGenPart):
+                    if abs(event.GenPart_pdgId[igen]) == 13:
+                        dR_gen_reco = ( (event.GenPart_eta[igen] - event.Muon_eta[event.Jet_muonIdx1[jetIds[0]]])**2 + (event.GenPart_phi[igen] - event.Muon_phi[event.Jet_muonIdx1[jetIds[0]]])**2 )**0.5
+                        if dR_gen_reco < smallest_muon_dR_gen_reco_1:
+                            smallest_muon_dR_gen_reco_1 = dR_gen_reco
+                        if dR_gen_reco < 0.05:
+                            n_gen_matched_muons_1 += 1
+                            gen_matched_muon_pt_1 += event.Muon_pt[event.Jet_muonIdx1[jetIds[0]]]
+            ################################################################################            
+
+        if event.Jet_muonIdx2[jetIds[0]] >=0 and event.Muon_looseId[event.Jet_muonIdx2[jetIds[0]]] and event.Muon_nStations[event.Jet_muonIdx2[jetIds[0]]] >=3:
             nLooseMuons1 += 1  
             ptMuons1 += event.Muon_pt[event.Jet_muonIdx2[jetIds[0]]]
-        if event.Jet_muonIdx1[jetIds[1]] >=0 and event.Muon_looseId[event.Jet_muonIdx1[jetIds[1]]]: 
+            ################################################################################ 
+            if self.isMC:
+                for igen in range(event.nGenPart):
+                    if abs(event.GenPart_pdgId[igen]) == 13:
+                        dR_gen_reco = ( (event.GenPart_eta[igen] - event.Muon_eta[event.Jet_muonIdx2[jetIds[0]]])**2 + (event.GenPart_phi[igen] - event.Muon_phi[event.Jet_muonIdx2[jetIds[0]]])**2 )**0.5
+                        if dR_gen_reco < smallest_muon_dR_gen_reco_1:
+                            smallest_muon_dR_gen_reco_1 = dR_gen_reco
+                        if dR_gen_reco < 0.05:
+                            n_gen_matched_muons_1 += 1
+                            gen_matched_muon_pt_1 += event.Muon_pt[event.Jet_muonIdx2[jetIds[0]]]
+            ################################################################################            
+
+        if event.Jet_muonIdx1[jetIds[1]] >=0 and event.Muon_looseId[event.Jet_muonIdx1[jetIds[1]]] and event.Muon_nStations[event.Jet_muonIdx1[jetIds[1]]] >=3: 
             nLooseMuons2 += 1  
             ptMuons2 += event.Muon_pt[event.Jet_muonIdx1[jetIds[1]]]
-        if event.Jet_muonIdx2[jetIds[1]] >=0 and event.Muon_looseId[event.Jet_muonIdx2[jetIds[1]]]: 
+            MuonWeight_central_2 = 1. + (event.Muon_pt[event.Jet_muonIdx1[jetIds[1]]] / 13000.)*(-7)
+            MuonWeight_up_2 = 1. + (event.Muon_pt[event.Jet_muonIdx1[jetIds[1]]] / 13000.)*(-7 + 28)
+            MuonWeight_down_2 = 1. + (event.Muon_pt[event.Jet_muonIdx1[jetIds[1]]] / 13000.)*(-7 - 28)
+            ################################################################################ 
+            if self.isMC:
+                for igen in range(event.nGenPart):
+                    if abs(event.GenPart_pdgId[igen]) == 13:
+                        dR_gen_reco = ( (event.GenPart_eta[igen] - event.Muon_eta[event.Jet_muonIdx1[jetIds[1]]])**2 + (event.GenPart_phi[igen] - event.Muon_phi[event.Jet_muonIdx1[jetIds[1]]])**2 )**0.5
+                        if dR_gen_reco < smallest_muon_dR_gen_reco_2:
+                            smallest_muon_dR_gen_reco_2 = dR_gen_reco
+                        if dR_gen_reco < 0.05:
+                            n_gen_matched_muons_2 += 1
+                            gen_matched_muon_pt_2 += event.Muon_pt[event.Jet_muonIdx1[jetIds[1]]]
+            ################################################################################            
+
+        if event.Jet_muonIdx2[jetIds[1]] >=0 and event.Muon_looseId[event.Jet_muonIdx2[jetIds[1]]] and event.Muon_nStations[event.Jet_muonIdx2[jetIds[1]]] >=3: 
             nLooseMuons2 += 1  
             ptMuons2 += event.Muon_pt[event.Jet_muonIdx2[jetIds[1]]]
+            ################################################################################ 
+            if self.isMC:
+                for igen in range(event.nGenPart):
+                    if abs(event.GenPart_pdgId[igen]) == 13:
+                        dR_gen_reco = ( (event.GenPart_eta[igen] - event.Muon_eta[event.Jet_muonIdx2[jetIds[1]]])**2 + (event.GenPart_phi[igen] - event.Muon_phi[event.Jet_muonIdx2[jetIds[1]]])**2 )**0.5
+                        if dR_gen_reco < smallest_muon_dR_gen_reco_2:
+                            smallest_muon_dR_gen_reco_2 = dR_gen_reco
+                        if dR_gen_reco < 0.05:
+                            n_gen_matched_muons_2 += 1
+                            gen_matched_muon_pt_2 += event.Muon_pt[event.Jet_muonIdx2[jetIds[1]]]
+            ################################################################################            
 
-        ##FIXME new entry start
         nMediumMuons1, nMediumMuons2 = 0, 0
-        if event.Jet_muonIdx1[jetIds[0]] >=0 and event.Muon_mediumId[event.Jet_muonIdx1[jetIds[0]]]:
+        if event.Jet_muonIdx1[jetIds[0]] >=0 and event.Muon_mediumId[event.Jet_muonIdx1[jetIds[0]]] and event.Muon_nStations[event.Jet_muonIdx1[jetIds[0]]] >=3:
             nMediumMuons1 += 1 
-        if event.Jet_muonIdx2[jetIds[0]] >=0 and event.Muon_mediumId[event.Jet_muonIdx2[jetIds[0]]]:
+        if event.Jet_muonIdx2[jetIds[0]] >=0 and event.Muon_mediumId[event.Jet_muonIdx2[jetIds[0]]] and event.Muon_nStations[event.Jet_muonIdx2[jetIds[0]]] >=3:
             nMediumMuons1 += 1  
-        if event.Jet_muonIdx1[jetIds[1]] >=0 and event.Muon_mediumId[event.Jet_muonIdx1[jetIds[1]]]: 
+        if event.Jet_muonIdx1[jetIds[1]] >=0 and event.Muon_mediumId[event.Jet_muonIdx1[jetIds[1]]] and event.Muon_nStations[event.Jet_muonIdx1[jetIds[1]]] >=3: 
             nMediumMuons2 += 1  
-        if event.Jet_muonIdx2[jetIds[1]] >=0 and event.Muon_mediumId[event.Jet_muonIdx2[jetIds[1]]]: 
+        if event.Jet_muonIdx2[jetIds[1]] >=0 and event.Muon_mediumId[event.Jet_muonIdx2[jetIds[1]]] and event.Muon_nStations[event.Jet_muonIdx2[jetIds[1]]] >=3: 
             nMediumMuons2 += 1  
-        ##FIXME new entry end
         
         ptRel1, ptRel2 = 0., 0.
         if event.Jet_muonIdx1[jetIds[0]] >=0: ptRel1 = event.Muon_jetPtRelv2[event.Jet_muonIdx1[jetIds[0]]]
@@ -423,10 +492,12 @@ class ZprimetobbProducer(Module):
         self.out.jnelectrons_1[0] = event.Jet_nElectrons[jetIds[0]]
         self.out.jnmuons_1[0] = event.Jet_nMuons[jetIds[0]]
         self.out.jnmuons_loose_1[0] = nLooseMuons1
-        self.out.jnmuons_medium_1[0] = nMediumMuons1 ##FIXME new entry
+        self.out.jnmuons_medium_1[0] = nMediumMuons1
         if self.isMC:
-            self.out.jnmuons_gen_1[0] = nGenMuons_1 ##FIXME new entry
-            self.out.jnmuons_gen_pt_1[0] = genMuon_pt_1 ##FIXME new entry
+            self.out.jnmuons_gen_1[0] = nGenMuons_1 
+            self.out.jnmuons_gen_pt_1[0] = genMuon_pt_1 
+            self.out.jnmuons_loose_genmatched_1[0] = n_gen_matched_muons_1
+            self.out.jmuonpt_genmatched_1[0] = gen_matched_muon_pt_1
             self.out.jflavour_1[0] = event.Jet_hadronFlavour[jetIds[0]]
         else:
             self.out.jflavour_1[0] = -1
@@ -451,11 +522,15 @@ class ZprimetobbProducer(Module):
         self.out.jnelectrons_2[0] = event.Jet_nElectrons[jetIds[1]]
         self.out.jnmuons_2[0] = event.Jet_nMuons[jetIds[1]]
         self.out.jnmuons_loose_2[0] = nLooseMuons2
-        self.out.jnmuons_medium_2[0] = nMediumMuons2 ##FIXME new entry
+        self.out.jnmuons_medium_2[0] = nMediumMuons2 
         if self.isMC:
-            self.out.jnmuons_gen_2[0] = nGenMuons_2 ##FIXME new entry
-            self.out.jnmuons_gen_pt_2[0] = genMuon_pt_2 ##FIXME new entry
+            self.out.jnmuons_gen_2[0] = nGenMuons_2
+            self.out.jnmuons_gen_pt_2[0] = genMuon_pt_2
+            self.out.jnmuons_loose_genmatched_2[0] = n_gen_matched_muons_2
+            self.out.jmuonpt_genmatched_2[0] = gen_matched_muon_pt_2
             self.out.jflavour_2[0] = event.Jet_hadronFlavour[jetIds[1]]
+            self.out.jmuon_gen_reco_dR_1[0] = smallest_muon_dR_gen_reco_1
+            self.out.jmuon_gen_reco_dR_2[0] = smallest_muon_dR_gen_reco_2
         else:
             self.out.jflavour_2[0] = -1
         self.out.jmask_2[0] = event.Jet_cleanmask[jetIds[1]]
@@ -608,7 +683,10 @@ class ZprimetobbProducer(Module):
             self.out.BTagAK4Weight_deepJet[0]           =  BTagAK4Weight_deepJet        
             self.out.BTagAK4Weight_deepJet_up[0]        =  BTagAK4Weight_deepJet_up  
             self.out.BTagAK4Weight_deepJet_down[0]      =  BTagAK4Weight_deepJet_down
- 
+            self.out.MuonWeight[0]           = MuonWeight_central_1 * MuonWeight_central_2
+            self.out.MuonWeight_up[0]        = MuonWeight_up_1 * MuonWeight_up_2
+            self.out.MuonWeight_down[0]      = MuonWeight_down_1 * MuonWeight_down_2
+
         ## event weight lumi
         #eventweightlumi = 1.
 

@@ -114,9 +114,9 @@ variable = {
     },
     'jmuonpt_1': {
         'title' : "jet 1 muon p_{T} (GeV)",
-        'nbins' : 50,
+        'nbins' : 90,
         'min' : 0.,
-        'max' : 1000.,
+        'max' : 1800.,
         'log' : True,
     },
     'jptRel_1': {
@@ -147,7 +147,21 @@ variable = {
         'max' : 5.5,
         'log' : True,
     },
-   
+     'jnmuons_loose_genmatched_1': {
+        'title' : "jet 1 number of loose muons",
+        'nbins' : 6,
+        'min' : -0.5,
+        'max' : 5.5,
+        'log' : True,
+    },
+     'jmuonpt_genmatched_1': {
+        'title' : "genmatched jet 1 muon p_{T} (GeV)",
+        'nbins' : 90,
+        'min' : 0.,
+        'max' : 1800.,
+        'log' : True,
+    },
+ 
     'jchf_2': {
         'title' : "jet 2 charged hadron fraction",
         'nbins' : 30,
@@ -185,9 +199,9 @@ variable = {
     },
     'jmuonpt_2': {
         'title' : "jet 2 muon p_{T} (GeV)",
-        'nbins' : 50,
+        'nbins' : 90,
         'min' : 0.,
-        'max' : 1000.,
+        'max' : 1800.,
         'log' : True,
     },
     'jptRel_2': {
@@ -216,6 +230,20 @@ variable = {
         'nbins' : 6,
         'min' : -0.5,
         'max' : 5.5,
+        'log' : True,
+    },
+    'jnmuons_loose_genmatched_2': {
+        'title' : "jet 2 number of loose muons",
+        'nbins' : 6,
+        'min' : -0.5,
+        'max' : 5.5,
+        'log' : True,
+    },
+     'jmuonpt_genmatched_2': {
+        'title' : "genmatched jet 2 muon p_{T} (GeV)",
+        'nbins' : 90,
+        'min' : 0.,
+        'max' : 1800.,
         'log' : True,
     },
 
@@ -321,5 +349,20 @@ variable = {
         'max'   : 2000.,
         'log'   : True,
     },
+    'jmuon_gen_reco_dR_1':{
+        'title' : "leading jet dR(gen-#mu, reco-#mu}",
+        'nbins' : 100,
+        'min'   : 0.,
+        'max'   : 0.5,
+        'log'   : True,
+    },
+    'jmuon_gen_reco_dR_2':{
+        'title' : "subleading jet dR(gen-#mu, reco-#mu}",
+        'nbins' : 100,
+        'min'   : 0.,
+        'max'   : 0.5,
+        'log'   : True,
+    },
+
 }
 

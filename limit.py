@@ -60,7 +60,7 @@ ISMC        = options.isMC
 CATEGORY    = options.category
 INCLUDEACC  = options.Acceptance
 
-CAT_LABELS  = {'bb': "2 b tag", 'bq': "1 b tag", 'mumu': "1 #mu"}
+CAT_LABELS  = {'bb': "2 b tag", 'bq': "1 b tag", 'mumu': "1 #mu", 'bb_bq': "2 b tag + 1 b tag"}
 
 if YEAR not in ['2016', '2017', '2018', 'run2', 'run2c']:
     print "unknown year:", YEAR
@@ -70,7 +70,7 @@ if BTAGGING not in ['tight', 'medium', 'loose', 'semimedium']:
     print "unknown btagging requirement:", BTAGGING
     sys.exit()
 
-if CATEGORY not in ['', 'bb', 'bq', 'mumu']:
+if CATEGORY not in ['', 'bb', 'bq', 'mumu', 'bb_bq']:
     print "unknown btagging category"
     sys.exit()
 
@@ -80,6 +80,10 @@ if YEAR=='run2c':
     print "Plotting the result from combine on separate years for run2..."
 else:
     SY=False
+    if CATEGORY=='bb_bq':
+        print "bb_bq category implemented only for separately combined fits"
+        sys.exit()
+
 
 LUMI        = luminosities[YEAR]
 
@@ -141,7 +145,10 @@ def limit():
         filename = "./combine/limits/" + BTAGGING + "/"+ YEAR + "_M%d.txt"
     if CATEGORY!="":
         if SY:
-            filename = filename.replace(BTAGGING + "/combined_run2/", BTAGGING + "/single_category/combined_run2/"+CATEGORY+"_")
+            if CATEGORY=='bb_bq':
+                filename = filename.replace(BTAGGING + "/combined_run2/", BTAGGING + "/combined_run2/"+CATEGORY+"_combined_")
+            else:
+                filename = filename.replace(BTAGGING + "/combined_run2/", BTAGGING + "/single_category/combined_run2/"+CATEGORY+"_")
         else:
             filename = filename.replace(BTAGGING + "/", BTAGGING + "/single_category/"+CATEGORY+"_")
         suffix += "_"+CATEGORY

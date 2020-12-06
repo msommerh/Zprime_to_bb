@@ -62,6 +62,7 @@ if BIAS:
         print "sigma value not regnognized"
         sys.exit()
     print "running in BIAS mode"
+    print "signal strength: {}".format("0" if SIGMA=='0' else SIGMA+"sigma")
 
 #categories = ['bb', 'bq']
 categories = ['bb', 'bq', 'mumu']
@@ -72,7 +73,7 @@ genPoints = [1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7
 if not os.path.exists(PLOTDIR):
     os.makedirs(PLOTDIR)
 
-def uncertainty_interpolation(year, category):
+def uncertainty_interpolation(year, category, uncertainty_type="BTag"):
 
     uncerts = {'up':{}, 'down':{}}
 
@@ -97,10 +98,10 @@ def uncertainty_interpolation(year, category):
         if year=="run2":
             up_value = 0
             for yr in ['2016', '2017', '2018']:
-                up_value += LUMI[yr]*sample['ZpBB_M{}'.format(m)]['BTag_uncertainties'][yr]['up'][category]
+                up_value += LUMI[yr]*sample['ZpBB_M{}'.format(m)][uncertainty_type+'_uncertainties'][yr]['up'][category]
             up_value /= LUMI['run2'] 
         else: 
-            up_value = sample['ZpBB_M{}'.format(m)]['BTag_uncertainties'][year]['up'][category]
+            up_value = sample['ZpBB_M{}'.format(m)][uncertainty_type+'_uncertainties'][year]['up'][category]
         if up_value==-100: continue
         g_up.SetPoint(n, m, up_value)
         n = n + 1
@@ -112,10 +113,10 @@ def uncertainty_interpolation(year, category):
         if year=="run2":
             down_value = 0
             for yr in ['2016', '2017', '2018']:
-                down_value += LUMI[yr]*sample['ZpBB_M{}'.format(m)]['BTag_uncertainties'][yr]['down'][category]
+                down_value += LUMI[yr]*sample['ZpBB_M{}'.format(m)][uncertainty_type+'_uncertainties'][yr]['down'][category]
             down_value /= LUMI['run2'] 
         else: 
-            down_value = sample['ZpBB_M{}'.format(m)]['BTag_uncertainties'][year]['down'][category]
+            down_value = sample['ZpBB_M{}'.format(m)][uncertainty_type+'_uncertainties'][year]['down'][category]
         if down_value==-100: continue
         g_down.SetPoint(n, m, down_value)
         n = n + 1
@@ -139,14 +140,14 @@ def uncertainty_interpolation(year, category):
     i_up.Draw("P, SAME")
     g_down.Draw("PL, SAME")
     i_down.Draw("P, SAME")
-    g_up.GetYaxis().SetRangeUser(-0.25,0.25)
+    g_up.GetYaxis().SetRangeUser(-1.,1.)
     g_up.GetXaxis().SetRangeUser(genPoints[0]-100, genPoints[-1]+100)
     
     leg = TLegend(0.7, 0.75, 0.9, 0.9)
     leg.AddEntry(g_up, "up")
     leg.AddEntry(g_down, "down")
     leg.Draw()
-    c.Print(PLOTDIR+"uncertainty_interpol_{}_{}.png".format(year, category))
+    c.Print(PLOTDIR+uncertainty_type+"_uncertainty_interpol_{}_{}.png".format(year, category))
    
     return uncerts 
 
@@ -165,8 +166,11 @@ syst_sig["param"]["CMS"+YEAR+"sig_p2_jer"] = (0., 1.)
 
 # linear interpolation of btagging uncertainties:
 syst_sig["BTag"] = {}
+syst_sig["Muon"] = {}
 for category in categories:
-    syst_sig["BTag"][category] = uncertainty_interpolation(YEAR, category)
+    syst_sig["BTag"][category] = uncertainty_interpolation(YEAR, category, uncertainty_type="BTag")
+    if category=="mumu":
+        syst_sig["Muon"][category] = uncertainty_interpolation(YEAR, category, uncertainty_type="Muon")
 
 ##############################
 
@@ -195,14 +199,24 @@ def generate_datacard(year, category, masspoint, btagging, outname):
     card += "process                          {:25}{:25}\n".format("0", "1")
     card += "rate                             {:25}{:25}\n".format("1", "1") 
     card += "-----------------------------------------------------------------------------------\n"
+
     #simple uncertainties (currently only lumi)
     for syst_unc in sorted(syst_sig["lnN"].keys()):
         card += "{:<25}{:<6}  {:<25}{:<25}\n".format(syst_unc, 'lnN', 1+syst_sig["lnN"][syst_unc], '-')
+
     #btagging uncertainties
     btag_uncert_up   = syst_sig["BTag"][category]['up'][masspoint]
     btag_uncert_down = syst_sig["BTag"][category]['down'][masspoint]
     btag_uncert = (btag_uncert_up+btag_uncert_down)*0.5
     card += "{:<25}{:<6}  {:<25}{:<25}\n".format('btag_{}_{}_M{}'.format(year, category, masspoint), 'lnN', 1+btag_uncert, '-')
+
+    #muon uncertainties
+    if category=="mumu":
+        muon_uncert_up   = syst_sig["Muon"][category]['up'][masspoint]
+        muon_uncert_down = syst_sig["Muon"][category]['down'][masspoint]
+        muon_uncert = (muon_uncert_up+muon_uncert_down)*0.5
+        card += "{:<25}{:<6}  {:<25}{:<25}\n".format('muon_{}_{}_M{}'.format(year, category, masspoint), 'lnN', 1+muon_uncert*2, '-') ##FIXME inflated by factor of 2
+
     #JES and JER
     for syst_unc in sorted(syst_sig["param"].keys()):
         card += "{:<25}{:<6}  {:<25}{:<25}\n".format(syst_unc.replace('sig_', 'sig_'+category+'_'), 'param', syst_sig["param"][syst_unc][0], syst_sig["param"][syst_unc][1])

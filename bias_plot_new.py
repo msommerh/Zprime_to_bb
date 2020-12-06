@@ -27,8 +27,8 @@ else:
 COLORS = {'0': 2, '2sigma': 8, '5sigma': 4}
 LEGEND = {'0': 'r=0', '2sigma': 'r~2#sigma', '5sigma': 'r~5#sigma'}
 FUNCTION = {1: "+1 parameter", 2: "modified exponential", 3: "ATLAS function"}
-#SEEDS = ['123456', '234567', '345678', '456789', '567891', '678912', '789123', '891234', '912345', '123459']
-SEEDS = ['123456']
+SEEDS = ['123456', '234567', '345678', '456789', '567891', '678912', '789123', '891234', '912345', '123459']
+#SEEDS = ['123456']
 
 def main():
     gROOT.SetBatch(True)
@@ -40,7 +40,8 @@ def main():
     
     ## extract pulls
     pulls = {}
-    for signal_strength in ['0', '2sigma', '5sigma']:
+    for signal_strength in ['0', '2sigma', '5sigma']: 
+    #for signal_strength in ['0']:  ##FIXME FIXME FIXME
         print
         print
         print "--------------------------------------------------"
@@ -48,6 +49,7 @@ def main():
         print "--------------------------------------------------"
         pulls[signal_strength] = TGraphErrors()
         for m in range(1600,8001,100):
+        #for m in range(6000,8001,100): ##FIXME FIXME FIXME
             print
             print "m = "+str(m)
             print
@@ -64,12 +66,27 @@ def main():
                 tree.GetEntry(i)
                 #print "r = {} (+{}, -{})".format(tree.r, tree.rHiErr, tree.rLoErr)
                 ##if tree.rLoErr < 0.: continue
-                if abs(tree.r+1.) < 0.001: continue
-                if abs(tree.r-1.) < 0.001: continue
-                if abs(tree.r-0.) < 0.001: continue
-                if tree.rHiErr==0. or tree.rLoErr==0.: continue
-                if abs(tree.r+abs(tree.rHiErr) - round(tree.r+abs(tree.rHiErr))) < 0.0001: continue
-                if abs(tree.r-abs(tree.rLoErr) - round(tree.r-abs(tree.rLoErr))) < 0.0001: continue
+                #if abs(tree.r+1.) < 0.001: 
+                #    print "filtered out"
+                #    continue
+                #if abs(tree.r-1.) < 0.001: 
+                #    print "filtered out"
+                #    continue
+                #if abs(tree.r-0.) < 0.001: 
+                #    print "filtered out"
+                #    continue
+                if tree.rHiErr==0. or tree.rLoErr==0.: 
+                    #print "filtered out"
+                    continue
+                if abs(tree.r+abs(tree.rHiErr) - round(tree.r+abs(tree.rHiErr))) < 0.0001: 
+                    #print "filtered out"
+                    continue
+                if abs(tree.r-abs(tree.rLoErr) - round(tree.r-abs(tree.rLoErr))) < 0.0001: 
+                    #print "filtered out"
+                    continue
+                #if signal_strength=='0' and m>6000 and abs(tree.r)>3.: 
+                #    print "filtered r = {} (+{}, -{})".format(tree.r, tree.rHiErr, tree.rLoErr)
+                #    continue
                 #print "r = {} (+{}, -{})".format(tree.r, tree.rHiErr, tree.rLoErr)
                 pull = (tree.r-pull0)/abs(tree.rHiErr) if tree.r-pull0 > 0. else (tree.r-pull0)/abs(tree.rLoErr) ## my own approach
                 hist.Fill(pull)
@@ -81,7 +98,7 @@ def main():
             hist.GetYaxis().SetTitleSize(0.045)
             hist.GetYaxis().SetTitleOffset(1.1)
             hist.GetXaxis().SetTitleOffset(1.05)
-            hist.GetXaxis().SetLimits(-6, 6.)
+            hist.GetXaxis().SetLimits(-5, 5.)
             hist.GetYaxis().SetLimits(0, 20.*len(SEEDS))
             hist.SetMinimum(0.)
             hist.SetMaximum(19.*len(SEEDS))
@@ -96,7 +113,7 @@ def main():
 
             drawCMS(-1, "Simulation Preliminary", year='run2')
             drawMass("m_{Z'} = "+str(m)+" GeV")
-            c1.Print("plots/bias/run2c_masspoints/r"+signal_strength+"_f"+str(args.function_index)+"/bias_fit_"+str(m)+"_"+args.year+".pdf")
+            c1.Print("plots/bias/run2c_masspoints/r"+signal_strength+"_f"+str(args.function_index)+"/bias_fit_"+str(m)+"_"+args.year+".pdf") ##FIXME FIXME FIXME
             c1.Print("plots/bias/run2c_masspoints/r"+signal_strength+"_f"+str(args.function_index)+"/bias_fit_"+str(m)+"_"+args.year+".png")
 
             n = pulls[signal_strength].GetN()
@@ -109,6 +126,7 @@ def main():
         #except:
         #    print "something went wrong in m =", m
 
+    #return ##FIXME FIXME FIXME
     ## draw pulls
     outfile = TFile("plots/bias/bias_study_new_function_"+str(args.function_index)+"_"+args.year+".root", "RECREATE")
 
@@ -124,8 +142,10 @@ def main():
         pulls[signal_strength].SetLineWidth(2)
         #pulls[signal_strength].SetMinimum(-0.7)
         #pulls[signal_strength].SetMaximum(0.7)
-        pulls[signal_strength].SetMinimum(-6.)
-        pulls[signal_strength].SetMaximum(4.)
+        pulls[signal_strength].SetMinimum(-1.)
+        pulls[signal_strength].SetMaximum(1.)
+        #pulls[signal_strength].SetMinimum(-8.)
+        #pulls[signal_strength].SetMaximum(8.)
         pulls[signal_strength].Draw("APL" if i==0 else "PL")
         leg.AddEntry(pulls[signal_strength], LEGEND[signal_strength])
     zeroline = TGraph()

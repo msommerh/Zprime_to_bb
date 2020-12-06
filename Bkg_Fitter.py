@@ -345,7 +345,7 @@ def dijet(category):
 
         # 1 parameter mod exp
         print "fitting 1 parameter model modified exponential"
-        exp_p1_1 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p1_1", "exp_p1", -1., -200., 200.)
+        exp_p1_1 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p1_1", "exp_p1", -1., -2000., 2000.)
         exp_modelBkg1 = RooGenericPdf("exp_Bkg1", "Modified Exponential Bkg. fit (2 par.)", "exp(@1*@0/13000)", RooArgList(X_mass, exp_p1_1))
         exp_normzBkg1 = RooRealVar(exp_modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents) 
         exp_modelExt1 = RooExtendPdf(exp_modelBkg1.GetName()+"_ext", exp_modelBkg1.GetTitle(), exp_modelBkg1, exp_normzBkg1)
@@ -355,8 +355,8 @@ def dijet(category):
 
         # 2 parameters mod exp
         print "fitting 2 parameter model modified exponential"
-        exp_p2_1 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p2_1", "exp_p1", exp_p1_1.getVal(), -200., 200.)
-        exp_p2_2 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p2_2", "exp_p2", 1., -200., 200.)
+        exp_p2_1 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p2_1", "exp_p1", exp_p1_1.getVal(), -2000., 2000.)
+        exp_p2_2 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p2_2", "exp_p2", 1., -2000., 2000.)
         exp_modelBkg2 = RooGenericPdf("exp_Bkg2", "Modified Exponential Bkg. fit (3 par.)", "exp(@1*pow(@0/13000, @2))", RooArgList(X_mass, exp_p2_1, exp_p2_2))
         exp_normzBkg2 = RooRealVar(exp_modelBkg2.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
         exp_modelExt2 = RooExtendPdf(exp_modelBkg2.GetName()+"_ext", exp_modelBkg2.GetTitle(), exp_modelBkg2, exp_normzBkg2)
@@ -366,9 +366,9 @@ def dijet(category):
         
         # 3 parameters mod exp
         print "fitting 3 parameter model modified exponential"
-        exp_p3_1 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p3_1", "exp_p1", exp_p2_1.getVal(), -200., 200.)
-        exp_p3_2 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p3_2", "exp_p2", exp_p2_2.getVal(), -200., 200.)
-        exp_p3_3 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p3_3", "exp_p3", 0., -200., 200.)
+        exp_p3_1 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p3_1", "exp_p1", exp_p2_1.getVal(), -2000., 2000.)
+        exp_p3_2 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p3_2", "exp_p2", exp_p2_2.getVal(), -2000., 2000.)
+        exp_p3_3 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p3_3", "exp_p3", 0.01, -2000., 2000.)
         exp_modelBkg3 = RooGenericPdf("exp_Bkg3", "Modified Exponenial Bkg. fit (4 par.)", "exp(@1*pow(@0/13000, @2)+@3*(1-@0/13000))", RooArgList(X_mass, exp_p3_1, exp_p3_2, exp_p3_3))
         exp_normzBkg3 = RooRealVar(exp_modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
         exp_modelExt3 = RooExtendPdf(exp_modelBkg3.GetName()+"_ext", exp_modelBkg3.GetTitle(), exp_modelBkg3, exp_normzBkg3)
@@ -376,9 +376,23 @@ def dijet(category):
         exp_fitRes3.Print()
         exp_RSS[3] = drawFit("exp_Bkg3", category, X_mass, exp_modelBkg3, setData, binsXmass, [exp_fitRes3], exp_normzBkg3.getVal())
 
+        # 4 parameters mod exp
+        print "fitting 4 parameter model modified exponential"
+        exp_p4_1 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p4_1", "exp_p1", exp_p3_1.getVal(), -2000., 2000.)
+        exp_p4_2 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p4_2", "exp_p2", exp_p3_2.getVal(), -2000., 2000.)
+        exp_p4_3 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p4_3", "exp_p3", exp_p3_3.getVal(), -2000., 2000.)
+        exp_p4_4 = RooRealVar("CMS"+YEAR+"_"+category+"_exp_p4_4", "exp_p4", 1., -2000., 2000.)
+        exp_modelBkg4 = RooGenericPdf("exp_Bkg4", "Modified Exponenial Bkg. fit (5 par.)", "exp(@1*pow(@0/13000, @2)+@3*pow(1-@0/13000, @4))", RooArgList(X_mass, exp_p4_1, exp_p4_2, exp_p4_3, exp_p4_4))
+        exp_normzBkg4 = RooRealVar(exp_modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
+        exp_modelExt4 = RooExtendPdf(exp_modelBkg4.GetName()+"_ext", exp_modelBkg4.GetTitle(), exp_modelBkg4, exp_normzBkg4)
+        exp_fitRes4 = exp_modelExt4.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
+        exp_fitRes4.Print()
+        exp_RSS[4] = drawFit("exp_Bkg4", category, X_mass, exp_modelBkg4, setData, binsXmass, [exp_fitRes4], exp_normzBkg4.getVal())
+
+
         # 1 parameter mod ATLAS
         print "fitting 1 parameter model ATLAS"
-        atlas_p1_1 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p1_1", "atlas_p1", 1., -200., 200.)
+        atlas_p1_1 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p1_1", "atlas_p1", 1., 0., 10.)
         atlas_modelBkg1 = RooGenericPdf("atlas_Bkg1", "Atlas Bkg. fit (2 par.)", "1 / pow(@0/13000, @1)", RooArgList(X_mass, atlas_p1_1))
         atlas_normzBkg1 = RooRealVar(atlas_modelBkg1.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
         atlas_modelExt1 = RooExtendPdf(atlas_modelBkg1.GetName()+"_ext", atlas_modelBkg1.GetTitle(), atlas_modelBkg1, atlas_normzBkg1)
@@ -388,8 +402,8 @@ def dijet(category):
 
         # 2 parameters ATLAS
         print "fitting 2 parameter model ATLAS"
-        atlas_p2_1 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p2_1", "atlas_p1", atlas_p1_1.getVal(), -200., 200.)
-        atlas_p2_2 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p2_2", "atlas_p2", 0., -200., 200.)
+        atlas_p2_1 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p2_1", "atlas_p1", atlas_p1_1.getVal(), 0., 10.)
+        atlas_p2_2 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p2_2", "atlas_p2", 0.001, -60., 50.)
         atlas_modelBkg2 = RooGenericPdf("atlas_Bkg2", "Atlas Bkg. fit (3 par.)", "exp(-@2*@0/13000) / pow(@0/13000, @1)", RooArgList(X_mass, atlas_p2_1, atlas_p2_2))
         atlas_normzBkg2 = RooRealVar(atlas_modelBkg2.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
         atlas_modelExt2 = RooExtendPdf(atlas_modelBkg2.GetName()+"_ext", atlas_modelBkg2.GetTitle(), atlas_modelBkg2, atlas_normzBkg2)
@@ -399,23 +413,37 @@ def dijet(category):
         
         # 3 parameters ATLAS
         print "fitting 3 parameter model ATLAS"
-        atlas_p3_1 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p3_1", "atlas_p1", atlas_p2_1.getVal(), -200., 200.)
-        atlas_p3_2 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p3_2", "atlas_p2", atlas_p2_2.getVal(), -200., 200.)
-        atlas_p3_3 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p3_3", "atlas_p3", 0., -200., 200.)
+        atlas_p3_1 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p3_1", "atlas_p1", atlas_p2_1.getVal(), 0., 10.)
+        atlas_p3_2 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p3_2", "atlas_p2", atlas_p2_2.getVal(), -60., 50.)
+        atlas_p3_3 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p3_3", "atlas_p3", 0.001, -100., 150.)
         atlas_modelBkg3 = RooGenericPdf("atlas_Bkg3", "Atlas Bkg. fit (4 par.)", "exp(-@2*@0/13000-@3*pow(@0/13000, 2)) / pow(@0/13000, @1)", RooArgList(X_mass, atlas_p3_1, atlas_p3_2, atlas_p3_3))
         atlas_normzBkg3 = RooRealVar(atlas_modelBkg3.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
         atlas_modelExt3 = RooExtendPdf(atlas_modelBkg3.GetName()+"_ext", atlas_modelBkg3.GetTitle(), atlas_modelBkg3, atlas_normzBkg3)
         atlas_fitRes3 = atlas_modelExt3.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
         atlas_fitRes3.Print()
         atlas_RSS[3] = drawFit("atlas_Bkg3", category, X_mass, atlas_modelBkg3, setData, binsXmass, [atlas_fitRes3], atlas_normzBkg3.getVal())
-     
+
+        # 4 parameters ATLAS
+        print "fitting 4 parameter model ATLAS"
+        atlas_p4_1 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p4_1", "atlas_p1", atlas_p3_1.getVal(), 0., 10.)
+        atlas_p4_2 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p4_2", "atlas_p2", atlas_p3_2.getVal(), -60., 50.)
+        atlas_p4_3 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p4_3", "atlas_p3", atlas_p3_3.getVal(), -100., 150.)
+        atlas_p4_4 = RooRealVar("CMS"+YEAR+"_"+category+"_atlas_p4_4", "atlas_p4", 0.001, -150., 100.)
+        atlas_modelBkg4 = RooGenericPdf("atlas_Bkg4", "Atlas Bkg. fit (5 par.)", "exp(-@2*@0/13000-@3*pow(@0/13000, 2)-@4*pow(@0/13000, 3)) / pow(@0/13000, @1)", RooArgList(X_mass, atlas_p4_1, atlas_p4_2, atlas_p4_3, atlas_p4_4))
+        atlas_normzBkg4 = RooRealVar(atlas_modelBkg4.GetName()+"_norm", "Number of background events", nevents, 0., 5.*nevents)
+        atlas_modelExt4 = RooExtendPdf(atlas_modelBkg4.GetName()+"_ext", atlas_modelBkg4.GetTitle(), atlas_modelBkg4, atlas_normzBkg4)
+        atlas_fitRes4 = atlas_modelExt4.fitTo(setData, RooFit.Extended(True), RooFit.Save(1), RooFit.SumW2Error(not isData), RooFit.Strategy(2), RooFit.Minimizer("Minuit2"), RooFit.PrintLevel(1 if VERBOSE else -1))
+        atlas_fitRes4.Print()
+        atlas_RSS[4] = drawFit("atlas_Bkg4", category, X_mass, atlas_modelBkg4, setData, binsXmass, [atlas_fitRes4], atlas_normzBkg4.getVal())
+
         exp_normzBkg1.setConstant(True) 
         exp_normzBkg2.setConstant(True)
         exp_normzBkg3.setConstant(True)
+        exp_normzBkg4.setConstant(True)
         atlas_normzBkg1.setConstant(True)
         atlas_normzBkg2.setConstant(True)
         atlas_normzBkg3.setConstant(True)
-       
+        atlas_normzBkg4.setConstant(True)
 
     
     # Normalization parameters are should be set constant, but shape ones should not
@@ -453,8 +481,7 @@ def dijet(category):
         for o1 in range(1, 5):
             o2 = min(o1 + 1, 5)
             if o2 > len(RSS):
-                fout.write( "%d par & %.2f & %.2f & %d & " % (o1+1, RSS[o1]["chi2"], RSS[o1][
-"rss"], RSS[o1]["nbins"]-RSS[o1]["npar"]))
+                fout.write( "%d par & %.2f & %.2f & %d & " % (o1+1, RSS[o1]["chi2"], RSS[o1]["rss"], RSS[o1]["nbins"]-RSS[o1]["npar"]))
                 fout.write(r"\\")
                 fout.write("\n")
                 continue #order==0 and 
@@ -479,36 +506,6 @@ def dijet(category):
 
     print "saved F-test table as", PLOTDIR+"/Fisher_"+category+".tex"
 
-    #print "-"*25
-    #print "function & $\\chi^2$ & RSS & ndof & F-test & result \\\\"
-    #print "\\multicolumn{6}{c}{", "Zprime_to_bb", "} \\\\"
-    #print "\\hline"
-    #CL_high = False
-    #for o1 in range(1, 5):
-    #    o2 = min(o1 + 1, 5)
-    #    print "%d par & %.2f & %.2f & %d & " % (o1+1, RSS[o1]["chi2"], RSS[o1]["rss"], RSS[o1]["nbins"]-RSS[o1]["npar"]),
-    #    if o2 > len(RSS):
-    #        print "\\\\"
-    #        continue #order==0 and 
-    #    CL = fisherTest(RSS[o1]['rss'], RSS[o2]['rss'], o1+1., o2+1., RSS[o1]["nbins"])
-    #    print "%d par vs %d par CL=%f & " % (o1+1, o2+1, CL),
-    #    if CL > 0.10: # The function with less parameters is enough
-    #        if not CL_high:
-    #            order = o1
-    #            print "%d par are sufficient" % (o1+1),
-    #            CL_high=True
-    #    else:
-    #        print "%d par are needed" % (o2+1),
-    #        if not CL_high:
-    #            order = o2
-    #    print "\\\\"
-    #print "\\hline"
-    #print "-"*25   
-    #print "@ Order is", order, "("+category+")"
-    
-    #order = min(3, order)
-    #order = 2
-
     if FORCE_PARAMS: order=options.force-1
 
     if order==1:
@@ -517,42 +514,42 @@ def dijet(category):
         normzBkg = normzBkg1#.Clone("Bkg_norm")
         normzAlt = normzBkg2#.Clone("Bkg_norm")
         fitRes = fitRes1
-        if BIAS:
-            modelExp = exp_modelBkg1
-            modelAtlas = atlas_modelBkg1
-            normzExp = exp_normzBkg1
-            normzAtlas = atlas_normzBkg1
+        #if BIAS:
+        #    modelExp = exp_modelBkg1
+        #    modelAtlas = atlas_modelBkg1
+        #    normzExp = exp_normzBkg1
+        #    normzAtlas = atlas_normzBkg1
     elif order==2:
         modelBkg = modelBkg2#.Clone("Bkg")
         modelAlt = modelBkg3#.Clone("BkgAlt")
         normzBkg = normzBkg2#.Clone("Bkg_norm")
         normzAlt = normzBkg3#.Clone("Bkg_norm")
         fitRes = fitRes2
-        if BIAS:
-            modelExp = exp_modelBkg2
-            modelAtlas = atlas_modelBkg2
-            normzExp = exp_normzBkg2
-            normzAtlas = atlas_normzBkg2
+        #if BIAS:
+        #    modelExp = exp_modelBkg2
+        #    modelAtlas = atlas_modelBkg2
+        #    normzExp = exp_normzBkg2
+        #    normzAtlas = atlas_normzBkg2
     elif order==3:
         modelBkg = modelBkg3#.Clone("Bkg")
         modelAlt = modelBkg4#.Clone("BkgAlt")
         normzBkg = normzBkg3#.Clone("Bkg_norm")
         normzAlt = normzBkg4#.Clone("Bkg_norm")
         fitRes = fitRes3
-        if BIAS:
-            modelExp = exp_modelBkg3
-            modelAtlas = atlas_modelBkg3
-            normzExp = exp_normzBkg3
-            normzAtlas = atlas_normzBkg3
+        #if BIAS:
+        #    modelExp = exp_modelBkg3
+        #    modelAtlas = atlas_modelBkg3
+        #    normzExp = exp_normzBkg3
+        #    normzAtlas = atlas_normzBkg3
     elif order==4:
         modelBkg = modelBkg4#.Clone("Bkg")
         modelAlt = modelBkg3#.Clone("BkgAlt")
         normzBkg = normzBkg4#.Clone("Bkg_norm")
         normzAlt = normzBkg3#.Clone("Bkg_norm")
         fitRes = fitRes4
-        if BIAS:
-            print "-------------------- undefined exp and ATLAS functions --------------------"
-            exit()
+        #if BIAS:
+        #    print "-------------------- undefined exp and ATLAS functions --------------------"
+        #    exit()
     else:
         print "Functions with", order+1, "or more parameters are needed to fit the background"
         exit()
@@ -562,6 +559,110 @@ def dijet(category):
     normzBkg.SetName("Bkg_"+YEAR+"_"+category+"_norm")
     normzAlt.SetName("Alt_"+YEAR+"_"+category+"_norm")   
     if BIAS:
+        with open(PLOTDIR+"/Exp_Fisher_"+category+".tex", 'w') as fout:
+            fout.write(r"\begin{tabular}{c|c|c|c|c}")
+            fout.write("\n")
+            fout.write(r"function & $\chi^2$ & RSS & ndof & F-test \\")
+            fout.write("\n")
+            fout.write("\hline")
+            fout.write("\n")
+            CL_high = False
+            for o1 in range(1, 5):
+                o2 = min(o1 + 1, 5)
+                if o2 > len(exp_RSS):
+                    fout.write( "%d par & %.2f & %.2f & %d & " % (o1+1, exp_RSS[o1]["chi2"], exp_RSS[o1]["rss"], exp_RSS[o1]["nbins"]-exp_RSS[o1]["npar"]))
+                    fout.write(r"\\")
+                    fout.write("\n")
+                    continue #order==0 and 
+
+                CL = fisherTest(exp_RSS[o1]['rss'], exp_RSS[o2]['rss'], o1+1., o2+1., exp_RSS[o1]["nbins"])
+                if CL > 0.10: # The function with less parameters is enough
+                    if not CL_high:
+                        exp_order = o1
+                        fout.write( "\\rowcolor{MarkerColor}\n")
+                        CL_high=True
+                else:
+                    #fout.write( "%d par are needed " % (o2+1))
+                    if not CL_high:
+                        exp_order = o2
+                fout.write( "%d par & %.2f & %.2f & %d & " % (o1+1, exp_RSS[o1]["chi2"], exp_RSS[o1]["rss"], exp_RSS[o1]["nbins"]-exp_RSS[o1]["npar"]))
+                fout.write("CL=%.3f " % (CL))
+                fout.write(r"\\")
+                fout.write("\n")
+            fout.write("\hline")
+            fout.write("\n")
+            fout.write(r"\end{tabular}")
+
+        print "saved F-test table as", PLOTDIR+"/Exp_Fisher_"+category+".tex"
+
+        if exp_order==1:
+            modelExp = exp_modelBkg1
+            normzExp = exp_normzBkg1
+        elif exp_order==2:
+            modelExp = exp_modelBkg2
+            normzExp = exp_normzBkg2
+        elif exp_order==3:
+            modelExp = exp_modelBkg3
+            normzExp = exp_normzBkg3
+        elif exp_order==4:
+            modelExp = exp_modelBkg4 
+            normzExp = exp_normzBkg4
+        else:
+            print "Functions with", exp_order+1, "or more parameters are needed to fit the background with the modified exponential"
+            exit()
+
+        with open(PLOTDIR+"/Atlas_Fisher_"+category+".tex", 'w') as fout:
+            fout.write(r"\begin{tabular}{c|c|c|c|c}")
+            fout.write("\n")
+            fout.write(r"function & $\chi^2$ & RSS & ndof & F-test \\")
+            fout.write("\n")
+            fout.write("\hline")
+            fout.write("\n")
+            CL_high = False
+            for o1 in range(1, 5):
+                o2 = min(o1 + 1, 5)
+                if o2 > len(atlas_RSS):
+                    fout.write( "%d par & %.2f & %.2f & %d & " % (o1+1, atlas_RSS[o1]["chi2"], atlas_RSS[o1]["rss"], atlas_RSS[o1]["nbins"]-atlas_RSS[o1]["npar"]))
+                    fout.write(r"\\")
+                    fout.write("\n")
+                    continue #order==0 and 
+
+                CL = fisherTest(atlas_RSS[o1]['rss'], atlas_RSS[o2]['rss'], o1+1., o2+1., atlas_RSS[o1]["nbins"])
+                if CL > 0.10: # The function with less parameters is enough
+                    if not CL_high:
+                        atlas_order = o1
+                        fout.write( "\\rowcolor{MarkerColor}\n")
+                        CL_high=True
+                else:
+                    #fout.write( "%d par are needed " % (o2+1))
+                    if not CL_high:
+                        atlas_order = o2
+                fout.write( "%d par & %.2f & %.2f & %d & " % (o1+1, atlas_RSS[o1]["chi2"], atlas_RSS[o1]["rss"], atlas_RSS[o1]["nbins"]-atlas_RSS[o1]["npar"]))
+                fout.write("CL=%.3f " % (CL))
+                fout.write(r"\\")
+                fout.write("\n")
+            fout.write("\hline")
+            fout.write("\n")
+            fout.write(r"\end{tabular}")
+
+        print "saved F-test table as", PLOTDIR+"/Atlas_Fisher_"+category+".tex"
+
+        if atlas_order==1:
+            modelAtlas = atlas_modelBkg1
+            normzAtlas = atlas_normzBkg1
+        elif atlas_order==2:
+            modelAtlas = atlas_modelBkg2
+            normzAtlas = atlas_normzBkg2
+        elif atlas_order==3:
+            modelAtlas = atlas_modelBkg3
+            normzAtlas = atlas_normzBkg3
+        elif atlas_order==4:
+            modelAtlas = atlas_modelBkg4 
+            normzAtlas = atlas_normzBkg4
+        else:
+            print "Functions with", atlas_order+1, "or more parameters are needed to fit the background with the ATLAS function"
+            exit()
+
         modelExp.SetName("Exp_"+YEAR+"_"+category)
         modelAtlas.SetName("Atlas_"+YEAR+"_"+category)
         normzExp.SetName("Exp_"+YEAR+"_"+category+"_norm")

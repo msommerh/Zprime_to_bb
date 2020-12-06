@@ -317,18 +317,20 @@ from ROOT import TLegend, TLatex, TText, TLine, TBox, TMath
 
 
 
-def printTable(hist, sign=[]):
+def printTable(hist, sign=[], fraction_above=0.):
     samples = [x for x in hist.keys() if not 'data' in x and not 'BkgSum' in x and not x in sign]
-    print "Sample                  Events          Entries         %"
-    print "-"*60
+    print "Sample                  Events          Entries         %" + "         fraction with {}".format(hist['BkgSum'].GetXaxis().GetTitle()+" >"+str(fraction_above)+" (%)") if fraction_above!=0. else ""
+    print "-"*90
     for i, s in enumerate(['data_obs']+samples+['BkgSum']):
-        if i==1 or i==len(samples)+1: print "-"*60
-        print "%-20s" % s, "\t%-10.2f" % hist[s].Integral(), "\t%-10.0f" % (hist[s].GetEntries()-2), "\t%-10.2f" % (100.*hist[s].Integral()/hist['BkgSum'].Integral()) if hist['BkgSum'].Integral() > 0 else 0
-    print "-"*60
+        if i==1 or i==len(samples)+1: print "-"*90
+        fractional_column = "" if fraction_above==0. else "\t%-10.2f" % (100.*hist[s].Integral(hist[s].FindBin(fraction_above), hist[s].GetNbinsX()+2)/hist[s].Integral(0, hist[s].GetNbinsX()+2))
+        print "%-20s" % s, "\t%-10.2f" % hist[s].Integral(), "\t%-10.0f" % (hist[s].GetEntries()-2), "\t%-10.2f" % (100.*hist[s].Integral()/hist['BkgSum'].Integral()) if hist['BkgSum'].Integral() > 0 else 0, fractional_column
+    print "-"*90
     for i, s in enumerate(sign):
         #if not sample[s]['plot']: continue
-        print "%-20s" % s, "\t%-10.2f" % hist[s].Integral(), "\t%-10.0f" % (hist[s].GetEntries()-2), "\t%-10.2f" % 0.
-    print "-"*60
+        fractional_column = "" if fraction_above==0. else "\t%-10.2f" % (100.*hist[s].Integral(hist[s].FindBin(fraction_above), hist[s].GetNbinsX()+2)/hist[s].Integral(0, hist[s].GetNbinsX()+2))
+        print "%-20s" % s, "\t%-10.2f" % hist[s].Integral(), "\t%-10.0f" % (hist[s].GetEntries()-2), "\t%-10.2f" % 0., fractional_column
+    print "-"*90
 
 
 
@@ -491,9 +493,9 @@ def getChannel(channel):
     text = ""
     #
     # purity
-    if 'hp' in channel: text += ", high purity"
-    elif 'lp' in channel: text += ", low purity"
-    elif 'ap' in channel: text += ", no purity"
+    #if 'hp' in channel: text += ", high purity"
+    #elif 'lp' in channel: text += ", low purity"
+    #elif 'ap' in channel: text += ", no purity"
     # b-tag
     if '0b' in channel: text += "0 b tag"
     elif 'bbbb' in channel or '4b' in channel: text +=  "4 b tag"
