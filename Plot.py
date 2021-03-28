@@ -45,6 +45,7 @@ parser.add_option("", "--btagging_eff", action="store_true", default=False, dest
 parser.add_option("", "--sync", action="store_true", default=False, dest="sync")
 parser.add_option("", "--recal", action="store_true", default=False, dest="recal")
 parser.add_option("", "--muon_eff", action="store_true", default=False, dest="muon_eff")
+parser.add_option("", "--s_over_b", action="store_true", default=False, dest="s_over_b")
 (options, args) = parser.parse_args()
 
 ########## SETTINGS ##########
@@ -1021,14 +1022,59 @@ def muon_efficiency(year, x_variable="jet_pt", gen_point="all"):
         pt_range = (0,1800) #(0,1500)
         x_var = "jnmuons_gen_pt"
         x_label = "gen muon p_{T} (GeV)"
+        y_label_part = "Loose + nStations>=3"
+        n_reco_mu_var = "jnmuons_"+wp
+        n_genmatched_mu_var = "jnmuons_loose_genmatched"
+        genmatched_mu_pt = "jmuonpt_genmatched"
     elif x_variable=="reco_mu_pt":
         pt_range = (0,1800)
         x_label = "reco muon p_{T} (GeV)"
+        y_label_part = "Loose + nStations>=3"
         x_var = "jmuonpt"
+        n_reco_mu_var = "jnmuons_"+wp
+        n_genmatched_mu_var = "jnmuons_loose_genmatched"
+        genmatched_mu_pt = "jmuonpt_genmatched"
+    elif x_variable=="global_tracker_jet_pt":
+        pt_range = (0, 4200)
+        x_var = "jpt"
+        x_label = "jet p_{T} (GeV)"
+        y_label_part = "Global || tracker"
+        n_reco_mu_var = "jnmuons_GlobalTracker"
+        n_genmatched_mu_var = "jnmuons_GlobalTracker_genmatched"
+        genmatched_mu_pt = "jmuonpt_GlobalTracker_genmatched"
+    elif x_variable=="PF_loose_jet_pt":
+        pt_range = (0, 4200)
+        x_var = "jpt"
+        x_label = "jet p_{T} (GeV)"
+        y_label_part = "Loose"
+        n_reco_mu_var = "jnmuons_PFLoose"
+        n_genmatched_mu_var = "jnmuons_PFLoose_genmatched"
+        genmatched_mu_pt = "jmuonpt_PFLoose_genmatched"
+    elif x_variable=="global_tracker_gen_mu_pt":
+        pt_range = (0, 1800)
+        x_var = "jmuonpt_GlobalTracker"
+        x_label = "gen muon p_{T} (GeV)"
+        y_label_part = "Global || tracker"
+        n_reco_mu_var = "jnmuons_GlobalTracker"
+        n_genmatched_mu_var = "jnmuons_GlobalTracker_genmatched"
+        genmatched_mu_pt = "jmuonpt_GlobalTracker_genmatched"
+    elif x_variable=="PF_loose_gen_mu_pt":
+        pt_range = (0, 1800)
+        x_var = "jmuonpt_PFLoose"
+        x_label = "gen muon p_{T} (GeV)"
+        y_label_part = "Loose"
+        n_reco_mu_var = "jnmuons_PFLoose"
+        n_genmatched_mu_var = "jnmuons_PFLoose_genmatched"
+        genmatched_mu_pt = "jmuonpt_PFLoose_genmatched"
     else:
         pt_range = (0,4200)
         x_var = "jpt"
         x_label = "jet p_{T} (GeV)"
+        y_label_part = "Loose + nStations>=3"
+        n_reco_mu_var = "jnmuons_"+wp
+        n_genmatched_mu_var = "jnmuons_loose_genmatched"
+        genmatched_mu_pt = "jmuonpt_genmatched"
+
     min_gen_muon_pt = 5.
     bins = np.linspace(pt_range[0], pt_range[1], n_bins+1)
     hist_gen = TH1F("generated muons", "generated muons", n_bins, pt_range[0], pt_range[1])
@@ -1041,18 +1087,22 @@ def muon_efficiency(year, x_variable="jet_pt", gen_point="all"):
             if year=="run2" or year in ss:
                 sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
                 treeSign[m] = sfile.Get("tree")
-                branches = ['eventWeightLumi', x_var+'_1', x_var+'_2', 'jnmuons_gen_1', 'jnmuons_'+wp+'_1', 'jnmuons_loose_genmatched_1', 'jnmuons_gen_2', 'jnmuons_'+wp+'_2', 'jnmuons_loose_genmatched_2', ]
-                for additional_var in ['jmuonpt_genmatched_1', 'jmuonpt_genmatched_2', 'jnmuons_gen_pt_1', 'jnmuons_gen_pt_2']:
+                branches = ['eventWeightLumi', x_var+'_1', x_var+'_2', 'jnmuons_gen_1', n_reco_mu_var+'_1', n_genmatched_mu_var+'_1', 'jnmuons_gen_2', n_reco_mu_var+'_2', n_genmatched_mu_var+'_2', ]
+                for additional_var in [genmatched_mu_pt+'_1', genmatched_mu_pt+'_2', 'jnmuons_gen_pt_1', 'jnmuons_gen_pt_2', 'jnmuons_PFLoose_1', 'jnmuons_PFLoose_2']:
                     if additional_var not in branches: branches.append(additional_var)
 
                 temp_array = tree2array(treeSign[m], branches=branches)
 
                 gen_mask_1 =                ( (temp_array['jnmuons_gen_1'] >= 1) & (temp_array['jnmuons_gen_pt_1'] >= min_gen_muon_pt) )
-                loose_mask_1 =              ( (temp_array['jnmuons_'+wp+'_1'] >= 1) & gen_mask_1 )
-                loose_genmatched_mask_1 =   ( (temp_array['jnmuons_loose_genmatched_1'] >= 1) & (temp_array['jmuonpt_genmatched_1'] >= min_gen_muon_pt) & loose_mask_1 )
+                loose_mask_1 =              ( (temp_array[n_reco_mu_var+'_1'] >= 1)  & gen_mask_1 )
+                #loose_mask_1 =              ( (temp_array[n_reco_mu_var+'_1'] >= 1) & (temp_array['jnmuons_GlobalTracker_1'] >= 1)  & gen_mask_1 )
+                #loose_mask_1 =              ( (temp_array[n_reco_mu_var+'_1'] >= 1) & (temp_array['jnmuons_PFLoose_1'] >= 1)  & gen_mask_1 )
+                loose_genmatched_mask_1 =   ( (temp_array[n_genmatched_mu_var+'_1'] >= 1) & (temp_array[genmatched_mu_pt+'_1'] >= min_gen_muon_pt) & loose_mask_1 )
                 gen_mask_2 =                ( (temp_array['jnmuons_gen_2'] >= 1) & (temp_array['jnmuons_gen_pt_2'] >= min_gen_muon_pt) )
-                loose_mask_2 =              ( (temp_array['jnmuons_'+wp+'_2'] >= 1) & gen_mask_2 )
-                loose_genmatched_mask_2 =   ( (temp_array['jnmuons_loose_genmatched_2'] >= 1) & (temp_array['jmuonpt_genmatched_2'] >= min_gen_muon_pt) & loose_mask_2 )
+                loose_mask_2 =              ( (temp_array[n_reco_mu_var+'_2'] >= 1) & gen_mask_2 )
+                #loose_mask_2 =              ( (temp_array[n_reco_mu_var+'_2'] >= 1) & (temp_array['jnmuons_GlobalTracker_2'] >= 1) & gen_mask_2 )
+                #loose_mask_2 =              ( (temp_array[n_reco_mu_var+'_2'] >= 1) & (temp_array['jnmuons_PFLoose_2'] >= 1) & gen_mask_2 )
+                loose_genmatched_mask_2 =   ( (temp_array[n_genmatched_mu_var+'_2'] >= 1) & (temp_array[genmatched_mu_pt+'_2'] >= min_gen_muon_pt) & loose_mask_2 )
 
                 fill_hist(hist_gen,              temp_array[x_var+'_1'], weights=np.multiply(temp_array['eventWeightLumi'], gen_mask_1             ))
                 fill_hist(hist_gen,              temp_array[x_var+'_2'], weights=np.multiply(temp_array['eventWeightLumi'], gen_mask_2             ))
@@ -1092,9 +1142,9 @@ def muon_efficiency(year, x_variable="jet_pt", gen_point="all"):
     eff.Draw("APL")
     eff_matched.Draw("PL") 
     #setHistStyle(eff, 1.1)
-    eff.SetTitle(";"+x_label+";"+"{} Muon efficiency".format("Medium" if wp=="medium" else "Loose"))
+    eff.SetTitle(";"+x_label+";"+"{} Muon efficiency".format(y_label_part))
     eff.SetMinimum(0.)
-    eff.SetMaximum(1.1) 
+    eff.SetMaximum(1.2) 
     eff.GetXaxis().SetTitleSize(0.045)
     eff.GetYaxis().SetTitleSize(0.045)
     eff.GetYaxis().SetTitleOffset(1.1)
@@ -1118,8 +1168,8 @@ def muon_efficiency(year, x_variable="jet_pt", gen_point="all"):
     else:
         gen_point_info = "_"+str(gen_point)
 
-    c1.Print("plots/Efficiency/muons_efficiency_"+year+"_"+wp+"_vs_"+x_var+gen_point_info+".pdf") 
-    c1.Print("plots/Efficiency/muons_efficiency_"+year+"_"+wp+"_vs_"+x_var+gen_point_info+".png") 
+    c1.Print("plots/Efficiency/muons_efficiency_"+year+"_vs_"+x_variable+gen_point_info+".pdf") 
+    c1.Print("plots/Efficiency/muons_efficiency_"+year+"_vs_"+x_variable+gen_point_info+".png") 
 
 def muon_purity(year, x_variable="jet_pt"):
     import numpy as np
@@ -1266,6 +1316,293 @@ def gen_muon_pt(year):
     c1.Print("plots/Efficiency/muons_pt_"+year+".pdf") 
     c1.Print("plots/Efficiency/muons_pt_"+year+".png") 
 
+
+def S_over_sqrt_B(year, x_variable="jj_deltaEta_widejet", cut_below=True, reference_cut=1.1):
+    import numpy as np
+    from root_numpy import tree2array, fill_hist
+    from aliases import AK8veto, electronVeto, muonVeto
+
+    gen_masses = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+    #gen_masses = [2000, 3000, 4000 ,6000, 8000]
+    sign = ['ZpBB_M{}'.format(m) for m in gen_masses]
+
+    draw_sign = ['ZpBB_M2000', 'ZpBB_M3000', 'ZpBB_M4000', 'ZpBB_M6000', 'ZpBB_M8000']
+    ## using sign and back lists
+    colors = [632, 633, 634, 635, 636]
+    s_over_b = {}
+    sig_hists = {}
+    s_over_b_fixed_cut = {}
+    n_bins = variable[x_variable]['nbins']
+    var_range = (variable[x_variable]['min'], variable[x_variable]['max'])
+    if cut_below:
+        x_label = variable[x_variable]['title']+" < X"
+    else:
+        x_label = variable[x_variable]['title']+" > X"
+    cut = SELECTIONS[options.selection]
+    if x_variable+" && " in cut:
+        cut = cut.replace(x_variable+" && ", "")
+    elif " && "+x_variable in cut:
+        cut = cut.replace(" && "+x_variable, "")
+
+    bkg_hist = TH1F("bkg_hist", "bkg_hist", n_bins, var_range[0], var_range[1])
+
+    for i, sig in enumerate(sign):
+        s_over_b[sig] = TGraph()
+        sig_hists[sig] = TH1F(sig+"_hist", sig+"_hist", n_bins, var_range[0], var_range[1])
+        for j, ss in enumerate(sample[sig]['files']):
+            if year=="run2" or year in ss:
+                sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
+                branches = ['eventWeightLumi', x_variable]
+                temp_array = tree2array(sfile.Get("tree"), branches=branches, selection=cut)
+                fill_hist(sig_hists[sig],   temp_array[x_variable], weights=temp_array['eventWeightLumi'])
+                temp_array=None
+                sfile.Close()
+        sig_hists[sig].Sumw2()
+
+    for i, bkg in enumerate(back):
+        for j, ss in enumerate(sample[bkg]['files']):
+            if year=="run2" or year in ss:
+                sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
+                branches = ['eventWeightLumi', x_variable]
+                temp_array = tree2array(sfile.Get("tree"), branches=branches, selection=cut)
+                
+                fill_hist(bkg_hist, temp_array[x_variable], weights=temp_array['eventWeightLumi'])
+                temp_array=None
+                sfile.Close()
+    bkg_hist.Sumw2()
+
+    max_val = 1.
+    leg = TLegend(0.65, 0.75, 0.9, 0.95)
+
+    nocut_S_over_B = {}
+    for j, sig in enumerate(sign):
+        nocut_S_over_B[sig] = sig_hists[sig].Integral()/bkg_hist.Integral()**0.5
+
+    min_dist_to_cut = 10000
+    reference_cut_bin = -1
+    for i in range(n_bins+1):
+        if cut_below:
+            B = bkg_hist.Integral(0, i)
+            x_val = bkg_hist.GetXaxis().GetBinLowEdge(i+1)
+        else:
+            B = bkg_hist.Integral(i, n_bins)
+            x_val = bkg_hist.GetXaxis().GetBinLowEdge(i)
+
+        dist_to_cut = abs(x_val - reference_cut)
+        if dist_to_cut < min_dist_to_cut:
+            min_dist_to_cut = dist_to_cut
+            reference_cut_bin = i
+
+        for j, sig in enumerate(sign):
+            if cut_below:
+                S = sig_hists[sig].Integral(0, i)
+            else:
+                S = sig_hists[sig].Integral(i, n_bins)
+            try:
+                S_over_B = S/B**0.5
+            except ZeroDivisionError:
+                S_over_B = 0.
+            s_over_b[sig].SetPoint(i, x_val, S_over_B/nocut_S_over_B[sig])
+            if S_over_B/nocut_S_over_B[sig] > max_val:
+                max_val = S_over_B/nocut_S_over_B[sig]
+
+    for j, sig in enumerate(draw_sign):
+        s_over_b[sig].SetMarkerColor(colors[j])
+        s_over_b[sig].SetMarkerStyle(20)
+        s_over_b[sig].SetLineColor(colors[j])
+        s_over_b[sig].SetLineWidth(2)
+        leg.AddEntry(s_over_b[sig], sig)
+
+    c1 = TCanvas("c1", "S over sqrt(B)", 1200, 800)
+    c1.cd(1)
+    for i, sig in enumerate(draw_sign):
+        if i ==0:
+            s_over_b[sig].Draw("APL")
+            s_over_b[sig].SetTitle(";"+x_label+";"+"(S/#sqrt{B}) / (S_{0}/#sqrt{B_{0}})")
+            s_over_b[sig].SetMinimum(0.)
+            s_over_b[sig].SetMaximum(1.2*max_val) 
+            s_over_b[sig].GetXaxis().SetTitleSize(0.045)
+            s_over_b[sig].GetYaxis().SetTitleSize(0.045)
+            s_over_b[sig].GetYaxis().SetTitleOffset(1.1)
+            s_over_b[sig].GetXaxis().SetTitleOffset(1.05)
+            s_over_b[sig].GetXaxis().SetRangeUser(var_range[0], var_range[1])
+        else:
+            s_over_b[sig].Draw("PL, SAME")
+
+    ref_line = TLine(reference_cut, 0., reference_cut, 1.01*max_val)
+    ref_line.SetLineStyle(2)
+    leg.AddEntry(ref_line, "X = "+str(reference_cut))
+    ref_line.Draw()
+
+    leg.Draw()
+    c1.SetTopMargin(0.05)
+    drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    #drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
+    #drawCMS(-1, "", year=year, suppressCMS=True)
+    drawAnalysis("")
+
+    c1.Print("plots/s_over_b/"+x_variable+"_"+year+".pdf") 
+    c1.Print("plots/s_over_b/"+x_variable+"_"+year+".png") 
+
+    ## S over sqrt(B) at the reference cut vs gen mass:
+    SIC_vs_mass = TGraph()
+    print "ref cut bin =", reference_cut_bin
+    print "max_dist =", min_dist_to_cut 
+    for i, m in enumerate(gen_masses):
+        SIC_vs_mass.SetPoint(i, m, s_over_b[sign[i]].GetY()[reference_cut_bin])
+    SIC_vs_mass.SetMarkerColor(2)
+    SIC_vs_mass.SetMarkerStyle(20)
+    SIC_vs_mass.SetLineColor(2)
+    SIC_vs_mass.SetLineWidth(2)
+    c2 = TCanvas("c2", "S over sqrt(B) vs mass", 1200, 800)
+    c2.cd(1)
+    SIC_vs_mass.Draw("APL")
+    SIC_vs_mass.SetTitle(";Z' mass (GeV);"+"(S/#sqrt{B}) / (S_{0}/#sqrt{B_{0}}) with "+x_label.replace("X", str(reference_cut)))
+    SIC_vs_mass.SetMinimum(0.8)
+    SIC_vs_mass.SetMaximum(1.2*max_val) 
+    SIC_vs_mass.GetXaxis().SetTitleSize(0.045)
+    SIC_vs_mass.GetYaxis().SetTitleSize(0.045)
+    SIC_vs_mass.GetYaxis().SetTitleOffset(1.1)
+    SIC_vs_mass.GetXaxis().SetTitleOffset(1.05)
+    #SIC_vs_mass.GetXaxis().SetRangeUser(var_range[0], var_range[1])
+    c2.SetTopMargin(0.05)
+    drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    drawAnalysis("")
+    c2.Print("plots/s_over_b/"+x_variable+"_"+year+"_fixedcut.pdf") 
+    c2.Print("plots/s_over_b/"+x_variable+"_"+year+"_fixedcut.png")    
+
+#def S_over_sqrt_B_fixed_cut(year, x_variable="jj_deltaEta_widejet", cut_below=True, reference_cut=1.1):
+#    import numpy as np
+#    from root_numpy import tree2array, fill_hist
+#    from aliases import AK8veto, electronVeto, muonVeto
+#
+#    gen_masses = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+#    sign = ['ZpBB_M{}'.format(m) for m in gen_masses]
+#    ## using sign and back lists
+#    #colors = [632, 633, 634, 635, 636]
+#    s_over_b = TGraph()
+#    sig_hists = {}
+#    n_bins = variable[x_variable]['nbins']
+#    var_range = (variable[x_variable]['min'], variable[x_variable]['max'])
+#    if cut_below:
+#        x_label = variable[x_variable]['title']+" < X"
+#    else:
+#        x_label = variable[x_variable]['title']+" > X"
+#    cut = SELECTIONS[options.selection]
+#    if x_variable+" && " in cut:
+#        cut = cut.replace(x_variable+" && ", "")
+#    elif " && "+x_variable in cut:
+#        cut = cut.replace(" && "+x_variable, "")
+#    if cut_below:
+#        cut = cut + " && "+x_variable+"<"+str(reference_cut)
+#    else:
+#        cut = cut + " && "+x_variable+">"+str(reference_cut)
+#
+#    bkg_hist = TH1F("bkg_hist", "bkg_hist", n_bins, var_range[0], var_range[1])
+#
+#    for i, sig in enumerate(sign):
+#        #s_over_b[sig] = TGraph()
+#        sig_hists[sig] = TH1F(sig+"_hist", sig+"_hist", n_bins, var_range[0], var_range[1])
+#        for j, ss in enumerate(sample[sig]['files']):
+#            if year=="run2" or year in ss:
+#                sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
+#                branches = ['eventWeightLumi', x_variable]
+#                temp_array = tree2array(sfile.Get("tree"), branches=branches, selection=cut)
+#                fill_hist(sig_hists[sig],   temp_array[x_variable], weights=temp_array['eventWeightLumi'])
+#                temp_array=None
+#                sfile.Close()
+#        sig_hists[sig].Sumw2()
+#
+#    for i, bkg in enumerate(back):
+#        for j, ss in enumerate(sample[bkg]['files']):
+#            if year=="run2" or year in ss:
+#                sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
+#                branches = ['eventWeightLumi', x_variable]
+#                temp_array = tree2array(sfile.Get("tree"), branches=branches, selection=cut)
+#                
+#                fill_hist(bkg_hist, temp_array[x_variable], weights=temp_array['eventWeightLumi'])
+#                temp_array=None
+#                sfile.Close()
+#    bkg_hist.Sumw2()
+#
+#    max_val = 1.
+#    #leg = TLegend(0.65, 0.75, 0.9, 0.95)
+#    
+#
+#    nocut_S_over_B = {}
+#    B = bkg_hist.Integral()
+#    for j, sig in enumerate(sign):
+#        nocut_S_over_B[sig] = sig_hists[sig].Integral()/bkg_hist.Integral()**0.5
+#
+#    for i, m in enumerate(gen_masses):
+#        S = sig_hists[sig].Integral()
+#        try:
+#            S_over_B = S/B**0.5
+#        except ZeroDivisionError:
+#            S_over_B = 0.
+#
+#    for i in range(n_bins+1):
+#        #if cut_below:
+#        #    B = bkg_hist.Integral(0, i)
+#        #else:
+#        #    B = bkg_hist.Integral(i, n_bins)
+#        #for j, sig in enumerate(sign):
+#        #    #if cut_below:
+#        #    #    S = sig_hists[sig].Integral(0, i)
+#        #    #else:
+#        #    #    S = sig_hists[sig].Integral(i, n_bins)
+#
+#        #    try:
+#        #        S_over_B = S/B**0.5
+#        #    except ZeroDivisionError:
+#        #        S_over_B = 0.
+#        #    if cut_below:
+#        #        x_val = bkg_hist.GetXaxis().GetBinLowEdge(i+1)
+#        #    else: 
+#        #        x_val = bkg_hist.GetXaxis().GetBinLowEdge(i)
+#        #    s_over_b[sig].SetPoint(i, x_val, S_over_B/nocut_S_over_B[sig])
+#        #    if S_over_B/nocut_S_over_B[sig] > max_val:
+#        #        max_val = S_over_B/nocut_S_over_B[sig]
+#
+#    for j, sig in enumerate(sign):
+#        s_over_b[sig].SetMarkerColor(colors[j])
+#        s_over_b[sig].SetMarkerStyle(20)
+#        s_over_b[sig].SetLineColor(colors[j])
+#        s_over_b[sig].SetLineWidth(2)
+#        leg.AddEntry(s_over_b[sig], sig)
+#
+#    c1 = TCanvas("c1", "S over sqrt(B)", 1200, 800)
+#    c1.cd(1)
+#    for i, sig in enumerate(sign):
+#        if i ==0:
+#            s_over_b[sig].Draw("APL")
+#            s_over_b[sig].SetTitle(";"+x_label+";"+"(S/#sqrt{B}) / (S_{0}/#sqrt{B_{0}})")
+#            s_over_b[sig].SetMinimum(0.)
+#            s_over_b[sig].SetMaximum(1.2*max_val) 
+#            s_over_b[sig].GetXaxis().SetTitleSize(0.045)
+#            s_over_b[sig].GetYaxis().SetTitleSize(0.045)
+#            s_over_b[sig].GetYaxis().SetTitleOffset(1.1)
+#            s_over_b[sig].GetXaxis().SetTitleOffset(1.05)
+#            s_over_b[sig].GetXaxis().SetRangeUser(var_range[0], var_range[1])
+#        else:
+#            s_over_b[sig].Draw("PL, SAME")
+#
+#    ref_line = TLine(reference_cut, 0., reference_cut, 1.01*max_val)
+#    ref_line.SetLineStyle(2)
+#    leg.AddEntry(ref_line, "X = "+str(reference_cut))
+#    ref_line.Draw()
+#
+#    leg.Draw()
+#    c1.SetTopMargin(0.05)
+#    drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+#    #drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
+#    #drawCMS(-1, "", year=year, suppressCMS=True)
+#    drawAnalysis("")
+#
+#    c1.Print("plots/s_over_b/"+x_variable+"_"+year+".pdf") 
+#    c1.Print("plots/s_over_b/"+x_variable+"_"+year+".png") 
+
+
 if __name__ == "__main__":
     if options.efficiency:
         efficiency(options.year)
@@ -1282,13 +1619,20 @@ if __name__ == "__main__":
             btag_efficiency(options.cut, options.year, pT_range=pt_range)
     elif options.muon_eff:
         muon_efficiency(options.year, x_variable="jet_pt")
-        muon_efficiency(options.year, x_variable="gen_mu_pt")
-        #muon_efficiency(options.year, x_variable="reco_mu_pt")
-        muon_purity(options.year, x_variable="jet_pt")
-        #muon_purity(options.year, x_variable="gen_mu_pt")
+        #muon_efficiency(options.year, x_variable="gen_mu_pt")
+        ##muon_efficiency(options.year, x_variable="reco_mu_pt")
+        #muon_purity(options.year, x_variable="jet_pt")
+        ##muon_purity(options.year, x_variable="gen_mu_pt")
         muon_purity(options.year, x_variable="reco_mu_pt")
-        for gen_point in [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]:
-            muon_efficiency(options.year, x_variable="jet_pt", gen_point=gen_point)
+        muon_efficiency(options.year, x_variable="global_tracker_jet_pt")
+        muon_efficiency(options.year, x_variable="PF_loose_jet_pt")
+        #muon_efficiency(options.year, x_variable="global_tracker_gen_mu_pt")
+        #muon_efficiency(options.year, x_variable="PF_loose_gen_mu_pt")
+
+        #for gen_point in [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]:
+        #    muon_efficiency(options.year, x_variable="jet_pt", gen_point=gen_point)
+    elif options.s_over_b:
+        S_over_sqrt_B(options.year, x_variable=options.variable, cut_below=True)
     else:
         plot(options.variable, options.cut, options.year, fraction_above=options.fraction_above)
 

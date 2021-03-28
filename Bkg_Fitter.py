@@ -256,7 +256,8 @@ def dijet(category):
 
         setData = RooDataSet("setData", "Data", variables, RooFit.Cut(baseCut), RooFit.Import(treeBkg)) ## FIXME FIXME FIXME FIXME 
         #if BIAS: binnedData = setData.binnedClone("data_obs", "data_obs") ## FIXME crashes FIXME
-        if BIAS: 
+        if BIAS or BTAGGING=="loose":
+            print "------------------ transforming to datahist ------------------" 
             datahist = TH1F("datahist", "datahist", len(abins_narrow)-1, abins_narrow)
             datahist.Sumw2()
             treeBkg.Project("datahist", "jj_mass_widejet", baseCut)
@@ -880,8 +881,13 @@ def dijet(category):
         getattr(w, "import")(normzAtlas, RooFit.Rename(normzAtlas.GetName()))
 
     else:
-        if isData: getattr(w, "import")(setData, RooFit.Rename("data_obs"))
-        else: getattr(w, "import")(setToys, RooFit.Rename("data_obs"))
+        if isData:
+            if BTAGGING=="loose":
+                getattr(w, "import")(binnedData, RooFit.Rename("data_obs"))
+            else:
+                getattr(w, "import")(setData, RooFit.Rename("data_obs"))
+        else: 
+            getattr(w, "import")(setToys, RooFit.Rename("data_obs"))
         getattr(w, "import")(modelBkg, RooFit.Rename(modelBkg.GetName()))
         getattr(w, "import")(normzBkg, RooFit.Rename(normzBkg.GetName()))
         getattr(w, "import")(modelAlt, RooFit.Rename(modelAlt.GetName()))

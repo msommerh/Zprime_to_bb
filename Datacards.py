@@ -215,7 +215,7 @@ def generate_datacard(year, category, masspoint, btagging, outname):
         muon_uncert_up   = syst_sig["Muon"][category]['up'][masspoint]
         muon_uncert_down = syst_sig["Muon"][category]['down'][masspoint]
         muon_uncert = (muon_uncert_up+muon_uncert_down)*0.5
-        card += "{:<25}{:<6}  {:<25}{:<25}\n".format('muon_{}_{}_M{}'.format(year, category, masspoint), 'lnN', 1+muon_uncert*2, '-') ##FIXME inflated by factor of 2
+        card += "{:<25}{:<6}  {:<25}{:<25}\n".format('muon_{}_{}_M{}'.format(year, category, masspoint), 'lnN', 1+muon_uncert, '-')
 
     #JES and JER
     for syst_unc in sorted(syst_sig["param"].keys()):
