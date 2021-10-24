@@ -42,6 +42,7 @@ parser.add_option("-c", "--category", action="store", type="string", dest="categ
 parser.add_option("-B", "--blind", action="store_true", default=False, dest="blind")
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
 parser.add_option("-A", "--Acceptance", action="store_true", default=False, dest="Acceptance")
+parser.add_option("", "--no_BR", action="store_true", default=False, dest="no_BR")
 (options, args) = parser.parse_args()
  
 gStyle.SetOptStat(0)
@@ -59,6 +60,7 @@ YEAR        = options.year
 ISMC        = options.isMC
 CATEGORY    = options.category
 INCLUDEACC  = options.Acceptance
+NO_BR       = options.no_BR
 
 CAT_LABELS  = {'bb': "2 b tag", 'bq': "1 b tag", 'mumu': "1 #mu", 'bb_bq': "2 b tag + 1 b tag"}
 
@@ -87,7 +89,8 @@ else:
 
 LUMI        = luminosities[YEAR]
 
-SIGNALS = range(1600, 8000+1, 100)
+#SIGNALS = range(1600, 8000+1, 100)
+SIGNALS = range(1800, 8000+1, 100)
 
 ACCEPTANCE = {}
 for s in range(500,9000+1,100): ACCEPTANCE[s] = 0.405 ##FIXME could include mass dependent exact value FIXME
@@ -95,7 +98,7 @@ for s in range(500,9000+1,100): ACCEPTANCE[s] = 0.405 ##FIXME could include mass
 theoryLabel = {'B3' : "HVT model B (g_{V}=3)", 'A1' : "HVT model A (g_{V}=1)", "SSM" : "SSM Z'"}
 theoryLineColor = {'B3' : 629, 'A1' : 616-3, "SSM" : 602}
 theoryFillColor = {'B3' : 625, 'A1' : 616-7, 'SSM' : 856}
-theoryFillStyle = {'B3' : 3002, 'A1' : 3013, 'SSM' : 3013}
+theoryFillStyle = {'B3' : 3002, 'A1' : 3013, 'SSM' : 3359}
 
 
 def fillValues(filename):
@@ -124,14 +127,17 @@ def fillValues(filename):
 def limit():
     method = ''
     channel = "bb"
-    if INCLUDEACC:
-        particleP = "X"
-    else:
-        particleP = "Z'"
+    #if INCLUDEACC:
+    #    particleP = "X"
+    #else:
+    #    particleP = "Z'"
+    particleP = "Z'"
     particle = 'b#bar{b}'
     multF = ZPTOBB
-    THEORY = ['A1', 'B3']
-    if INCLUDEACC: THEORY.append('SSM')
+    THEORY = ['A1', 'B3', 'SSM']
+    #THEORY = ['A1', 'B3']
+    #if INCLUDEACC: THEORY.append('SSM')
+    
  
     suffix = "_"+BTAGGING
     if ISMC: suffix += "_MC"
@@ -192,23 +198,31 @@ def limit():
 
     for t in THEORY:
         Theory[t] = TGraphAsymmErrors()
+        #Theory[t] = TGraph()
         Xs_dict = HVT[t]['Z']['XS'] if t!='SSM' else SSM['Z']
         for m in sorted(Xs_dict.keys()):
             if INCLUDEACC and t!='SSM':
                 acc_factor = ACCEPTANCE[m]
             else:
-                acc_factor = 1.
+                if not INCLUDEACC and t=='SSM':
+                    acc_factor = 1./ACCEPTANCE[m]
+                else:
+                    acc_factor = 1.
             if m < SIGNALS[0] or m > SIGNALS[-1]: continue
             #if m < mass[0] or m > mass[-1]: continue
             #if t!= 'SSM' and m>4500: continue ## I don't have the higher mass xs
             if m>4500: continue
+            if NO_BR:
+                br_factor = 1.
+            else:
+                br_factor = SSM["BrZ"][m]
             XsZ, XsZ_Up, XsZ_Down = 0., 0., 0.
             if t!='SSM':
-                XsZ = 1000.*HVT[t]['Z']['XS'][m]*SSM["BrZ"][m] #assuming the same BR as the SSM Z' one
+                XsZ = 1000.*HVT[t]['Z']['XS'][m]*br_factor#assuming the same BR as the SSM Z' one
                 XsZ_Up = XsZ*(1.+math.hypot(HVT[t]['Z']['QCD'][m][0]-1., HVT[t]['Z']['PDF'][m][0]-1.))
                 XsZ_Down = XsZ*(1.-math.hypot(1.-HVT[t]['Z']['QCD'][m][0], 1.-HVT[t]['Z']['PDF'][m][0]))
             else:
-                XsZ = 1000.*SSM['Z'][m]*SSM["BrZ"][m]
+                XsZ = 1000.*SSM['Z'][m]*br_factor
                 XsZ_Up = XsZ*(1.+math.hypot(HVT['A1']['Z']['QCD'][m][0]-1., HVT['A1']['Z']['PDF'][m][0]-1.))
                 XsZ_Down = XsZ*(1.-math.hypot(1.-HVT['A1']['Z']['QCD'][m][0], 1.-HVT['A1']['Z']['PDF'][m][0]))
      
@@ -234,24 +248,31 @@ def limit():
     Exp1s.SetLineColor(417) #kGreen+1
     Exp2s.SetFillColor(800) #kOrange
     Exp2s.SetLineColor(800) #kOrange
-    Exp2s.GetXaxis().SetTitle("m_{"+particleP+"} (GeV)")
+    #Exp2s.GetXaxis().SetTitle("m_{"+particleP+"} (GeV)")
+    Exp2s.GetXaxis().SetTitle(particleP+" mass (GeV)")
     Exp2s.GetXaxis().SetTitleSize(Exp2s.GetXaxis().GetTitleSize()*1.25)
     Exp2s.GetXaxis().SetNoExponent(True)
     Exp2s.GetXaxis().SetMoreLogLabels(True)
-    Exp2s.GetYaxis().SetTitle("#sigma("+particleP+") #bf{#it{#Beta}}("+particleP+" #rightarrow "+particle+"){} (fb)".format(" #times #Alpha" if INCLUDEACC else ""))
+    #Exp2s.GetYaxis().SetTitle("#sigma("+particleP+") #bf{#it{#Beta}}("+particleP+" #rightarrow "+particle+"){} (fb)".format(" #times #Alpha" if INCLUDEACC else ""))
+    if NO_BR:
+        Exp2s.GetYaxis().SetTitle("#sigma("+particleP+"){} (fb)".format(" #Alpha" if INCLUDEACC else ""))
+    else:
+        Exp2s.GetYaxis().SetTitle("#sigma("+particleP+") #bf{#it{#Beta}}("+particleP+" #rightarrow "+particle+"){} (fb)".format(" #Alpha" if INCLUDEACC else ""))
     Exp2s.GetYaxis().SetTitleOffset(1.5)
     Exp2s.GetYaxis().SetNoExponent(True)
     Exp2s.GetYaxis().SetMoreLogLabels()
 
     Sign.SetLineWidth(2)
     Sign.SetLineColor(629)
-    Sign.GetXaxis().SetTitle("m_{"+particleP+"} (GeV)")
+    #Sign.GetXaxis().SetTitle("m_{"+particleP+"} (GeV)")
+    Sign.GetXaxis().SetTitle(particleP+" mass (GeV)")
     Sign.GetXaxis().SetTitleSize(Sign.GetXaxis().GetTitleSize()*1.1)
     Sign.GetYaxis().SetTitle("Significance")
 
     pVal.SetLineWidth(2)
     pVal.SetLineColor(629)
-    pVal.GetXaxis().SetTitle("m_{"+particleP+"} (GeV)")
+    #pVal.GetXaxis().SetTitle("m_{"+particleP+"} (GeV)")
+    pVal.GetXaxis().SetTitle(particleP+" mass (GeV)")
     pVal.GetXaxis().SetTitleSize(pVal.GetXaxis().GetTitleSize()*1.1)
     pVal.GetYaxis().SetTitle("local p-Value")
 
@@ -259,7 +280,8 @@ def limit():
     Best.SetLineColor(629)
     Best.SetFillColor(629)
     Best.SetFillStyle(3003)
-    Best.GetXaxis().SetTitle("m_{"+particleP+"} (GeV)")
+    #Best.GetXaxis().SetTitle("m_{"+particleP+"} (GeV)")
+    Best.GetXaxis().SetTitle(particleP+" mass (GeV)")
     Best.GetXaxis().SetTitleSize(Best.GetXaxis().GetTitleSize()*1.1)
     Best.GetYaxis().SetTitle("Best Fit (pb)")
 
@@ -279,7 +301,7 @@ def limit():
     Exp1s.Draw("SAME, 3")
     for t in THEORY:
         Theory[t].Draw("SAME, L3")
-        Theory[t].Draw("SAME, L3X0Y0")
+        #Theory[t].Draw("SAME, L3X0Y0")
     Exp0s.Draw("SAME, L")
     if not options.blind: Obs0s.Draw("SAME, L")
     #setHistStyle(Exp2s)
@@ -304,19 +326,22 @@ def limit():
     drawRegion("", True)
     #drawCMS(LUMI, "Simulation Preliminary") #Preliminary
     if CATEGORY=="": 
+        drawCMS(LUMI, "", suppress_year=True)
+        #drawCMS(LUMI, "Preliminary", suppress_year=True)
         #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
-        drawCMS(LUMI, "Preliminary")
+        #drawCMS(LUMI, "Preliminary")
         #drawCMS(LUMI, "", suppressCMS=True)
     else:
+        drawCMS(LUMI, CAT_LABELS[CATEGORY], suppress_year=True)
         #drawCMS(LUMI, "Work in Progress, "+CAT_LABELS[CATEGORY], suppressCMS=True)       
-        drawCMS(LUMI, "Preliminary   "+CAT_LABELS[CATEGORY])       
+        #drawCMS(LUMI, "Preliminary   "+CAT_LABELS[CATEGORY])       
         #drawCMS(LUMI, CAT_LABELS[CATEGORY], suppressCMS=True)       
 
     # legend
     top = 0.9
     nitems = 4 + len(THEORY)
 
-    leg = TLegend(0.55, top-nitems*0.3/5., 0.98, top)
+    leg = TLegend(0.53, top-nitems*0.3/5., 0.96, top)
     #leg = TLegend(0.45, top-nitems*0.3/5., 0.98, top)
     leg.SetBorderSize(0)
     leg.SetFillStyle(0) #1001
@@ -327,6 +352,7 @@ def limit():
     leg.AddEntry(Exp1s, "#pm 1 std. deviation", "f")
     leg.AddEntry(Exp2s, "#pm 2 std. deviation", "f")
     for t in THEORY: leg.AddEntry(Theory[t], theoryLabel[t], "fl")
+    #for t in THEORY: leg.AddEntry(Theory[t], theoryLabel[t], "l")
     leg.Draw()
     latex = TLatex()
     latex.SetNDC()
@@ -346,11 +372,15 @@ def limit():
 
     if not gROOT.IsBatch(): raw_input("Press Enter to continue...")
 
-    c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".png")
-    c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".pdf")
-    if 'ah' in channel or 'sl' in channel:
-        c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".C")
-        c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".root")
+    if NO_BR:
+        c1.Print("combine/plotsLimit/ExclusionLimits/no_br_"+YEAR+suffix+".png")
+        c1.Print("combine/plotsLimit/ExclusionLimits/no_br_"+YEAR+suffix+".pdf")
+    else: 
+        c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".png")
+        c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".pdf")
+    #if 'ah' in channel or 'sl' in channel:
+    #    c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".C")
+    #    c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".root")
 
     for t in THEORY:
         print "Model", t, ":",
@@ -359,7 +389,7 @@ def limit():
             if not (Theory[t].Eval(m) > Exp0s.Eval(m)) == (Theory[t].Eval(m+1) > Exp0s.Eval(m+1)): print m, "(exp)",
         print ""
 
-    return ##FIXME
+    #return ## ENDING HERE ALREADY ##################################################################################
 
 
     # ---------- Significance ----------
@@ -371,6 +401,7 @@ def limit():
     c2.GetPad(0).SetGridx()
     c2.GetPad(0).SetGridy()
     Sign.GetYaxis().SetRangeUser(0., 5.)
+    Sign.GetXaxis().SetRangeUser(SIGNALS[0], SIGNALS[-1])
     Sign.Draw("AL3")
     drawCMS(LUMI, "Preliminary")
     #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
@@ -379,6 +410,8 @@ def limit():
     c2.Print("combine/plotsLimit/Significance/"+YEAR+suffix+".pdf")
 #    c2.Print("plotsLimit/Significance/"+YEAR+suffix+".root")
 #    c2.Print("plotsLimit/Significance/"+YEAR+suffix+".C")
+
+    return ## now ending here
 
     # ---------- p-Value ----------
     c3 = TCanvas("c3", "p-Value", 800, 600)

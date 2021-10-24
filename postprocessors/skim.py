@@ -17,6 +17,7 @@ outDir = global_paths.WEIGHTEDDIR[:-1]
 
 blacklist = ["backup","weighted","parallel_execution", "Recal_V7"]
 cutstring = "jj_mass_widejet>1530 && "+triggers
+#cutstring = "jj_deltaEta_widejet<1.1 && jid_1>5 && jid_2>5 && !(fatjetmass_1>65 && fatjetmass_2>65) && nelectrons<1 && nmuons<1 && "+triggers
 
 def skim(sample):
     print sample
@@ -46,6 +47,6 @@ def skim(sample):
     chain.Reset()
 
 
-dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'SingleMuon' in x and not 'Recal' in x and not "QCD" in x and not "TTbar" in x and "MC_signal" in x]##FIXME
+dirList = [x for x in os.listdir(inDir) if not x in blacklist and not 'SingleMuon' in x and not 'Recal' in x and not "QCD" in x and not "TTbar" in x]##FIXME
 for d in dirList:
     skim(d)

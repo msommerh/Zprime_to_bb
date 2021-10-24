@@ -16,14 +16,18 @@ from aliases import alias, working_points
 from argparse import ArgumentParser
 parser = ArgumentParser()
 parser.add_argument('-b', '--btagging', action='store', type=str, dest='btagging',default='medium', choices = ['tight', 'medium', 'loose'])
+parser.add_argument('--conservative', action='store_true', dest='conservative',default=False)
 args = parser.parse_args()
 
 YEARS       = ['2016', '2017', '2018']
 BTAGGING    = args.btagging
+CONSERVATIVE = args.conservative
 
 mass_points = [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
-BRANCHES = ['MuonWeight', 'MuonWeight_up', 'MuonWeight_down']
-#categories = ['bb', 'bq', 'mumu']
+if not CONSERVATIVE:
+    BRANCHES = ['MuonWeight', 'MuonWeight_up', 'MuonWeight_down']
+else:
+    BRANCHES = ['MuonWeight', 'MuonWeight_conservative_up', 'MuonWeight_conservative_down']
 categories = ['mumu']
 
 NTUPLEDIR = global_paths.SKIMMEDDIR
@@ -43,7 +47,8 @@ def MuonUncertainties(year, mass):
     
         for j, category in enumerate(categories):
             for weight in weights[category][branch]:
-                histograms[branch].Fill(j, weight)
+                weight_ = 1. if (CONSERVATIVE and i==0) else weight
+                histograms[branch].Fill(j, weight_)
 
     uncertainties = {"up":{}, "down":{}}
 

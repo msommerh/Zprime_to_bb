@@ -424,6 +424,9 @@ def plot(var, cut, year, norm=False, fraction_above=0):
 
 
 def efficiency(year):
+
+    SINGLE_LEGEND = True
+
     import numpy as np
     from root_numpy import tree2array, fill_hist
     from aliases import AK8veto, electronVeto, muonVeto
@@ -488,7 +491,7 @@ def efficiency(year):
                             temp_array=None; temp_hist.Reset()                                          
 
                     sfile.Close()
-                    print channel, ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
+                    #print channel, ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
             if nevtSign[m] == 0 or ngenSign[m] < 0: continue
             n = eff[channel].GetN()
             eff[channel].SetPoint(n, m, nevtSign[m]/ngenSign[m])
@@ -540,32 +543,43 @@ def efficiency(year):
         eff["sum"].SetPoint(i, mass, tot)
         if SEPARATE: eff_add["sum"].SetPoint(i, mass, tot_add)
 
+    if not SINGLE_LEGEND:
+        if SEPARATE:
+            leg = TLegend(0.15, 0.50, 0.95, 0.8)
+            legS = TLegend(0.5, 0.8-0.045, 0.9, 0.85)
+        else:
+            leg = TLegend(0.15, 0.60, 0.95, 0.8)
+            legS = TLegend(0.5, 0.85-0.045, 0.9, 0.85)
+        leg.SetBorderSize(0)
+        leg.SetFillStyle(0) #1001
+        leg.SetFillColor(0)
+        leg.SetNColumns(len(channels)/4)
+        legS.SetBorderSize(0)
+        legS.SetFillStyle(0) #1001
+        legS.SetFillColor(0)
+        if SEPARATE: 
+            leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])*0.045)
+        else:
+            leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])/2.*0.045)
+        legS.AddEntry(eff['sum'], "Total b tag efficiency (1 b tag + 2 b tag + 1 #mu)", "pl")
+        for i, channel in enumerate(channels):
+            if eff[channel].GetN() > 0: 
+                leg.AddEntry(eff[channel], getChannel(channel), "pl")
+                if SEPARATE: leg.AddEntry(eff_add[channel], getChannel(channel)+" no "+VETO+"-veto", "pl") 
+        if SEPARATE: legS.AddEntry(eff_add['sum'], "Total b tag efficiency, no "+VETO+"-veto", "pl")
+    else:
+        leg = TLegend(0.4, 0.63, 0.87, 0.85)
+        leg.SetBorderSize(0)
+        leg.SetFillStyle(0) #1001
+        leg.SetFillColor(0)
+        ## same vertical order as in the low mass region as prescribed by CCLE
+        leg.AddEntry(eff[channels[0]], "Preselection acceptance", "pl")
+        leg.AddEntry(eff['sum'], "Total b tag efficiency (1 b tag + 2 b tag + 1 #mu)", "pl")
+        for i, channel in enumerate(channels):
+            if i==0: continue
+            if eff[channel].GetN() > 0: 
+                leg.AddEntry(eff[channel], getChannel(channel), "pl")
 
-    if SEPARATE:
-        leg = TLegend(0.15, 0.50, 0.95, 0.8)
-    else:
-        leg = TLegend(0.15, 0.60, 0.95, 0.8)
-    leg.SetBorderSize(0)
-    leg.SetFillStyle(0) #1001
-    leg.SetFillColor(0)
-    leg.SetNColumns(len(channels)/4)
-    for i, channel in enumerate(channels):
-        if eff[channel].GetN() > 0: 
-            leg.AddEntry(eff[channel], getChannel(channel), "pl")
-            if SEPARATE: leg.AddEntry(eff_add[channel], getChannel(channel)+" no "+VETO+"-veto", "pl") 
-    if SEPARATE: 
-        leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])*0.045)
-    else:
-        leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])/2.*0.045)
-    if SEPARATE:
-        legS = TLegend(0.5, 0.8-0.045, 0.9, 0.85)
-    else:
-        legS = TLegend(0.5, 0.85-0.045, 0.9, 0.85)
-    legS.SetBorderSize(0)
-    legS.SetFillStyle(0) #1001
-    legS.SetFillColor(0)
-    legS.AddEntry(eff['sum'], "Total b tag efficiency (1 b tag + 2 b tag + 1 #mu)", "pl")
-    if SEPARATE: legS.AddEntry(eff_add['sum'], "Total b tag efficiency, no "+VETO+"-veto", "pl")
     c1 = TCanvas("c1", "Signal Efficiency", 1200, 800)
     c1.cd(1)
     eff['sum'].Draw("APL")
@@ -574,23 +588,29 @@ def efficiency(year):
         eff[channel].Draw("SAME, PL")
         if SEPARATE: eff_add[channel].Draw("SAME, PL")
     leg.Draw()
-    legS.Draw()
+    if not SINGLE_LEGEND:
+        legS.Draw()
     setHistStyle(eff["sum"], 1.1)
-    eff["sum"].SetTitle(";m_{Z'} (GeV);Acceptance #times efficiency")
+    eff["sum"].SetTitle(";Z' mass (GeV);Acceptance #times efficiency")
     eff["sum"].SetMinimum(0.)
     eff["sum"].SetMaximum(max(1., maxEff*1.5)) #0.65
     if SEPARATE: 
-        eff_add["sum"].SetTitle(";m_{Z'} (GeV);Acceptance #times efficiency")
+        eff_add["sum"].SetTitle(";Z' mass (GeV);Acceptance #times efficiency")
         eff_add["sum"].SetMinimum(0.)
         eff_add["sum"].SetMaximum(1.)
 
-    eff["sum"].GetXaxis().SetTitleSize(0.045)
-    eff["sum"].GetYaxis().SetTitleSize(0.045)
-    eff["sum"].GetYaxis().SetTitleOffset(1.1)
-    eff["sum"].GetXaxis().SetTitleOffset(1.05)
-    eff["sum"].GetXaxis().SetRangeUser(1500, 8000)
+    eff["sum"].GetXaxis().SetTitleSize(0.050)
+    eff["sum"].GetYaxis().SetTitleSize(0.050)
+    #eff["sum"].GetYaxis().SetTitleOffset(1.1)
+    eff["sum"].GetYaxis().SetTitleOffset(1.05)
+    #eff["sum"].GetXaxis().SetTitleOffset(1.05)
+    eff["sum"].GetXaxis().SetTitleOffset(1.03)
+    eff["sum"].GetXaxis().SetRangeUser(1800, 8000)
     c1.SetTopMargin(0.05)
-    drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
+    c1.GetPad(0).SetTicks(1, 1)
+    #drawCMS(-1, "Simulation", year='')
+    drawCMS(-1, "Simulation Preliminary", year='')
+    #drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
     #drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
     #drawCMS(-1, "", year=year, suppressCMS=True)
     drawAnalysis("")
@@ -1471,6 +1491,79 @@ def S_over_sqrt_B(year, x_variable="jj_deltaEta_widejet", cut_below=True, refere
     c2.Print("plots/s_over_b/"+x_variable+"_"+year+"_fixedcut.pdf") 
     c2.Print("plots/s_over_b/"+x_variable+"_"+year+"_fixedcut.png")    
 
+
+def mass_cut_efficiency(year):
+
+    print "deriving mass cut efficiency..."
+    import numpy as np
+    from root_numpy import tree2array, fill_hist
+    from aliases import AK8veto, electronVeto, muonVeto
+    genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+
+    treeSign = {}
+    ngenSign = {}
+    nevtSign = {}
+    eff = TGraphErrors()
+
+    for i, m in enumerate(genPoints):
+        signName = "ZpBB_M"+str(m)
+        ngenSign[m] = 0.
+        nevtSign[m] = 0.
+        for j, ss in enumerate(sample[signName]['files']):
+            if year=="run2" or year in ss:
+                sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
+                treeSign[m] = sfile.Get("tree")
+                all_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet')
+                passed_array = tree2array(treeSign[m], branches='BTagAK4Weight_deepJet', selection="jj_mass_widejet>1530")
+                all_hist = TH1F('all', 'all', 1,0,1)                                     
+                fill_hist(all_hist, np.zeros(len(all_array)), weights=all_array)
+                pass_hist = TH1F('pass', 'pass', 1,0,1)                                     
+                fill_hist(pass_hist, np.zeros(len(passed_array)), weights=passed_array)
+                ngenSign[m] += all_hist.GetBinContent(1) 
+                nevtSign[m] += pass_hist.GetBinContent(1)                                   
+                passed_array=None; pass_hist.Reset()                                          
+                all_array=None; all_hist.Reset()                                          
+                sfile.Close()
+                print ss, ":", nevtSign[m], "/", ngenSign[m], "=", nevtSign[m]/ngenSign[m]
+        if nevtSign[m] == 0 or ngenSign[m] < 0: continue
+        n = eff.GetN()
+        eff.SetPoint(n, m, nevtSign[m]/ngenSign[m])
+        eff.SetPointError(n, 0, math.sqrt(nevtSign[m])/ngenSign[m])
+
+    eff.SetMarkerColor(2)
+    eff.SetMarkerStyle(20)
+    eff.SetLineColor(2)
+    eff.SetLineWidth(2)
+    n = eff.GetN()
+
+    one_line = TGraph()
+    one_line.SetPoint(0, 1800., 1.)
+    one_line.SetPoint(1, 8000., 1.)
+    one_line.SetLineStyle(2)
+
+    c1 = TCanvas("c1", "Signal Mass Cut Efficiency", 1200, 800)
+    c1.cd(1)
+    eff.Draw("APL")
+    one_line.Draw("L")
+    setHistStyle(eff, 1.1)
+    eff.SetTitle(";Z' gen mass (GeV);dijet mass cut efficiency")
+    eff.SetMinimum(0.)
+    eff.SetMaximum(1.3) #0.65
+
+    eff.GetXaxis().SetTitleSize(0.050)
+    eff.GetYaxis().SetTitleSize(0.050)
+    eff.GetYaxis().SetTitleOffset(1.05)
+    eff.GetXaxis().SetTitleOffset(1.03)
+    eff.GetXaxis().SetRangeUser(1800, 8000)
+    c1.SetTopMargin(0.05)
+    c1.GetPad(0).SetTicks(1, 1)
+    drawCMS(-1, "Simulation", year='')
+    drawAnalysis("")
+
+    c1.Print("plots/Efficiency/mass_cut_"+year+".pdf") 
+    c1.Print("plots/Efficiency/mass_cut_"+year+".png") 
+
+
 #def S_over_sqrt_B_fixed_cut(year, x_variable="jj_deltaEta_widejet", cut_below=True, reference_cut=1.1):
 #    import numpy as np
 #    from root_numpy import tree2array, fill_hist
@@ -1606,6 +1699,7 @@ def S_over_sqrt_B(year, x_variable="jj_deltaEta_widejet", cut_below=True, refere
 if __name__ == "__main__":
     if options.efficiency:
         efficiency(options.year)
+        #mass_cut_efficiency(options.year) ## FIXME REMOVE!!! FIXME
     elif options.acceptance:
         acceptance(options.year)
     elif options.trigger:
