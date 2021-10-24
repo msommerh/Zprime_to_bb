@@ -568,10 +568,11 @@ def efficiency(year):
                 if SEPARATE: leg.AddEntry(eff_add[channel], getChannel(channel)+" no "+VETO+"-veto", "pl") 
         if SEPARATE: legS.AddEntry(eff_add['sum'], "Total b tag efficiency, no "+VETO+"-veto", "pl")
     else:
-        leg = TLegend(0.4, 0.63, 0.87, 0.85)
+        leg = TLegend(0.25, 0.48, 0.87, 0.85)
         leg.SetBorderSize(0)
         leg.SetFillStyle(0) #1001
         leg.SetFillColor(0)
+        leg.SetTextSize(0.039)
         ## same vertical order as in the low mass region as prescribed by CCLE
         leg.AddEntry(eff[channels[0]], "Preselection acceptance", "pl")
         leg.AddEntry(eff['sum'], "Total b tag efficiency (1 b tag + 2 b tag + 1 #mu)", "pl")
@@ -608,8 +609,8 @@ def efficiency(year):
     eff["sum"].GetXaxis().SetRangeUser(1800, 8000)
     c1.SetTopMargin(0.05)
     c1.GetPad(0).SetTicks(1, 1)
-    #drawCMS(-1, "Simulation", year='')
-    drawCMS(-1, "Simulation Preliminary", year='')
+    drawCMS(-1, "Simulation", year='')
+    #drawCMS(-1, "Simulation Preliminary", year='')
     #drawCMS(-1, "Simulation Preliminary", year=year) #Preliminary
     #drawCMS(-1, "Work in Progress", year=year, suppressCMS=True)
     #drawCMS(-1, "", year=year, suppressCMS=True)

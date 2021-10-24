@@ -134,7 +134,7 @@ def limit():
     particleP = "Z'"
     particle = 'b#bar{b}'
     multF = ZPTOBB
-    THEORY = ['A1', 'B3', 'SSM']
+    THEORY = ['SSM', 'A1', 'B3']
     #THEORY = ['A1', 'B3']
     #if INCLUDEACC: THEORY.append('SSM')
     
@@ -196,10 +196,12 @@ def limit():
         if len(val[m]) > 10: Best.SetPointError(n, 0., 0., abs(val[m][9]), val[m][10])
         #print "m =", m, " --> Xsec*Br =", val[m][3]
 
+
     for t in THEORY:
         Theory[t] = TGraphAsymmErrors()
         #Theory[t] = TGraph()
         Xs_dict = HVT[t]['Z']['XS'] if t!='SSM' else SSM['Z']
+
         for m in sorted(Xs_dict.keys()):
             if INCLUDEACC and t!='SSM':
                 acc_factor = ACCEPTANCE[m]
@@ -236,11 +238,11 @@ def limit():
             Theory[t].SetLineWidth(2)
             #Theory[t].SetLineStyle(7)
 
-
     Exp2s.SetLineWidth(2)
     Exp2s.SetLineStyle(1)
     Obs0s.SetLineWidth(3)
-    Obs0s.SetMarkerStyle(0)
+    Obs0s.SetMarkerStyle(8)
+    Obs0s.SetMarkerSize(0.75)
     Obs0s.SetLineColor(1)
     Exp0s.SetLineStyle(2)
     Exp0s.SetLineWidth(3)
@@ -303,7 +305,7 @@ def limit():
         Theory[t].Draw("SAME, L3")
         #Theory[t].Draw("SAME, L3X0Y0")
     Exp0s.Draw("SAME, L")
-    if not options.blind: Obs0s.Draw("SAME, L")
+    if not options.blind: Obs0s.Draw("SAME, PL")
     #setHistStyle(Exp2s)
     Exp2s.GetXaxis().SetTitleSize(0.050)
     Exp2s.GetYaxis().SetTitleSize(0.050)
@@ -347,7 +349,7 @@ def limit():
     leg.SetFillStyle(0) #1001
     leg.SetFillColor(0)
     leg.SetHeader("95% CL upper limits")
-    leg.AddEntry(Obs0s, "Observed", "l")
+    leg.AddEntry(Obs0s, "Observed", "Pl")
     leg.AddEntry(Exp0s, "Expected", "l")
     leg.AddEntry(Exp1s, "#pm 1 std. deviation", "f")
     leg.AddEntry(Exp2s, "#pm 2 std. deviation", "f")
