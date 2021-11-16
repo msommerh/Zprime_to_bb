@@ -113,7 +113,7 @@ def draw():
     Exp2s.GetXaxis().SetTitleSize(Exp2s.GetXaxis().GetTitleSize()*1.25)
     Exp2s.GetXaxis().SetNoExponent(True)
     Exp2s.GetXaxis().SetMoreLogLabels(True)
-    Exp2s.GetYaxis().SetTitle("#sigma("+INPUT["particle_label"]+") #bf{#it{#Beta}}("+INPUT["decay_label"]+" #rightarrow "+INPUT["decay_label"]+") #Alpha (fb)")
+    Exp2s.GetYaxis().SetTitle("#sigma("+INPUT["particle_label"]+") #bf{#it{#Beta}}("+INPUT["particle_label"]+" #rightarrow "+INPUT["decay_label"]+") #Alpha (fb)")
     Exp2s.GetYaxis().SetTitleOffset(1.5)
     Exp2s.GetYaxis().SetNoExponent(True)
     Exp2s.GetYaxis().SetMoreLogLabels()
