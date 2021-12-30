@@ -5,7 +5,7 @@
 ###
 
 import ROOT
-from ROOT import gStyle, gROOT, RooFit, RooAbsData
+from ROOT import gStyle, gROOT, RooFit, RooAbsData, RooAbsReal
 from ROOT import TLatex, TCanvas, TLine, TFile, RooBinning, TLegend
 
 from array import array
@@ -21,19 +21,25 @@ parser.add_option("-m", "--model_name", action="store", type="string", dest="mod
 parser.add_option("-v", "--variable_name", action="store", type="string", dest="variable_name", default="jj_mass_widejet")
 parser.add_option("--category", action="store", type="string", dest="category", default="bb")
 parser.add_option("-o", "--output", action="store", type="string", dest="output", default="bkg_plot.pdf")
+parser.add_option("--signal_input", action="store", type="string", dest="signal_input", default="")
+parser.add_option("--signal_workspace", action="store", type="string", dest="signal_workspace", default="Zprime_2018")
+parser.add_option("--signal_norm_factor", action="store", type=float, dest="signal_norm_factor", default=1000.)
 (options, args) = parser.parse_args()
 
 gStyle.SetOptStat(0)
 
 gROOT.SetBatch(True)
 
-def extract_workspace(input_file, workspace_name, model_name, variable_name):
+def extract_workspace(input_file, workspace_name, model_name, variable_name, signal=False):
     root_file = TFile.Open(input_file)
     workspace = root_file.Get(workspace_name)
-    data_obs = workspace.data("data_obs")
-    bkg_model = workspace.pdf(model_name)
+    if signal:
+        data_obs = workspace.var(model_name+"_norm").getValV() # abuse of variable name
+    else:
+        data_obs = workspace.data("data_obs")
+    pdf = workspace.pdf(model_name)
     variable = workspace.var(variable_name)
-    return data_obs, bkg_model, variable
+    return data_obs, pdf, variable
 
 def setTopPad(TopPad, r=4):
     TopPad.SetPad("TopPad", "", 0., 1./r, 1.0, 1.0, 0, -1, 0)
@@ -93,13 +99,13 @@ def drawCMS(lumi, text, onTop=False, year='', suppressCMS=False, suppress_year=F
             if year=="run2": year="RunII"
             latex.DrawLatex(0.24, upper_margin, year)
         elif float(lumi) > 0:
-            if lumi==35920.:
+            if lumi==35920. or lumi==36330.:
                 year = '2016'
             elif lumi==41530.:
                 year = '2017'
             elif lumi==59740.:
                 year = '2018'
-            elif lumi==137190.:
+            elif lumi==137190. or lumi==137600.:
                 year = 'RunII'
             if not suppress_year:
                 latex.DrawLatex(0.24, upper_margin, year)
@@ -192,17 +198,24 @@ def fixData(hist, useGarwood=False, cutGrass=True, maxPoisson=False):
             if (hist.GetX()[i]>65 and hist.GetX()[i]<135 and hist.GetY()[i]==0): hist.SetPointError(i, hist.GetErrorXlow(i), hist.GetErrorXhigh(i), 1.e-6, 1.e-6, )
             hist.SetPoint(i, hist.GetX()[i], -1.e-4)
 
-def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, year, category, chi2, dof, output_file):
+def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, year, category, chi2, dof, output_file, signal_file=None, signal_workspace=None, signal_norm_factor=1000.):
+    if signal_file is not None:
+        assert signal_workspace is not None
+    if signal_workspace is not None:
+        assert signal_file is not None
+
     print "starting to plot"
     RATIO = 4 
     if year=='2016':
-        lumi=35920.
+        #lumi=35920.
+        lumi=36330.
     elif year=='2017':
         lumi=41530.
     elif year=='2018':
         lumi=59740.
     elif year=='run2':
-        lumi=137190.
+        #lumi=137190.
+        lumi=137600.
 
     c = TCanvas("c_"+category, category, 800, 800)
     c.Divide(1, 2)
@@ -215,8 +228,22 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
 
     graphData = setData.plotOn(frame, RooFit.Binning(plot_binning), RooFit.Scaling(False), RooFit.Invisible())
     modelBkg.plotOn(frame, RooFit.LineColor(2), RooFit.DrawOption("L"), RooFit.Name(modelBkg.GetName()))
+
+    if signal_file is not None:
+        X_mass.setRange("signal_m2000" ,1600., 2200.)
+        X_mass.setRange("signal_m4000" ,3200., 4400.)
+        X_mass.setRange("signal_m6000" ,4800., 6600.)
+        signal_norm_2000, signal_pdf_m2000, _ = extract_workspace(signal_file, signal_workspace, "ZpBB_{}_{}_M{}".format(year, category, 2000), options.variable_name, signal=True)
+        signal_pdf_m2000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2), RooFit.LineColor(433), RooFit.DrawOption("L"), RooFit.Name("Z' Signal m2000"), RooFit.Normalization(signal_norm_factor*signal_norm_2000, RooAbsReal.NumEvent), RooFit.Range("signal_m2000"))
+        signal_norm_4000, signal_pdf_m4000, _ = extract_workspace(signal_file, signal_workspace, "ZpBB_{}_{}_M{}".format(year, category, 4000), options.variable_name, signal=True)
+        signal_pdf_m4000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2), RooFit.LineColor(434), RooFit.DrawOption("L"), RooFit.Name("Z' Signal m4000"), RooFit.Normalization(signal_norm_factor*signal_norm_4000, RooAbsReal.NumEvent), RooFit.Range("signal_m4000"))
+        signal_norm_6000, signal_pdf_m6000, _ = extract_workspace(signal_file, signal_workspace, "ZpBB_{}_{}_M{}".format(year, category, 6000), options.variable_name, signal=True)
+        signal_pdf_m6000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2), RooFit.LineColor(435), RooFit.DrawOption("L"), RooFit.Name("Z' Signal m6000"), RooFit.Normalization(signal_norm_factor*signal_norm_6000, RooAbsReal.NumEvent), RooFit.Range("signal_m6000"))
+
     graphData = setData.plotOn(frame, RooFit.Binning(plot_binning), RooFit.Scaling(False), RooFit.XErrorSize(1), RooFit.DataError(RooAbsData.Poisson), RooFit.DrawOption("PE0"), RooFit.Name(setData.GetName()))
+    
     fixData(graphData.getHist(), True, True, False)
+
     pulls = frame.pullHist(setData.GetName(), modelBkg.GetName(), True)  
     chi = frame.chiSquare(setData.GetName(), modelBkg.GetName(), True)
     frame.GetYaxis().SetTitle("Events")
@@ -236,12 +263,16 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     drawRegion(category, True, large=True)
     drawCMS(lumi, "", suppress_year=True if year=="run2" else False, large=True)
 
-    leg = TLegend(0.575, 0.6, 0.95, 0.9)
+    leg = TLegend(0.55, 0.6, 0.925, 0.9)
     leg.SetBorderSize(0)
     leg.SetFillStyle(0) #1001
     leg.SetFillColor(0)
     leg.AddEntry(setData.GetName(), setData.GetTitle(), "PEL")
     leg.AddEntry(modelBkg.GetName(), modelBkg.GetTitle(), "FL")#.SetTextColor(629)
+    if signal_file is not None:
+        leg.AddEntry("Z' Signal m2000", "Z', m=2000 GeV", "L")
+        leg.AddEntry("Z' Signal m4000", "Z', m=4000 GeV", "L")
+        leg.AddEntry("Z' Signal m6000", "Z', m=6000 GeV", "L")
     leg.SetY1(0.9-leg.GetNRows()*0.075)
     leg.Draw()
 
@@ -292,6 +323,13 @@ plot_binning = RooBinning(len(abins)-1, abins)
 
 setData, modelBkg, X_mass = extract_workspace(options.input, options.workspace_name, options.model_name, options.variable_name)
 
-bkg_function_plotter(X_mass, X_min, X_max, plot_binning, modelBkg, setData, options.year, options.category, options.chi, options.dof, options.output)
+if options.signal_input=="":
+    signal_file = None
+    signal_workspace = None
+else:
+    signal_file = options.signal_input
+    signal_workspace = options.signal_workspace
+
+bkg_function_plotter(X_mass, X_min, X_max, plot_binning, modelBkg, setData, options.year, options.category, options.chi, options.dof, options.output, signal_file=signal_file, signal_workspace=signal_workspace, signal_norm_factor=options.signal_norm_factor)
 
 
