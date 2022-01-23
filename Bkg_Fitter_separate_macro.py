@@ -239,8 +239,9 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
 
     graphData = setData.plotOn(frame, RooFit.Binning(plot_binning),# RooFit.Rescale(1000/lumi),
         RooFit.Invisible())
-    modelBkg.plotOn(frame, RooFit.LineColor(2), RooFit.DrawOption("L"), RooFit.Normalization(1000/lumi, ROOT.RooAbsReal.Relative),
-        RooFit.Name(modelBkg.GetName()))
+    conversion_factor = 1000/(lumi*graphData.getHist().getNominalBinWidth())
+
+    modelBkg.plotOn(frame, RooFit.LineColor(2), RooFit.DrawOption("L"), RooFit.Normalization(conversion_factor, ROOT.RooAbsReal.Relative), RooFit.Name(modelBkg.GetName()))
 
     if signal_file is not None:
         X_mass.setRange("signal_m2000" ,1600., 2200.)
@@ -251,21 +252,21 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
             "ZpBB_{}_{}_M{}".format(year, category, 2000), options.variable_name, signal=True)
         signal_pdf_m2000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2),
             RooFit.LineColor(433), RooFit.DrawOption("L"), RooFit.Name("Z' Signal m2000"),
-            RooFit.Normalization(signal_norm_factor*signal_norm_2000*1000/lumi, RooAbsReal.NumEvent),
+            RooFit.Normalization(signal_norm_factor*signal_norm_2000*conversion_factor, RooAbsReal.NumEvent),
             RooFit.Range("signal_m2000"))
 
         signal_norm_4000, signal_pdf_m4000, _ = extract_workspace(signal_file, signal_workspace,
             "ZpBB_{}_{}_M{}".format(year, category, 4000), options.variable_name, signal=True)
         signal_pdf_m4000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2),
             RooFit.LineColor(434), RooFit.DrawOption("L"), RooFit.Name("Z' Signal m4000"),
-            RooFit.Normalization(signal_norm_factor*signal_norm_4000*1000/lumi, RooAbsReal.NumEvent),
+            RooFit.Normalization(signal_norm_factor*signal_norm_4000*conversion_factor, RooAbsReal.NumEvent),
             RooFit.Range("signal_m4000"))
 
         signal_norm_6000, signal_pdf_m6000, _ = extract_workspace(signal_file, signal_workspace,
             "ZpBB_{}_{}_M{}".format(year, category, 6000), options.variable_name, signal=True)
         signal_pdf_m6000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2),
             RooFit.LineColor(435), RooFit.DrawOption("L"), RooFit.Name("Z' Signal m6000"),
-            RooFit.Normalization(signal_norm_factor*signal_norm_6000*1000/lumi, RooAbsReal.NumEvent),
+            RooFit.Normalization(signal_norm_factor*signal_norm_6000*conversion_factor, RooAbsReal.NumEvent),
             RooFit.Range("signal_m6000"))
 
     graphData = setData.plotOn(frame, RooFit.Binning(plot_binning), #RooFit.Rescale(1000/lumi),
@@ -290,10 +291,9 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
 
     roohist = graphData.getHist()
     for i in range(roohist.GetN()):
-        roohist.SetPoint(i, roohist.GetX()[i], 1000/lumi*roohist.GetY()[i])
-        roohist.SetPointEYlow(i, 1000/lumi*roohist.GetEYlow()[i])
-        roohist.SetPointEYhigh(i, 1000/lumi*roohist.GetEYhigh()[i])
-
+        roohist.SetPoint(i, roohist.GetX()[i], conversion_factor*roohist.GetY()[i])
+        roohist.SetPointEYlow(i, conversion_factor*roohist.GetEYlow()[i])
+        roohist.SetPointEYhigh(i, conversion_factor*roohist.GetEYhigh()[i])
 
     pulls = frame.pullHist(setData.GetName(), modelBkg.GetName(), True)  
     chi = frame.chiSquare(setData.GetName(), modelBkg.GetName(), True)
@@ -308,10 +308,10 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     
     #frame.SetMaximum(frame.GetMaximum()*10)
     #frame.SetMaximum(frame.GetMaximum()/10)
-    frame.SetMaximum(frame.GetMaximum()/4)
+    frame.SetMaximum(frame.GetMaximum()*conversion_factor*6)
     #frame.SetMinimum(max(frame.GetMinimum(), 1.e-1))
     #frame.SetMinimum(0.09)
-    frame.SetMinimum(0.004)
+    frame.SetMinimum(2*1e-5)
     c.GetPad(1).SetLogy()
 
     #drawAnalysis(category)
@@ -323,7 +323,7 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     leg.SetFillStyle(0) #1001
     leg.SetFillColor(0)
     leg.AddEntry(setData.GetName(), "Data", "PEL")
-    leg.AddEntry(modelBkg.GetName(), modelBkg.GetTitle() if n_parameters=="" else "Fit ({} par.)".format(n_parameters), "FL")#.SetTextColor(629)
+    leg.AddEntry(modelBkg.GetName(), modelBkg.GetTitle() if n_parameters=="" else "Fit ({} par.)".format(n_parameters), "L")#.SetTextColor(629)
     if signal_file is not None:
         leg.AddEntry("Z' Signal m2000", "Z', m=2000 GeV", "L")
         leg.AddEntry("Z' Signal m4000", "Z', m=4000 GeV", "L")
@@ -333,7 +333,7 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
 
     latex = TLatex()
     latex.SetNDC()
-    latex.SetTextSize(0.055)
+    latex.SetTextSize(0.04)
     latex.SetTextFont(42)
 
     text = TLatex()
@@ -341,7 +341,7 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     text.SetTextFont(42)
     text.SetTextAlign(11)
     #text.SetTextSize(0.04)
-    text.SetTextSize(0.055)
+    text.SetTextSize(0.06)
     text.DrawLatexNDC(0.15, 0.18, "#splitline{#splitline{#chi^{2}/ndf = %.1f/%.0f}{Wide PF-jets}}{#splitline{m_{jj} > 1.53 TeV, |#Delta#eta| < 1.1}{|#eta| < 2.5, p_{T} > 30 GeV}}" % (chi2, dof))
     text.Draw("SAME")
 
