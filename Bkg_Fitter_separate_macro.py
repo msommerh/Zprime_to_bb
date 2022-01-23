@@ -237,8 +237,7 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     setPadStyle(frame, 1.25, True)
     frame.GetXaxis().SetRangeUser(m_min, m_max)
 
-    graphData = setData.plotOn(frame, RooFit.Binning(plot_binning),# RooFit.Rescale(1000/lumi),
-        RooFit.Invisible())
+    graphData = setData.plotOn(frame, RooFit.Binning(plot_binning), RooFit.Invisible())
     conversion_factor = 1000/(lumi*graphData.getHist().getNominalBinWidth())
 
     modelBkg.plotOn(frame, RooFit.LineColor(2), RooFit.DrawOption("L"), RooFit.Normalization(conversion_factor, ROOT.RooAbsReal.Relative), RooFit.Name(modelBkg.GetName()))
@@ -269,24 +268,10 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
             RooFit.Normalization(signal_norm_factor*signal_norm_6000*conversion_factor, RooAbsReal.NumEvent),
             RooFit.Range("signal_m6000"))
 
-    graphData = setData.plotOn(frame, RooFit.Binning(plot_binning), #RooFit.Rescale(1000/lumi),
+    graphData = setData.plotOn(frame, RooFit.Binning(plot_binning),
         RooFit.XErrorSize(1), RooFit.DataError(RooAbsData.Poisson),
         RooFit.DrawOption("PE0"), RooFit.Name(setData.GetName()))
 
-    #frame.addPlotable(roohist, "PE0")
-
-    #test_TGraph = ROOT.TGraphAsymmErrors(roohist.GetN(), roohist.GetX(), roohist.GetY(), roohist.GetEXlow(), roohist.GetEXhigh(), roohist.GetEYlow(), roohist.GetEYhigh())
-    #test_TGraph.SetMarkerColor(ROOT.kGreen)
-    #frame.addPlotable(test_TGraph, "PE0")
-
-    #test_hist = RooAbsData.createHistogram(setData, "test_histo", X_mass, RooFit.Binning(plot_binning))
-    #print "test_hist =", test_hist
-    ##test_hist.Scale(1000/lumi)
-    #frame.addTH1(test_hist, "PE0")
-    #test_roohist = ROOT.RooHist(test_hist)
-    #test_roohist.SetMarkerColor(ROOT.kGreen)
-    #frame.addPlotable(test_roohist, "PE0")
-    
     fixData(graphData.getHist(), True, True, False)
 
     roohist = graphData.getHist()
@@ -306,11 +291,7 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     frame.Draw()
     frame.SetTitle("")
     
-    #frame.SetMaximum(frame.GetMaximum()*10)
-    #frame.SetMaximum(frame.GetMaximum()/10)
-    frame.SetMaximum(frame.GetMaximum()*conversion_factor*6)
-    #frame.SetMinimum(max(frame.GetMinimum(), 1.e-1))
-    #frame.SetMinimum(0.09)
+    frame.SetMaximum(frame.GetMaximum()*conversion_factor*10)
     frame.SetMinimum(2*1e-5)
     c.GetPad(1).SetLogy()
 
@@ -322,7 +303,16 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     leg.SetBorderSize(0)
     leg.SetFillStyle(0) #1001
     leg.SetFillColor(0)
-    leg.AddEntry(setData.GetName(), "Data", "PEL")
+
+    # ridiculous workaround to retain control over marker in legend
+    fake_hist = ROOT.TH1D("fake_hist", "fake_hist", 10, 0, 1) 
+    fake_hist.SetMarkerStyle(8)
+    fake_hist.SetMarkerColor(1)
+    fake_hist.SetLineColor(1)
+    fake_hist.Draw("SAME, E1")
+
+    leg.AddEntry(fake_hist.GetName(), "Data", "PEL")
+    #leg.AddEntry(setData.GetName(), "Data", "PEL")
     leg.AddEntry(modelBkg.GetName(), modelBkg.GetTitle() if n_parameters=="" else "Fit ({} par.)".format(n_parameters), "L")#.SetTextColor(629)
     if signal_file is not None:
         leg.AddEntry("Z' Signal m2000", "Z', m=2000 GeV", "L")
@@ -366,7 +356,7 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     c.SaveAs(output_file)
 
 X_MIN = 1530
-X_MAX = 8200
+X_MAX = 7800 #8200
 
 dijet_bins = [1, 3, 6, 10, 16, 23, 31, 40, 50, 61, 74, 88, 103, 119, 137, 156, 176, 197, 220, 244, 270, 296, 325, 354, 386, 419, 453, 489, 526, 565, 606, 649, 693, 740, 788, 838, 890, 944, 1000, 1058, 1118, 1181, 1246, 1313, 1383, 1455, 1530, 1607, 1687, 1770, 1856, 1945, 2037, 2132, 2231, 2332, 2438, 2546, 2659, 2775, 2895, 3019, 3147, 3279, 3416, 3558, 3704, 3854, 4010, 4171, 4337, 4509, 4686, 4869, 5058, 5253, 5455, 5663, 5877, 6099, 6328, 6564, 6808, 7060, 7320, 7589, 7866, 8152, 8447, 8752, 9067, 9391, 9726, 10072, 10430, 10798, 11179, 11571, 11977, 12395, 12827, 13272, 13732, 14000]
 
