@@ -46,6 +46,7 @@ parser.add_option("", "--sync", action="store_true", default=False, dest="sync")
 parser.add_option("", "--recal", action="store_true", default=False, dest="recal")
 parser.add_option("", "--muon_eff", action="store_true", default=False, dest="muon_eff")
 parser.add_option("", "--s_over_b", action="store_true", default=False, dest="s_over_b")
+parser.add_option("", "--widejet_efficiency", action="store_true", default=False, dest="widejet_efficiency")
 (options, args) = parser.parse_args()
 
 ########## SETTINGS ##########
@@ -1565,6 +1566,40 @@ def mass_cut_efficiency(year):
     c1.Print("plots/Efficiency/mass_cut_"+year+".png") 
 
 
+def widejet_efficiency(year):
+    print "deriving the widejet efficiency: n_(mjj==mjj_widejet)/n_all"
+
+    from root_numpy import tree2array
+    genPoints = [1800, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000, 8000]
+
+    n_all = {}
+    n_same = {}
+    widejet_efficiency = {}
+
+    signal_names = ["ZpBB_M"+str(m) for m in genPoints]
+    for signName in ["data_obs"]+signal_names:
+        n_all[signName] = 0.
+        n_same[signName] = 0.
+        for j, ss in enumerate(sample[signName]['files']):
+            if year=="run2" or year in ss:
+                sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
+                treeSign = sfile.Get("tree")
+
+                all_array = tree2array(treeSign, branches=["jj_mass", "jj_mass_widejet"], selection=alias["preselection"])
+                n_all_current = float(all_array.shape[0])
+                n_same_current = float(sum(all_array["jj_mass"]==all_array["jj_mass_widejet"]))
+                n_all[signName] += n_all_current
+                n_same[signName] += n_same_current
+                sfile.Close()
+                print "\t", ss, ":", n_same_current, "/", n_all_current, "=", n_same_current/n_all_current
+        if n_all[signName] <= 0:
+            continue
+        else:
+            widejet_efficiency[signName] = n_same[signName]/n_all[signName]
+            print signName, ":", widejet_efficiency[signName]
+    return widejet_efficiency
+
+
 #def S_over_sqrt_B_fixed_cut(year, x_variable="jj_deltaEta_widejet", cut_below=True, reference_cut=1.1):
 #    import numpy as np
 #    from root_numpy import tree2array, fill_hist
@@ -1728,6 +1763,8 @@ if __name__ == "__main__":
         #    muon_efficiency(options.year, x_variable="jet_pt", gen_point=gen_point)
     elif options.s_over_b:
         S_over_sqrt_B(options.year, x_variable=options.variable, cut_below=True)
+    elif options.widejet_efficiency:
+        widejet_efficiency(options.year)
     else:
         plot(options.variable, options.cut, options.year, fraction_above=options.fraction_above)
 
