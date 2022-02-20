@@ -432,7 +432,7 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     frame.SetTitle("")
     
     if grid_plots:
-        frame.SetMaximum(210) ##TODO tune
+        frame.SetMaximum(300) ##TODO tune
     else:
         frame.SetMaximum(frame.GetMaximum()*conversion_factor*10)
     frame.SetMinimum(2*1e-5)
