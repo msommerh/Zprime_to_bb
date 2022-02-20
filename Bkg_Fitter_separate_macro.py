@@ -27,6 +27,7 @@ parser.add_option("-o", "--output", action="store", type="string", dest="output"
 parser.add_option("--signal_input", action="store", type="string", dest="signal_input", default="")
 parser.add_option("--signal_workspace", action="store", type="string", dest="signal_workspace", default="Zprime_2018")
 parser.add_option("--signal_norm_factor", action="store", type=float, dest="signal_norm_factor", default=1000.)
+parser.add_option("--grid_plots", action="store_true", dest="grid_plots", default=False)
 (options, args) = parser.parse_args()
 
 gStyle.SetOptStat(0)
@@ -69,18 +70,24 @@ def adjust_bstar_shape(roohist, m_range):
     for point in points_to_remove[::-1]: # remove backwards to preserve indexing
         roohist.RemovePoint(point)
 
-def setTopPad(TopPad, r=4):
+def setTopPad(TopPad, r=4, small_gap=False):
     TopPad.SetPad("TopPad", "", 0., 1./r, 1.0, 1.0, 0, -1, 0)
     #TopPad.SetTopMargin(0.24/r)
     TopPad.SetTopMargin(0.28/r)
-    TopPad.SetBottomMargin(2*0.04/r)
+    if small_gap:
+        TopPad.SetBottomMargin(2*0.01/r)
+    else:
+        TopPad.SetBottomMargin(2*0.04/r)
     TopPad.SetRightMargin(0.05)
     TopPad.SetLeftMargin(0.11)
     TopPad.SetTicks(1, 1)
 
-def setBotPad(BotPad, r=4):
+def setBotPad(BotPad, r=4, small_gap=False):
     BotPad.SetPad("BotPad", "", 0., 0., 1.0, 1./r, 0, -1, 0)
-    BotPad.SetTopMargin(0.5*r/100.)
+    if small_gap:
+        BotPad.SetTopMargin(0.1*r/100.)
+    else:
+        BotPad.SetTopMargin(0.5*r/100.)
     BotPad.SetBottomMargin(r/10.)
     BotPad.SetRightMargin(0.05)
     BotPad.SetLeftMargin(0.11)
@@ -163,6 +170,42 @@ def drawCMS(lumi, text, onTop=False, year='', suppressCMS=False, suppress_year=F
     if not onTop: latex.DrawLatex(0.15, 0.84, text)
     else: latex.DrawLatex(0.45, 0.98, text)
 
+def drawCMS_grid_plots(lumi, text, year='', suppress_year=False):
+    latex = TLatex()
+    latex.SetNDC()
+    latex.SetTextSize(0.06)
+    upper_margin = 0.98
+    latex.SetTextColor(1)
+    latex.SetTextFont(42)
+    latex.SetTextAlign(33)
+    if (type(lumi) is float or type(lumi) is int):
+        if float(lumi) > 0:
+            if float(lumi)>100000.:
+                latex.DrawLatex(0.85, upper_margin+0.012, "%.0f fb^{-1}" % (float(lumi)/1000.))
+            else:
+                latex.DrawLatex(0.85, upper_margin+0.012, "%.1f fb^{-1}" % (float(lumi)/1000.))
+        if year!='':
+            if year=="run2": year="RunII"
+            latex.DrawLatex(0.15, upper_margin, year)
+        elif float(lumi) > 0:
+            if lumi==35920. or lumi==36330.:
+                year = '2016'
+            elif lumi==41530.:
+                year = '2017'
+            elif lumi==59740.:
+                year = '2018'
+            elif lumi==137190. or lumi==137600.:
+                year = 'RunII'
+            if not suppress_year:
+                latex.DrawLatex(0.15, upper_margin, year)
+    elif type(lumi) is str: latex.DrawLatex(0.95, 0.885, "%s" % lumi)
+    latex.SetTextAlign(11)
+    latex.SetTextFont(62)
+    latex.SetTextSize(0.07 if len(text)>0 else 0.08)
+    latex.SetTextSize(0.05)
+    latex.SetTextFont(52)
+    latex.DrawLatex(0.15, 0.84, text)
+
 def getChannel(channel):
     text = ""
     if 'bg' in channel: text += "#geq 1 b tag"
@@ -186,7 +229,38 @@ def drawRegion(channel, left=False, large=False):
     if left: latex.DrawLatex(0.15, 0.79, text)
     else:
         latex.SetTextAlign(22)
-        latex.DrawLatex(0.5, 0.85, text)
+        latex.DrawLatex(0.5, 0.79, text)
+
+def drawRegion_grid_plots(channel, year, lumi):
+    text_year = str(year)
+    latex_year = TLatex()
+    latex_year.SetNDC()
+    latex_year.SetTextAlign(12)
+    latex_year.SetTextFont(42) #52
+    latex_year.SetTextSize(0.07)
+    latex_year.DrawLatex(0.16, 0.86, text_year)
+
+    if isinstance(lumi, str):
+        text_lumi = "%s fb^{-1}" % (lumi)
+    else:
+        if float(lumi)>1000000:
+            text_lumi = "%.0f fb^{-1}" % (float(lumi)/1000.)
+        else:
+            text_lumi = "%.1f fb^{-1}" % (float(lumi)/1000.)
+    latex_lumi = TLatex()
+    latex_lumi.SetNDC()
+    latex_lumi.SetTextAlign(32)
+    latex_lumi.SetTextFont(42) #52
+    latex_lumi.SetTextSize(0.07)
+    latex_lumi.DrawLatex(0.88, 0.86, text_lumi)
+    
+    text_channel = getChannel(channel)
+    latex_channel = TLatex()
+    latex_channel.SetNDC()
+    latex_channel.SetTextAlign(12)
+    latex_channel.SetTextFont(72) #52
+    latex_channel.SetTextSize(0.06)
+    latex_channel.DrawLatex(0.16, 0.78, text_channel)
 
 def drawLine(x1, y1, x2, y2):
     line = TLine(x1, y1, x2, y2)
@@ -228,7 +302,7 @@ def fixData(hist, useGarwood=False, cutGrass=True, maxPoisson=False):
             if (hist.GetX()[i]>65 and hist.GetX()[i]<135 and hist.GetY()[i]==0): hist.SetPointError(i, hist.GetErrorXlow(i), hist.GetErrorXhigh(i), 1.e-6, 1.e-6, )
             hist.SetPoint(i, hist.GetX()[i], -1.e-4)
 
-def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, year, category, chi2, dof, output_file, signal_file=None, signal_workspace=None, signal_norm_factor=1000., n_parameters=""):
+def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, year, category, chi2, dof, output_file, signal_file=None, signal_workspace=None, signal_norm_factor=1000., n_parameters="", grid_plots=False):
     if signal_file is not None:
         assert signal_workspace is not None
     if signal_workspace is not None:
@@ -249,8 +323,8 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
 
     c = TCanvas("c_"+category, category, 900, 800)
     c.Divide(1, 2)
-    setTopPad(c.GetPad(1), RATIO)
-    setBotPad(c.GetPad(2), RATIO)
+    setTopPad(c.GetPad(1), RATIO, small_gap=True if grid_plots else False)
+    setBotPad(c.GetPad(2), RATIO, small_gap=True if grid_plots else False)
     c.cd(1)
     frame = X_mass.frame()
     setPadStyle(frame, 1.25, True)
@@ -341,7 +415,15 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     pulls = frame.pullHist(setData.GetName(), modelBkg.GetName(), True)  
     chi = frame.chiSquare(setData.GetName(), modelBkg.GetName(), True)
     #frame.GetYaxis().SetTitle("Events")
-    frame.GetYaxis().SetTitle("d#sigma/dm_{jj} (fb/GeV)")
+    if grid_plots and str(year)!="2016":
+        frame.GetYaxis().SetTitle("")
+        frame.GetYaxis().SetLabelSize(0.)
+    else:
+        if grid_plots:
+            axis_shift = " "
+        else:
+            axis_shift = ""
+        frame.GetYaxis().SetTitle("d#sigma/dm_{jj} (fb/GeV)"+axis_shift)
     #frame.GetYaxis().SetTitleOffset(1.05)
     frame.GetYaxis().SetTitleOffset(0.7)
     frame.GetYaxis().SetTitleSize(0.07)
@@ -349,54 +431,68 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     frame.Draw()
     frame.SetTitle("")
     
-    frame.SetMaximum(frame.GetMaximum()*conversion_factor*10)
+    if grid_plots:
+        frame.SetMaximum(210) ##TODO tune
+    else:
+        frame.SetMaximum(frame.GetMaximum()*conversion_factor*10)
     frame.SetMinimum(2*1e-5)
     c.GetPad(1).SetLogy()
 
-    #drawAnalysis(category)
-    drawRegion(category, True, large=True)
-    drawCMS(lumi, "", suppress_year=True if year=="run2" else False, large=True)
+    if grid_plots:
+        drawRegion_grid_plots(category, year, lumi)
 
-    leg = TLegend(0.55, 0.6, 0.925, 0.9)
-    leg.SetBorderSize(0)
-    leg.SetFillStyle(0) #1001
-    leg.SetFillColor(0)
+        text = TLatex()
+        text.SetTextColor(1)
+        text.SetTextFont(42)
+        text.SetTextAlign(11)
+        text.SetTextSize(0.07)
+        text.DrawLatexNDC(0.16, 0.12, "#splitline{%s par. fit}{#chi^{2}/ndf = %.1f/%.0f}" % (n_parameters, chi2, dof))
+        text.Draw("SAME")
 
-    # ridiculous workaround to retain control over marker in legend
-    fake_hist = ROOT.TH1D("fake_hist", "fake_hist", 10, 0, 1) 
-    fake_hist.SetMarkerStyle(8)
-    fake_hist.SetMarkerColor(1)
-    fake_hist.SetLineColor(1)
-    fake_hist.Draw("SAME, E1")
+    else:
+        drawRegion(category, True, large=True)
+        drawCMS(lumi, "", suppress_year=True if year=="run2" else False, large=True)
 
-    leg.AddEntry(fake_hist.GetName(), "Data", "PEL")
-    #leg.AddEntry(setData.GetName(), "Data", "PEL")
-    leg.AddEntry(modelBkg.GetName(), modelBkg.GetTitle() if n_parameters=="" else "Fit ({} par.)".format(n_parameters), "L")#.SetTextColor(629)
-    if signal_file is not None:
-        if signal_workspace=="bstar":
-            leg.AddEntry("b* Signal m2000", "b*, m=2000 GeV", "L")
-            leg.AddEntry("b* Signal m4000", "b*, m=4000 GeV", "L")
-            leg.AddEntry("b* Signal m6000", "b*, m=6000 GeV", "L")
-        else:
-            leg.AddEntry("Z' Signal m2000", "Z', m=2000 GeV", "L")
-            leg.AddEntry("Z' Signal m4000", "Z', m=4000 GeV", "L")
-            leg.AddEntry("Z' Signal m6000", "Z', m=6000 GeV", "L")
-    leg.SetY1(0.9-leg.GetNRows()*0.075)
-    leg.Draw()
+        leg = TLegend(0.55, 0.6, 0.925, 0.9)
+        leg.SetBorderSize(0)
+        leg.SetFillStyle(0) #1001
+        leg.SetFillColor(0)
 
-    latex = TLatex()
-    latex.SetNDC()
-    latex.SetTextSize(0.04)
-    latex.SetTextFont(42)
+        # ridiculous workaround to retain control over marker in legend
+        fake_hist = ROOT.TH1D("fake_hist", "fake_hist", 10, 0, 1) 
+        fake_hist.SetMarkerStyle(8)
+        fake_hist.SetMarkerColor(1)
+        fake_hist.SetLineColor(1)
+        fake_hist.Draw("SAME, E1")
 
-    text = TLatex()
-    text.SetTextColor(1)
-    text.SetTextFont(42)
-    text.SetTextAlign(11)
-    #text.SetTextSize(0.04)
-    text.SetTextSize(0.06)
-    text.DrawLatexNDC(0.15, 0.18, "#splitline{#splitline{#chi^{2}/ndf = %.1f/%.0f}{Wide PF-jets}}{#splitline{m_{jj} > 1.53 TeV, |#Delta#eta| < 1.1}{|#eta| < 2.5, p_{T} > 30 GeV}}" % (chi2, dof))
-    text.Draw("SAME")
+        leg.AddEntry(fake_hist.GetName(), "Data", "PEL")
+        #leg.AddEntry(setData.GetName(), "Data", "PEL")
+        leg.AddEntry(modelBkg.GetName(), modelBkg.GetTitle() if n_parameters=="" else "Fit ({} par.)".format(n_parameters), "L")#.SetTextColor(629)
+        if signal_file is not None:
+            if signal_workspace=="bstar":
+                leg.AddEntry("b* Signal m2000", "b*, m=2000 GeV", "L")
+                leg.AddEntry("b* Signal m4000", "b*, m=4000 GeV", "L")
+                leg.AddEntry("b* Signal m6000", "b*, m=6000 GeV", "L")
+            else:
+                leg.AddEntry("Z' Signal m2000", "Z', m=2000 GeV", "L")
+                leg.AddEntry("Z' Signal m4000", "Z', m=4000 GeV", "L")
+                leg.AddEntry("Z' Signal m6000", "Z', m=6000 GeV", "L")
+        leg.SetY1(0.9-leg.GetNRows()*0.075)
+        leg.Draw()
+
+        latex = TLatex()
+        latex.SetNDC()
+        latex.SetTextSize(0.04)
+        latex.SetTextFont(42)
+
+        text = TLatex()
+        text.SetTextColor(1)
+        text.SetTextFont(42)
+        text.SetTextAlign(11)
+        #text.SetTextSize(0.04)
+        text.SetTextSize(0.06)
+        text.DrawLatexNDC(0.15, 0.18, "#splitline{#splitline{#chi^{2}/ndf = %.1f/%.0f}{Wide PF-jets}}{#splitline{m_{jj} > 1.53 TeV, |#Delta#eta| < 1.1}{|#eta| < 2.5, p_{T} > 30 GeV}}" % (chi2, dof))
+        text.Draw("SAME")
 
     c.cd(2)
     frame_res = X_mass.frame()
@@ -405,13 +501,21 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     setBotStyle(frame_res, RATIO, False)
     frame_res.GetXaxis().SetRangeUser(m_min, m_max)
     frame_res.GetYaxis().SetRangeUser(-3, 3)
-    frame_res.GetYaxis().SetTitle("Pulls (#sigma)")
+    if grid_plots and str(year)!="2016":
+        frame_res.GetYaxis().SetTitle("")
+        frame_res.GetYaxis().SetLabelSize(0.)
+    else:
+        frame_res.GetYaxis().SetTitle("Pulls (#sigma)")
     frame_res.GetYaxis().SetTitleOffset(0.21)
     frame_res.GetXaxis().SetTitleOffset(0.9)
     frame_res.SetTitle("")
     frame_res.GetYaxis().SetTitleSize(0.2)   
-    frame_res.GetXaxis().SetTitleSize(0.2)
-    frame_res.GetXaxis().SetLabelSize(0.17)
+    if grid_plots and category!="bg":
+        frame_res.GetXaxis().SetLabelSize(0.)
+        frame_res.GetXaxis().SetTitleSize(0.)
+    else:
+        frame_res.GetXaxis().SetLabelSize(0.17)
+        frame_res.GetXaxis().SetTitleSize(0.2)
     frame_res.Draw()
     fixData(pulls, False, True, False)
 
@@ -447,6 +551,6 @@ else:
 bkg_function_plotter(X_mass, X_min, X_max, plot_binning, modelBkg, setData, options.year,
     options.category, options.chi, options.dof, options.output, signal_file=signal_file,
     signal_workspace=signal_workspace, signal_norm_factor=options.signal_norm_factor,
-    n_parameters=options.parameters)
+    n_parameters=options.parameters, grid_plots=options.grid_plots)
 
 
