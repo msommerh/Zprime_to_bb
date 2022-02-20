@@ -341,7 +341,7 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     frame_res.addPlotable(pulls, "P")
     setBotStyle(frame_res, RATIO, False)
     frame_res.GetXaxis().SetRangeUser(m_min, m_max)
-    frame_res.GetYaxis().SetRangeUser(-5, 5)
+    frame_res.GetYaxis().SetRangeUser(-3, 3)
     frame_res.GetYaxis().SetTitle("Pulls (#sigma)")
     frame_res.GetYaxis().SetTitleOffset(0.21)
     frame_res.GetXaxis().SetTitleOffset(0.9)
