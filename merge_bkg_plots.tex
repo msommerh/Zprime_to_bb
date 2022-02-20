@@ -1,0 +1,29 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage[paperwidth=30in,paperheight=35in]{geometry}
+\usepackage{booktabs}
+
+\setlength{\tabcolsep}{0pt}
+
+
+\begin{document}
+    \begin{table}
+        \centering
+            \begin{tabular}{ccc}
+                \multicolumn{3}{c}{\includegraphics[width=\linewidth, trim={1.31cm 0.16cm 1.99cm 0 },clip]{bstar_bkg_plots/legend_pad.pdf}}\\[-4pt]
+                    \includegraphics[trim={    0 1.4cm 0.95cm 0.85cm},clip]{plots/medium/data_2016/Bkg_new_bb.pdf}
+                & \includegraphics[trim={1.9cm 1.4cm 0.95cm 0.85cm},clip]{plots/medium/data_2017/Bkg_new_bb.pdf}
+                & \includegraphics[trim={1.9cm 1.4cm 0.95cm 0.85cm},clip]{plots/medium/data_2018/Bkg_new_bb.pdf}\\[-4pt]
+                    \includegraphics[trim={    0 1.4cm 0.95cm 0.85cm},clip]{plots/medium/data_2016/Bkg_new_bq.pdf}
+                & \includegraphics[trim={1.9cm 1.4cm 0.95cm 0.85cm},clip]{plots/medium/data_2017/Bkg_new_bq.pdf}
+                & \includegraphics[trim={1.9cm 1.4cm 0.95cm 0.85cm},clip]{plots/medium/data_2018/Bkg_new_bq.pdf}\\[-4pt]
+                    \includegraphics[trim={    0 1.4cm 0.95cm 0.85cm},clip]{plots/medium/data_2016/Bkg_new_mumu.pdf}
+                & \includegraphics[trim={1.9cm 1.4cm 0.95cm 0.85cm},clip]{plots/medium/data_2017/Bkg_new_mumu.pdf}
+                & \includegraphics[trim={1.9cm 1.4cm 0.95cm 0.85cm},clip]{plots/medium/data_2018/Bkg_new_mumu.pdf}\\[-4pt]
+                    \includegraphics[trim={    0   0 0.95cm 0.85cm},clip]{bstar_bkg_plots/bkg_bstar_2016.pdf}
+                & \includegraphics[trim={1.9cm   0 0.95cm 0.85cm},clip]{bstar_bkg_plots/bkg_bstar_2017.pdf}
+                & \includegraphics[trim={1.9cm   0 0.95cm 0.85cm},clip]{bstar_bkg_plots/bkg_bstar_2018.pdf}\\[-4pt]
+            \end{tabular}%
+    \end{table}
+\end{document}
