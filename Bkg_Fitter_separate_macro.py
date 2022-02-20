@@ -5,7 +5,7 @@
 ###
 
 import ROOT
-from ROOT import gStyle, gROOT, RooFit, RooAbsData, RooAbsReal
+from ROOT import gStyle, gROOT, RooFit, RooAbsData, RooAbsReal, RooDataHist, RooArgList
 from ROOT import TLatex, TCanvas, TLine, TFile, RooBinning, TLegend
 
 from array import array
@@ -49,6 +49,25 @@ def extract_workspace(input_file, workspace_name, model_name, variable_name, sig
     if not "Dijet" in variable.GetTitle():
         variable.SetTitle("Dijet Mass (GeV)")
     return data_obs, pdf, variable
+
+def extract_signal_histogram(input_file, hist_name, variable):
+    root_file = TFile.Open(input_file)
+    hist = root_file.Get(hist_name)
+    norm = hist.Integral()
+    data_hist = RooDataHist(hist_name+"_datahist", hist_name+"_datahist", RooArgList(variable), hist)
+    return norm, data_hist
+
+def adjust_bstar_shape(roohist, m_range):
+    points_to_remove = []
+    for i in range(roohist.GetN()):
+        roohist.SetPointEYlow(i, 0.)
+        roohist.SetPointEYhigh(i, 0.)
+        roohist.SetPointEXlow(i, 0.)
+        roohist.SetPointEXhigh(i, 0.)
+        if roohist.GetX()[i]<m_range[0] or roohist.GetX()[i]>m_range[1]:
+            points_to_remove.append(i)
+    for point in points_to_remove[::-1]: # remove backwards to preserve indexing
+        roohist.RemovePoint(point)
 
 def setTopPad(TopPad, r=4):
     TopPad.SetPad("TopPad", "", 0., 1./r, 1.0, 1.0, 0, -1, 0)
@@ -243,30 +262,63 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     modelBkg.plotOn(frame, RooFit.LineColor(2), RooFit.DrawOption("L"), RooFit.Normalization(conversion_factor, ROOT.RooAbsReal.Relative), RooFit.Name(modelBkg.GetName()))
 
     if signal_file is not None:
-        X_mass.setRange("signal_m2000" ,1600., 2200.)
-        X_mass.setRange("signal_m4000" ,3200., 4400.)
-        X_mass.setRange("signal_m6000" ,4800., 6600.)
+        m2000_range = (1600., 2200.)
+        m4000_range = (3200., 4400.)
+        m6000_range = (4800., 6600.)
+        X_mass.setRange("signal_m2000", *m2000_range)
+        X_mass.setRange("signal_m4000", *m4000_range)
+        X_mass.setRange("signal_m6000", *m6000_range)
 
-        signal_norm_2000, signal_pdf_m2000, _ = extract_workspace(signal_file, signal_workspace,
-            "ZpBB_{}_{}_M{}".format(year, category, 2000), options.variable_name, signal=True)
-        signal_pdf_m2000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2),
-            RooFit.LineColor(433), RooFit.DrawOption("L"), RooFit.Name("Z' Signal m2000"),
+        if signal_workspace == "bstar":
+            signal_norm_2000, signal_pdf_m2000 = extract_signal_histogram(signal_file, "h_qg_2000", X_mass)
+            signal_color = 616
+            signal_name = "b* Signal m2000"
+        else:
+            signal_norm_2000, signal_pdf_m2000, _ = extract_workspace(signal_file, signal_workspace,
+                "ZpBB_{}_{}_M{}".format(year, category, 2000), options.variable_name, signal=True)
+            signal_color = 433
+            signal_name = "Z' Signal m2000"
+
+        graphSignal = signal_pdf_m2000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2),
+            RooFit.LineColor(signal_color), RooFit.DrawOption("L"), RooFit.Name(signal_name),
             RooFit.Normalization(signal_norm_factor*signal_norm_2000*conversion_factor, RooAbsReal.NumEvent),
-            RooFit.Range("signal_m2000"))
+            RooFit.Range("signal_m2000"), RooFit.Binning(plot_binning))
+        if signal_workspace == "bstar":
+            adjust_bstar_shape(graphSignal.getHist(), m2000_range)
 
-        signal_norm_4000, signal_pdf_m4000, _ = extract_workspace(signal_file, signal_workspace,
+        if signal_workspace == "bstar":
+            signal_norm_4000, signal_pdf_m4000 = extract_signal_histogram(signal_file, "h_qg_4000", X_mass)
+            signal_color = 617
+            signal_name = "b* Signal m4000"
+        else:
+            signal_norm_4000, signal_pdf_m4000, _ = extract_workspace(signal_file, signal_workspace,
             "ZpBB_{}_{}_M{}".format(year, category, 4000), options.variable_name, signal=True)
-        signal_pdf_m4000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2),
-            RooFit.LineColor(434), RooFit.DrawOption("L"), RooFit.Name("Z' Signal m4000"),
-            RooFit.Normalization(signal_norm_factor*signal_norm_4000*conversion_factor, RooAbsReal.NumEvent),
-            RooFit.Range("signal_m4000"))
+            signal_color = 434
+            signal_name = "Z' Signal m4000"
 
-        signal_norm_6000, signal_pdf_m6000, _ = extract_workspace(signal_file, signal_workspace,
+        graphSignal = signal_pdf_m4000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2),
+            RooFit.LineColor(signal_color), RooFit.DrawOption("L"), RooFit.Name(signal_name),
+            RooFit.Normalization(signal_norm_factor*signal_norm_4000*conversion_factor, RooAbsReal.NumEvent),
+            RooFit.Range("signal_m4000"), RooFit.Binning(plot_binning))
+        if signal_workspace == "bstar":
+            adjust_bstar_shape(graphSignal.getHist(), m4000_range)
+
+        if signal_workspace == "bstar":
+            signal_norm_6000, signal_pdf_m6000 = extract_signal_histogram(signal_file, "h_qg_6000", X_mass)
+            signal_color = 618
+            signal_name = "b* Signal m6000"
+        else:
+            signal_norm_6000, signal_pdf_m6000, _ = extract_workspace(signal_file, signal_workspace,
             "ZpBB_{}_{}_M{}".format(year, category, 6000), options.variable_name, signal=True)
-        signal_pdf_m6000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2),
-            RooFit.LineColor(435), RooFit.DrawOption("L"), RooFit.Name("Z' Signal m6000"),
+            signal_color = 435
+            signal_name = "Z' Signal m6000"
+
+        graphSignal = signal_pdf_m6000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2),
+            RooFit.LineColor(signal_color), RooFit.DrawOption("L"), RooFit.Name(signal_name),
             RooFit.Normalization(signal_norm_factor*signal_norm_6000*conversion_factor, RooAbsReal.NumEvent),
-            RooFit.Range("signal_m6000"))
+            RooFit.Range("signal_m6000"), RooFit.Binning(plot_binning))
+        if signal_workspace == "bstar":
+            adjust_bstar_shape(graphSignal.getHist(), m6000_range)
 
     graphData = setData.plotOn(frame, RooFit.Binning(plot_binning),
         RooFit.XErrorSize(1), RooFit.DataError(RooAbsData.Poisson),
@@ -315,9 +367,14 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     #leg.AddEntry(setData.GetName(), "Data", "PEL")
     leg.AddEntry(modelBkg.GetName(), modelBkg.GetTitle() if n_parameters=="" else "Fit ({} par.)".format(n_parameters), "L")#.SetTextColor(629)
     if signal_file is not None:
-        leg.AddEntry("Z' Signal m2000", "Z', m=2000 GeV", "L")
-        leg.AddEntry("Z' Signal m4000", "Z', m=4000 GeV", "L")
-        leg.AddEntry("Z' Signal m6000", "Z', m=6000 GeV", "L")
+        if signal_workspace=="bstar":
+            leg.AddEntry("b* Signal m2000", "b*, m=2000 GeV", "L")
+            leg.AddEntry("b* Signal m4000", "b*, m=4000 GeV", "L")
+            leg.AddEntry("b* Signal m6000", "b*, m=6000 GeV", "L")
+        else:
+            leg.AddEntry("Z' Signal m2000", "Z', m=2000 GeV", "L")
+            leg.AddEntry("Z' Signal m4000", "Z', m=4000 GeV", "L")
+            leg.AddEntry("Z' Signal m6000", "Z', m=6000 GeV", "L")
     leg.SetY1(0.9-leg.GetNRows()*0.075)
     leg.Draw()
 
