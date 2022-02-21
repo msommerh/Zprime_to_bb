@@ -118,7 +118,7 @@ def drawRegion_grid_plots(channel, year, lumi):
     
 def draw_legend_pad(X_mass, setData, plot_binning, output_file):
  
-    c = TCanvas("c", "c", 2000, 300)
+    c = TCanvas("c", "c", 3000, 300)
  
     frame = X_mass.frame()
     setPadStyle(frame)
@@ -169,7 +169,7 @@ def draw_legend_pad(X_mass, setData, plot_binning, output_file):
     #drawRegion(category, True, large=True)
     drawCMS()
 
-    leg1 = TLegend(0.5, 0.1, 0.65, 0.78)
+    leg1 = TLegend(0.47, 0.1, 0.62, 0.78)
     leg1.SetBorderSize(0)
     leg1.SetFillStyle(0) #1001
     leg1.SetFillColor(0)
@@ -186,7 +186,7 @@ def draw_legend_pad(X_mass, setData, plot_binning, output_file):
     leg1.SetY1(0.78-leg1.GetNRows()*0.22)
     leg1.Draw()
 
-    leg2 = TLegend(0.6, 0.1, 0.75, 0.78)
+    leg2 = TLegend(0.58, 0.1, 0.73, 0.78)
     leg2.SetBorderSize(0)
     leg2.SetFillStyle(0) #1001
     leg2.SetFillColor(0)
@@ -196,7 +196,7 @@ def draw_legend_pad(X_mass, setData, plot_binning, output_file):
     leg2.SetY1(0.78-leg2.GetNRows()*0.22)
     leg2.Draw()
 
-    leg3 = TLegend(0.75, 0.1, 0.9, 0.78)
+    leg3 = TLegend(0.74, 0.1, 0.89, 0.78)
     leg3.SetBorderSize(0)
     leg3.SetFillStyle(0) #1001
     leg3.SetFillColor(0)
@@ -216,7 +216,7 @@ def draw_legend_pad(X_mass, setData, plot_binning, output_file):
     text.SetTextFont(42)
     text.SetTextAlign(12)
     text.SetTextSize(0.15)
-    text.DrawLatexNDC(0.25, 0.42, "#splitline{Wide PF-jets}{#splitline{m_{jj} > 1.53 TeV, |#Delta#eta| < 1.1}{|#eta| < 2.5, p_{T} > 30 GeV}}")
+    text.DrawLatexNDC(0.27, 0.42, "#splitline{Wide PF-jets}{#splitline{m_{jj} > 1.53 TeV, |#Delta#eta| < 1.1}{|#eta| < 2.5, p_{T} > 30 GeV}}")
     text.Draw("SAME")
 
     c.SaveAs(output_file)

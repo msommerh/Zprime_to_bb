@@ -420,12 +420,12 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
         frame.GetYaxis().SetLabelSize(0.)
     else:
         if grid_plots:
-            axis_shift = " "
+            axis_shift = "  "
         else:
             axis_shift = ""
         frame.GetYaxis().SetTitle("d#sigma/dm_{jj} (fb/GeV)"+axis_shift)
     #frame.GetYaxis().SetTitleOffset(1.05)
-    frame.GetYaxis().SetTitleOffset(0.7)
+    frame.GetYaxis().SetTitleOffset(0.6)
     frame.GetYaxis().SetTitleSize(0.07)
     #frame.GetYaxis().SetLabelSize(0.045)
     frame.Draw()
@@ -506,7 +506,7 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
         frame_res.GetYaxis().SetLabelSize(0.)
     else:
         frame_res.GetYaxis().SetTitle("Pulls (#sigma)")
-    frame_res.GetYaxis().SetTitleOffset(0.21)
+    frame_res.GetYaxis().SetTitleOffset(0.225)
     frame_res.GetXaxis().SetTitleOffset(0.9)
     frame_res.SetTitle("")
     frame_res.GetYaxis().SetTitleSize(0.2)   
