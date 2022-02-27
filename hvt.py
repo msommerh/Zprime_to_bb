@@ -28,7 +28,7 @@ if options.bash: gROOT.SetBatch(True)
 gStyle.SetHatchesSpacing(1)
 gStyle.SetHatchesLineWidth(2) # default is 1
 
-LUMI = 137200
+LUMI = 137600
 ZpToBB = 0.1293
 
 # model B: g = 0.646879, cH = 0.976246, cF = 1.02433 
@@ -135,8 +135,8 @@ def hvt(benchmark = ['B3', 'A1']):
     mg.GetYaxis().SetNdivisions(505)
 #    hxs[3500].Draw("CONTZ")
    
-    #drawCMS(LUMI, "", False) 
-    drawCMS(LUMI, "Preliminary", False)
+    drawCMS(LUMI, "", False, suppress_year=True) 
+    #drawCMS(LUMI, "Preliminary", False)
 #    drawAnalysis("XVH"+category, False)
 #    latex = TLatex()
 #    latex.SetNDC()
