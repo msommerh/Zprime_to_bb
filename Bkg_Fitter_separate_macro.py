@@ -7,6 +7,7 @@
 import ROOT
 from ROOT import gStyle, gROOT, RooFit, RooAbsData, RooAbsReal, RooDataHist, RooArgList
 from ROOT import TLatex, TCanvas, TLine, TFile, RooBinning, TLegend
+import json
 
 from array import array
 import optparse
@@ -411,6 +412,15 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
         roohist.SetPoint(i, roohist.GetX()[i], conversion_factor*roohist.GetY()[i])
         roohist.SetPointEYlow(i, conversion_factor*roohist.GetEYlow()[i])
         roohist.SetPointEYhigh(i, conversion_factor*roohist.GetEYhigh()[i])
+
+    # saving for HEPdata
+    data_values = {"x":[], "y":[], "dy":[]}
+    for i in range(roohist.GetN()):
+        data_values["x"].append(roohist.GetX()[i])
+        data_values["y"].append(roohist.GetY()[i])
+        data_values["dy"].append(roohist.GetEYlow()[i])
+    with open(output_file.replace(".pdf", ".json"), "w") as json_file:
+        json.dump(data_values, json_file)
 
     pulls = frame.pullHist(setData.GetName(), modelBkg.GetName(), True)  
     chi = frame.chiSquare(setData.GetName(), modelBkg.GetName(), True)
