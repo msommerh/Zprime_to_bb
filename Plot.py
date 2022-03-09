@@ -56,6 +56,10 @@ gStyle.SetOptStat(0)
 
 BTAGGING    = options.btagging
 NTUPLEDIR   = global_paths.SKIMMEDDIR
+OUTDIR      = "./"
+## FIXME temorary FIXME
+#NTUPLEDIR   = "/eos/home-j/jkiesele/DeepNtuples/Zbb/"
+#OUTDIR       = "/eos/user/m/msommerh/jan/"
 ACCEPTANCEDIR = "acceptance/"
 TRIGGERDIR = global_paths.SKIMMEDDIR+"TriggerStudy"
 SIGNAL      = 1 # Signal magnification factor
@@ -405,8 +409,8 @@ def plot(var, cut, year, norm=False, fraction_above=0):
         suffix = ''
         if "b" in channel or 'mu' in channel: suffix+="_"+BTAGGING
         if ADDSELECTION: suffix+="_"+options.selection
-        c1.Print("plots/"+channel+"/"+varname.replace("/","_")+"_"+year+suffix+".png")
-        c1.Print("plots/"+channel+"/"+varname.replace("/","_")+"_"+year+suffix+".pdf")
+        c1.Print(OUTDIR+"plots/"+channel+"/"+varname.replace("/","_")+"_"+year+suffix+".png")
+        c1.Print(OUTDIR+"plots/"+channel+"/"+varname.replace("/","_")+"_"+year+suffix+".pdf")
     
     # Print table
     if not SIGNAL_ONLY:
@@ -457,6 +461,7 @@ def efficiency(year):
             if SEPARATE: nevtSign_add[m] = 0.
             for j, ss in enumerate(sample[signName]['files']):
                 if year=="run2" or year in ss:
+                    print "opening " + NTUPLEDIR + ss + ".root"
                     sfile = TFile(NTUPLEDIR + ss + ".root", "READ")
                     ngenSign[m] += sfile.Get("Events").GetBinContent(1) 
                     treeSign[m] = sfile.Get("tree")
@@ -504,13 +509,13 @@ def efficiency(year):
         eff[channel].SetMarkerColor(color[channel])
         eff[channel].SetMarkerStyle(20)
         eff[channel].SetLineColor(color[channel])
-        eff[channel].SetLineWidth(2)
+        eff[channel].SetLineWidth(3)
 
         if SEPARATE:
             eff_add[channel].SetMarkerColor(color[channel]+color_shift[channel])
             eff_add[channel].SetMarkerStyle(21)
             eff_add[channel].SetLineColor(color[channel]+color_shift[channel])
-            eff_add[channel].SetLineWidth(2)
+            eff_add[channel].SetLineWidth(3)
             eff_add[channel].SetLineStyle(7)
 
         if channel=='qq' or channel=='none': eff[channel].SetLineStyle(3)
@@ -522,13 +527,13 @@ def efficiency(year):
     eff["sum"] = TGraphErrors(n)
     eff["sum"].SetMarkerStyle(24)
     eff["sum"].SetMarkerColor(1)
-    eff["sum"].SetLineWidth(2)
+    eff["sum"].SetLineWidth(3)
     
     if SEPARATE:
         eff_add["sum"] = TGraphErrors(n)
         eff_add["sum"].SetMarkerStyle(25)
         eff_add["sum"].SetMarkerColor(1)
-        eff_add["sum"].SetLineWidth(2)
+        eff_add["sum"].SetLineWidth(3)
         eff_add["sum"].SetLineStyle(7)
 
     for i in range(n):
@@ -558,6 +563,7 @@ def efficiency(year):
         legS.SetBorderSize(0)
         legS.SetFillStyle(0) #1001
         legS.SetFillColor(0)
+        legS.SetMargin(0.15)
         if SEPARATE: 
             leg.SetY1(leg.GetY2()-len([x for x in channels if eff[x].GetN() > 0])*0.045)
         else:
@@ -573,7 +579,8 @@ def efficiency(year):
         leg.SetBorderSize(0)
         leg.SetFillStyle(0) #1001
         leg.SetFillColor(0)
-        leg.SetTextSize(0.039)
+        leg.SetTextSize(0.043)
+        leg.SetMargin(0.15)
         ## same vertical order as in the low mass region as prescribed by CCLE
         leg.AddEntry(eff[channels[0]], "Preselection acceptance", "pl")
         leg.AddEntry(eff['sum'], "Total b tag efficiency (1 b tag + 2 b tag + 1 #mu)", "pl")
@@ -601,14 +608,16 @@ def efficiency(year):
         eff_add["sum"].SetMinimum(0.)
         eff_add["sum"].SetMaximum(1.)
 
-    eff["sum"].GetXaxis().SetTitleSize(0.050)
-    eff["sum"].GetYaxis().SetTitleSize(0.050)
+    eff["sum"].GetXaxis().SetTitleSize(0.055)
+    eff["sum"].GetYaxis().SetTitleSize(0.055)
     #eff["sum"].GetYaxis().SetTitleOffset(1.1)
-    eff["sum"].GetYaxis().SetTitleOffset(1.05)
+    eff["sum"].GetYaxis().SetTitleOffset(0.85)
     #eff["sum"].GetXaxis().SetTitleOffset(1.05)
     eff["sum"].GetXaxis().SetTitleOffset(1.03)
     eff["sum"].GetXaxis().SetRangeUser(1800, 8000)
+    eff["sum"].GetYaxis().SetRangeUser(0,0.85)
     c1.SetTopMargin(0.05)
+    c1.SetBottomMargin(0.12)
     c1.GetPad(0).SetTicks(1, 1)
     drawCMS(-1, "Simulation", year='')
     #drawCMS(-1, "Simulation Preliminary", year='')

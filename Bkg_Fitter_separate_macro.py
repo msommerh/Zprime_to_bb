@@ -232,7 +232,7 @@ def drawRegion(channel, left=False, large=False):
         latex.SetTextAlign(22)
         latex.DrawLatex(0.5, 0.79, text)
 
-def drawRegion_grid_plots(channel, year, lumi):
+def drawRegion_grid_plots(channel, year, lumi, center=False):
     text_year = str(year)
     latex_year = TLatex()
     latex_year.SetNDC()
@@ -258,10 +258,14 @@ def drawRegion_grid_plots(channel, year, lumi):
     text_channel = getChannel(channel)
     latex_channel = TLatex()
     latex_channel.SetNDC()
-    latex_channel.SetTextAlign(12)
-    latex_channel.SetTextFont(72) #52
-    latex_channel.SetTextSize(0.06)
-    latex_channel.DrawLatex(0.16, 0.78, text_channel)
+    latex_channel.SetTextFont(62) #52
+    latex_channel.SetTextSize(0.07)
+    if center:
+        latex_channel.SetTextAlign(22)
+        latex_channel.DrawLatex(0.5, 0.85, text_channel)
+    else:
+        latex_channel.SetTextAlign(12)
+        latex_channel.DrawLatex(0.16, 0.78, text_channel)
 
 def drawLine(x1, y1, x2, y2):
     line = TLine(x1, y1, x2, y2)
@@ -334,7 +338,7 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     graphData = setData.plotOn(frame, RooFit.Binning(plot_binning), RooFit.Invisible())
     conversion_factor = 1000/(lumi*graphData.getHist().getNominalBinWidth())
 
-    modelBkg.plotOn(frame, RooFit.LineColor(2), RooFit.DrawOption("L"), RooFit.Normalization(conversion_factor, ROOT.RooAbsReal.Relative), RooFit.Name(modelBkg.GetName()))
+    modelBkg.plotOn(frame, RooFit.LineColor(2), RooFit.LineWidth(4), RooFit.DrawOption("L"), RooFit.Normalization(conversion_factor, ROOT.RooAbsReal.Relative), RooFit.Name(modelBkg.GetName()))
 
     if signal_file is not None:
         m2000_range = (1600., 2200.)
@@ -346,12 +350,14 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
 
         if signal_workspace == "bstar":
             signal_norm_2000, signal_pdf_m2000 = extract_signal_histogram(signal_file, "h_qg_2000", X_mass)
-            signal_color = 616
+            signal_color = 607
+            signal_linestyle = 2
             signal_name = "b* Signal m2000"
         else:
             signal_norm_2000, signal_pdf_m2000, _ = extract_workspace(signal_file, signal_workspace,
                 "ZpBB_{}_{}_M{}".format(year, category, 2000), options.variable_name, signal=True)
-            signal_color = 433
+            signal_color = 424
+            signal_linestyle = 1
             signal_name = "Z' Signal m2000"
 
             # correcting height of hist mass point for Z'
@@ -360,7 +366,7 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
             elif category=="mumu":
                 signal_norm_2000 *= 3.
 
-        graphSignal = signal_pdf_m2000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2),
+        graphSignal = signal_pdf_m2000.plotOn(frame, RooFit.LineStyle(signal_linestyle), RooFit.LineWidth(4),
             RooFit.LineColor(signal_color), RooFit.DrawOption("L"), RooFit.Name(signal_name),
             RooFit.Normalization(signal_norm_factor*signal_norm_2000*conversion_factor, RooAbsReal.NumEvent),
             RooFit.Range("signal_m2000"), RooFit.Binning(plot_binning))
@@ -377,7 +383,7 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
             signal_color = 434
             signal_name = "Z' Signal m4000"
 
-        graphSignal = signal_pdf_m4000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2),
+        graphSignal = signal_pdf_m4000.plotOn(frame, RooFit.LineStyle(signal_linestyle), RooFit.LineWidth(4),
             RooFit.LineColor(signal_color), RooFit.DrawOption("L"), RooFit.Name(signal_name),
             RooFit.Normalization(signal_norm_factor*signal_norm_4000*conversion_factor, RooAbsReal.NumEvent),
             RooFit.Range("signal_m4000"), RooFit.Binning(plot_binning))
@@ -386,15 +392,15 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
 
         if signal_workspace == "bstar":
             signal_norm_6000, signal_pdf_m6000 = extract_signal_histogram(signal_file, "h_qg_6000", X_mass)
-            signal_color = 618
+            signal_color = 619
             signal_name = "b* Signal m6000"
         else:
             signal_norm_6000, signal_pdf_m6000, _ = extract_workspace(signal_file, signal_workspace,
             "ZpBB_{}_{}_M{}".format(year, category, 6000), options.variable_name, signal=True)
-            signal_color = 435
+            signal_color = 436
             signal_name = "Z' Signal m6000"
 
-        graphSignal = signal_pdf_m6000.plotOn(frame, RooFit.LineStyle(1), RooFit.LineWidth(2),
+        graphSignal = signal_pdf_m6000.plotOn(frame, RooFit.LineStyle(signal_linestyle), RooFit.LineWidth(4),
             RooFit.LineColor(signal_color), RooFit.DrawOption("L"), RooFit.Name(signal_name),
             RooFit.Normalization(signal_norm_factor*signal_norm_6000*conversion_factor, RooAbsReal.NumEvent),
             RooFit.Range("signal_m6000"), RooFit.Binning(plot_binning))
@@ -435,9 +441,9 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
             axis_shift = ""
         frame.GetYaxis().SetTitle("d#sigma/dm_{jj} (fb/GeV)"+axis_shift)
     #frame.GetYaxis().SetTitleOffset(1.05)
-    frame.GetYaxis().SetTitleOffset(0.6)
+    frame.GetYaxis().SetTitleOffset(0.75)
     frame.GetYaxis().SetTitleSize(0.07)
-    #frame.GetYaxis().SetLabelSize(0.045)
+    frame.GetYaxis().SetLabelSize(0.055)
     frame.Draw()
     frame.SetTitle("")
     
@@ -449,7 +455,7 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
     c.GetPad(1).SetLogy()
 
     if grid_plots:
-        drawRegion_grid_plots(category, year, lumi)
+        drawRegion_grid_plots(category, year, lumi, center=True)
 
         text = TLatex()
         text.SetTextColor(1)
@@ -515,8 +521,10 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
         frame_res.GetYaxis().SetTitle("")
         frame_res.GetYaxis().SetLabelSize(0.)
     else:
-        frame_res.GetYaxis().SetTitle("Pulls (#sigma)")
-    frame_res.GetYaxis().SetTitleOffset(0.225)
+        frame_res.GetYaxis().SetTitle("Pulls  ")
+        frame_res.GetYaxis().SetLabelSize(0.16)
+        frame_res.GetYaxis().SetLabelOffset(0.011)
+    frame_res.GetYaxis().SetTitleOffset(0.29)
     frame_res.GetXaxis().SetTitleOffset(0.9)
     frame_res.SetTitle("")
     frame_res.GetYaxis().SetTitleSize(0.2)   
