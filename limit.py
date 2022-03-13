@@ -8,6 +8,7 @@ import os, sys, getopt
 import copy
 import time
 import math
+import json
 from array import array
 from ROOT import gROOT, gRandom
 from ROOT import TFile, TTree, TCut, TH1F, TH2F, TGraph, TGraph2D, TGraphErrors, TGraphAsymmErrors
@@ -49,9 +50,13 @@ gStyle.SetOptStat(0)
 
 gROOT.SetBatch(True)
 
-luminosities = {'2016':35920., '2017':41530., '2018':59740., 'run2':137190.}
+#luminosities = {'2016':35920., '2017':41530., '2018':59740., 'run2':137190.}
+luminosities = {'2016':36330., '2017':41530., '2018':59740., 'run2':137600.}
 
 #HTOBB       = 0.5824#0.577
+MAIN_DIR    = "./"
+## FIXME temporary FIXME
+#MAIN_DIR    = "/eos/user/m/msommerh/jan/"
 ZPTOBB      = 1.
 LUMI        = 35867
 MAXIMUM     = {'XVHsl' : 4500., 'XWHsl' : 4500., 'XZHsl' : 3500., 'bb':100}
@@ -96,8 +101,8 @@ ACCEPTANCE = {}
 for s in range(500,9000+1,100): ACCEPTANCE[s] = 0.405 ##FIXME could include mass dependent exact value FIXME
 
 theoryLabel = {'B3' : "HVT model B (g_{V}=3)", 'A1' : "HVT model A (g_{V}=1)", "SSM" : "SSM Z'"}
-theoryLineColor = {'B3' : 629, 'A1' : 616-3, "SSM" : 602}
-theoryFillColor = {'B3' : 625, 'A1' : 616-7, 'SSM' : 856}
+theoryLineColor = {'B3' : 616-3, 'A1' : 629, "SSM" : 602}
+theoryFillColor = {'B3' : 616-7, 'A1' : 625, 'SSM' : 856}
 theoryFillStyle = {'B3' : 3002, 'A1' : 3013, 'SSM' : 3359}
 
 
@@ -146,9 +151,9 @@ def limit():
     if INCLUDEACC: suffix+="_acc"
 
     if SY:
-        filename = "./combine/limits/" + BTAGGING + "/combined_run2/"+ YEAR + "_M%d.txt"
+         filename = MAIN_DIR+"combine/limits/" + BTAGGING + "/combined_run2/"+ YEAR + "_M%d.txt"
     else:
-        filename = "./combine/limits/" + BTAGGING + "/"+ YEAR + "_M%d.txt"
+        filename = MAIN_DIR+"/combine/limits/" + BTAGGING + "/"+ YEAR + "_M%d.txt"
     if CATEGORY!="":
         if SY:
             if CATEGORY=='bb_bq':
@@ -172,6 +177,7 @@ def limit():
     pVal = TGraph()
     Best = TGraphAsymmErrors()
     Theory = {}
+    json_output = {"obs":{}, "exp":{}, "exp_1up":{}, "exp_1down":{}, "exp_2up":{}, "exp_2down":{}}
 
     for i, m in enumerate(mass):
         if not m in val:
@@ -195,7 +201,15 @@ def limit():
         if len(val[m]) > 8: Best.SetPoint(n, m, val[m][8])
         if len(val[m]) > 10: Best.SetPointError(n, 0., 0., abs(val[m][9]), val[m][10])
         #print "m =", m, " --> Xsec*Br =", val[m][3]
+        json_output["obs"][m] = val[m][0]*multF*acc_factor
+        json_output["exp"][m] = val[m][3]*multF*acc_factor
+        json_output["exp_1up"][m] = val[m][4]*multF*acc_factor
+        json_output["exp_1down"][m] = val[m][2]*multF*acc_factor
+        json_output["exp_2up"][m] = val[m][5]*multF*acc_factor
+        json_output["exp_2down"][m] = val[m][1]*multF*acc_factor
 
+    with open(MAIN_DIR+"combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".json", "w") as fp:
+        json.dump(json_output, fp)
 
     for t in THEORY:
         Theory[t] = TGraphAsymmErrors()
@@ -328,13 +342,14 @@ def limit():
     drawRegion("", True)
     #drawCMS(LUMI, "Simulation Preliminary") #Preliminary
     if CATEGORY=="": 
-        drawCMS(LUMI, "", suppress_year=True)
+        drawCMS(LUMI, "", suppress_year=True, CMS_pos=0.17)
+        #drawCMS(LUMI, "Internal", suppress_year=True)
         #drawCMS(LUMI, "Preliminary", suppress_year=True)
         #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
         #drawCMS(LUMI, "Preliminary")
         #drawCMS(LUMI, "", suppressCMS=True)
     else:
-        drawCMS(LUMI, CAT_LABELS[CATEGORY], suppress_year=True)
+        drawCMS(LUMI, CAT_LABELS[CATEGORY], suppress_year=True, CMS_pos=0.17)
         #drawCMS(LUMI, "Work in Progress, "+CAT_LABELS[CATEGORY], suppressCMS=True)       
         #drawCMS(LUMI, "Preliminary   "+CAT_LABELS[CATEGORY])       
         #drawCMS(LUMI, CAT_LABELS[CATEGORY], suppressCMS=True)       
@@ -375,11 +390,11 @@ def limit():
     if not gROOT.IsBatch(): raw_input("Press Enter to continue...")
 
     if NO_BR:
-        c1.Print("combine/plotsLimit/ExclusionLimits/no_br_"+YEAR+suffix+".png")
-        c1.Print("combine/plotsLimit/ExclusionLimits/no_br_"+YEAR+suffix+".pdf")
+        c1.Print(MAIN_DIR+"combine/plotsLimit/ExclusionLimits/no_br_"+YEAR+suffix+".png")
+        c1.Print(MAIN_DIR+"combine/plotsLimit/ExclusionLimits/no_br_"+YEAR+suffix+".pdf")
     else: 
-        c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".png")
-        c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".pdf")
+        c1.Print(MAIN_DIR+"combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".png")
+        c1.Print(MAIN_DIR+"combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".pdf")
     #if 'ah' in channel or 'sl' in channel:
     #    c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".C")
     #    c1.Print("combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".root")
@@ -408,8 +423,8 @@ def limit():
     drawCMS(LUMI, "Preliminary")
     #drawCMS(LUMI, "Work in Progress", suppressCMS=True)
     drawAnalysis(channel[1:3])
-    c2.Print("combine/plotsLimit/Significance/"+YEAR+suffix+".png")
-    c2.Print("combine/plotsLimit/Significance/"+YEAR+suffix+".pdf")
+    c2.Print(MAIN_DIR+"combine/plotsLimit/Significance/"+YEAR+suffix+".png")
+    c2.Print(MAIN_DIR+"combine/plotsLimit/Significance/"+YEAR+suffix+".pdf")
 #    c2.Print("plotsLimit/Significance/"+YEAR+suffix+".root")
 #    c2.Print("plotsLimit/Significance/"+YEAR+suffix+".C")
 

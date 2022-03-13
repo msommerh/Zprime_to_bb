@@ -360,11 +360,11 @@ def bkg_function_plotter(X_mass, m_min, m_max, plot_binning, modelBkg, setData, 
             signal_linestyle = 1
             signal_name = "Z' Signal m2000"
 
-            # correcting height of hist mass point for Z'
-            if category=="bb":
-                signal_norm_2000 *= 0.3
-            elif category=="mumu":
-                signal_norm_2000 *= 3.
+            # # correcting height of hist mass point for Z'
+            # if category=="bb":
+            #     signal_norm_2000 *= 0.3
+            # elif category=="mumu":
+            #     signal_norm_2000 *= 3.
 
         graphSignal = signal_pdf_m2000.plotOn(frame, RooFit.LineStyle(signal_linestyle), RooFit.LineWidth(4),
             RooFit.LineColor(signal_color), RooFit.DrawOption("L"), RooFit.Name(signal_name),

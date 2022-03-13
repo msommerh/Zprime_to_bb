@@ -575,15 +575,16 @@ def efficiency(year):
                 if SEPARATE: leg.AddEntry(eff_add[channel], getChannel(channel)+" no "+VETO+"-veto", "pl") 
         if SEPARATE: legS.AddEntry(eff_add['sum'], "Total b tag efficiency, no "+VETO+"-veto", "pl")
     else:
-        leg = TLegend(0.25, 0.48, 0.87, 0.85)
+        #leg = TLegend(0.25, 0.48, 0.87, 0.85)
+        leg = TLegend(0.45, 0.63, 0.9, 0.93)
         leg.SetBorderSize(0)
         leg.SetFillStyle(0) #1001
         leg.SetFillColor(0)
-        leg.SetTextSize(0.043)
+        leg.SetTextSize(0.045)
         leg.SetMargin(0.15)
         ## same vertical order as in the low mass region as prescribed by CCLE
-        leg.AddEntry(eff[channels[0]], "Preselection acceptance", "pl")
-        leg.AddEntry(eff['sum'], "Total b tag efficiency (1 b tag + 2 b tag + 1 #mu)", "pl")
+        leg.AddEntry(eff[channels[0]], "Acceptance prior to b tagging", "pl")
+        leg.AddEntry(eff['sum'], "Total (1 b tag + 2 b tag + 1 #mu)", "pl")
         for i, channel in enumerate(channels):
             if i==0: continue
             if eff[channel].GetN() > 0: 
@@ -615,7 +616,7 @@ def efficiency(year):
     #eff["sum"].GetXaxis().SetTitleOffset(1.05)
     eff["sum"].GetXaxis().SetTitleOffset(1.03)
     eff["sum"].GetXaxis().SetRangeUser(1800, 8000)
-    eff["sum"].GetYaxis().SetRangeUser(0,0.85)
+    eff["sum"].GetYaxis().SetRangeUser(0,0.6)
     c1.SetTopMargin(0.05)
     c1.SetBottomMargin(0.12)
     c1.GetPad(0).SetTicks(1, 1)

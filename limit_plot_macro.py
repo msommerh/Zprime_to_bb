@@ -41,13 +41,13 @@ def drawCMS(lumi, text, onTop=False, year='', suppressCMS=False, suppress_year=F
             if year=="run2": year="RunII"
             latex.DrawLatex(0.24, 0.99, year)
         elif float(lumi) > 0:
-            if lumi==35920.:
+            if lumi==35920. or lumi==36330.:
                 year = '2016'
             elif lumi==41530.:
                 year = '2017'
             elif lumi==59740.:
                 year = '2018'
-            elif lumi==137190.:
+            elif lumi==137190. or lumi==137600.:
                 year = 'RunII'
             if not suppress_year:
                 latex.DrawLatex(0.24, 0.99, year)
@@ -58,7 +58,7 @@ def drawCMS(lumi, text, onTop=False, year='', suppressCMS=False, suppress_year=F
     latex.SetTextFont(62)
     latex.SetTextSize(0.05 if len(text)>0 else 0.06)
     if not suppressCMS:
-        if not onTop: latex.DrawLatex(0.15, 0.88 if len(text)>0 else 0.85, "CMS")
+        if not onTop: latex.DrawLatex(0.17, 0.88 if len(text)>0 else 0.85, "CMS")
         else: latex.DrawLatex(0.24, 0.9925, "CMS")
     latex.SetTextSize(0.04)
     latex.SetTextFont(52)
@@ -87,14 +87,19 @@ def draw():
         Exp2s.SetPointError(n, 0., 0., INPUT["expected_values"][m]-INPUT["expected_minus2sigma_values"][m], INPUT["expected_plus2sigma_values"][m]-INPUT["expected_values"][m])
 
     for t in INPUT["theory_order"]:
-        Theory[t] = TGraphAsymmErrors()
+        if INPUT["theory_fill_style"][t] == 0:
+            Theory[t] = TGraph()
+        else:
+            Theory[t] = TGraphAsymmErrors()
         for m in sorted(INPUT["theory_values"][t].keys()):
             n = Theory[t].GetN()
             Theory[t].SetPoint(n, float(m), INPUT["theory_values"][t][m])
-            Theory[t].SetPointError(n, 0., 0., INPUT["theory_uncert_down"][t][m], INPUT["theory_uncert_up"][t][m])
+            if INPUT["theory_fill_style"][t] != 0:
+                Theory[t].SetPointError(n, 0., 0., INPUT["theory_uncert_down"][t][m], INPUT["theory_uncert_up"][t][m])
+                Theory[t].SetFillColor(INPUT["theory_fill_color"][t])
+                Theory[t].SetFillStyle(INPUT["theory_fill_style"][t])
+            Theory[t].SetLineStyle(INPUT["theory_line_style"][t])
             Theory[t].SetLineColor(INPUT["theory_line_color"][t])
-            Theory[t].SetFillColor(INPUT["theory_fill_color"][t])
-            Theory[t].SetFillStyle(INPUT["theory_fill_style"][t])
             Theory[t].SetLineWidth(2)
 
     Exp2s.SetLineWidth(2)
@@ -141,7 +146,8 @@ def draw():
     Exp2s.GetYaxis().SetNoExponent(True)
     Exp2s.GetYaxis().SetRangeUser(INPUT["Y_range"][0], INPUT["Y_range"][1])
     Exp2s.GetXaxis().SetRangeUser(INPUT["X_range"][0], INPUT["X_range"][1])
-    drawCMS(137190., "", suppress_year=True) ##!!##
+    #drawCMS(137190., "", suppress_year=True) ##!!##
+    drawCMS(137600., "", suppress_year=True) ##!!##
 
     # legend
     top = 0.9

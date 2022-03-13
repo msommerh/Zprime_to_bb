@@ -517,7 +517,7 @@ def getChannel(channel):
     
     return text
 
-def drawCMS(lumi, text, onTop=False, year='', suppressCMS=False, suppress_year=False):
+def drawCMS(lumi, text, onTop=False, year='', suppressCMS=False, suppress_year=False, CMS_pos=0.15):
     latex = TLatex()
     latex.SetNDC()
     latex.SetTextSize(0.045)
@@ -532,13 +532,13 @@ def drawCMS(lumi, text, onTop=False, year='', suppressCMS=False, suppress_year=F
             if year=="run2": year="RunII"
             latex.DrawLatex(0.24, 0.99, year) 
         elif float(lumi) > 0:
-            if lumi==35920.:
+            if lumi==35920. or lumi==36330.:
                 year = '2016'
             elif lumi==41530.:
                 year = '2017'
             elif lumi==59740.:
                 year = '2018'
-            elif lumi==137190.:
+            elif lumi==137190. or lumi==137600.:
                 year = 'RunII'
             if not suppress_year:
                 latex.DrawLatex(0.24, 0.99, year)
@@ -550,7 +550,7 @@ def drawCMS(lumi, text, onTop=False, year='', suppressCMS=False, suppress_year=F
     latex.SetTextFont(62)
     latex.SetTextSize(0.05 if len(text)>0 else 0.06)
     if not suppressCMS:
-        if not onTop: latex.DrawLatex(0.15, 0.88 if len(text)>0 else 0.85, "CMS")
+        if not onTop: latex.DrawLatex(CMS_pos, 0.88 if len(text)>0 else 0.85, "CMS")
         else: latex.DrawLatex(0.24, 0.9925, "CMS")
     latex.SetTextSize(0.04)
     latex.SetTextFont(52)
