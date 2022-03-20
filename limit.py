@@ -43,6 +43,7 @@ parser.add_option("-c", "--category", action="store", type="string", dest="categ
 parser.add_option("-B", "--blind", action="store_true", default=False, dest="blind")
 parser.add_option("-b", "--btagging", action="store", type="string", dest="btagging", default="medium")
 parser.add_option("-A", "--Acceptance", action="store_true", default=False, dest="Acceptance")
+parser.add_option("-E", "--Efficiency", action="store_true", default=False, dest="Efficiency")
 parser.add_option("", "--no_BR", action="store_true", default=False, dest="no_BR")
 (options, args) = parser.parse_args()
  
@@ -65,7 +66,10 @@ YEAR        = options.year
 ISMC        = options.isMC
 CATEGORY    = options.category
 INCLUDEACC  = options.Acceptance
+INCLUDEEFF  = options.Efficiency
 NO_BR       = options.no_BR
+
+assert not (INCLUDEACC and INCLUDEEFF), "cannot use both acceptance and efficiency mode"
 
 CAT_LABELS  = {'bb': "2 b tag", 'bq': "1 b tag", 'mumu': "1 #mu", 'bb_bq': "2 b tag + 1 b tag"}
 
@@ -99,6 +103,7 @@ SIGNALS = range(1800, 8000+1, 100)
 
 ACCEPTANCE = {}
 for s in range(500,9000+1,100): ACCEPTANCE[s] = 0.405 ##FIXME could include mass dependent exact value FIXME
+EFFICIENCY = {1800: 0.244, 1900: 0.26349999999999996, 2000: 0.283, 2100: 0.286, 2200: 0.289, 2300: 0.292, 2400: 0.295, 2500: 0.298, 2600: 0.2956, 2700: 0.29319999999999996, 2800: 0.2908, 2900: 0.2884, 3000: 0.286, 3100: 0.2818, 3200: 0.2776, 3300: 0.2734, 3400: 0.2692, 3500: 0.265, 3600: 0.2604, 3700: 0.2558, 3800: 0.2512, 3900: 0.24659999999999999, 4000: 0.242, 4100: 0.2382, 4200: 0.2344, 4300: 0.2306, 4400: 0.2268, 4500: 0.223, 4600: 0.2192, 4700: 0.2154, 4800: 0.21159999999999998, 4900: 0.20779999999999998, 5000: 0.204, 5100: 0.2002, 5200: 0.1964, 5300: 0.1926, 5400: 0.1888, 5500: 0.185, 5600: 0.182, 5700: 0.179, 5800: 0.17600000000000002, 5900: 0.17300000000000001, 6000: 0.17, 6100: 0.16670000000000001, 6200: 0.16340000000000002, 6300: 0.16010000000000002, 6400: 0.15680000000000002, 6500: 0.15350000000000003, 6600: 0.1502, 6700: 0.1469, 6800: 0.1436, 6900: 0.1403, 7000: 0.137, 7100: 0.1342, 7200: 0.13140000000000002, 7300: 0.1286, 7400: 0.1258, 7500: 0.123, 7600: 0.1202, 7700: 0.1174, 7800: 0.11460000000000001, 7900: 0.1118, 8000: 0.109}
 
 theoryLabel = {'B3' : "HVT model B (g_{V}=3)", 'A1' : "HVT model A (g_{V}=1)", "SSM" : "SSM Z'"}
 theoryLineColor = {'B3' : 616-3, 'A1' : 629, "SSM" : 602}
@@ -148,7 +153,10 @@ def limit():
     if ISMC: suffix += "_MC"
     if SY: suffix += "_comb"
     #if method=="cls": suffix="_CLs"
-    if INCLUDEACC: suffix+="_acc"
+    if INCLUDEACC:
+        suffix+="_acc"
+    elif INCLUDEEFF:
+        suffix+="_eff"
 
     if SY:
          filename = MAIN_DIR+"combine/limits/" + BTAGGING + "/combined_run2/"+ YEAR + "_M%d.txt"
@@ -177,7 +185,7 @@ def limit():
     pVal = TGraph()
     Best = TGraphAsymmErrors()
     Theory = {}
-    json_output = {"obs":{}, "exp":{}, "exp_1up":{}, "exp_1down":{}, "exp_2up":{}, "exp_2down":{}}
+    json_output = {"obs":{}, "exp":{}, "exp_1up":{}, "exp_1down":{}, "exp_2up":{}, "exp_2down":{}, "theory_values": {}, "theory_uncert_up": {}, "theory_uncert_down": {}}
 
     for i, m in enumerate(mass):
         if not m in val:
@@ -186,6 +194,8 @@ def limit():
 
         if INCLUDEACC:
             acc_factor = ACCEPTANCE[m]
+        elif INCLUDEEFF:
+            acc_factor = EFFICIENCY[m]
         else:
             acc_factor = 1.
 
@@ -208,22 +218,29 @@ def limit():
         json_output["exp_2up"][m] = val[m][5]*multF*acc_factor
         json_output["exp_2down"][m] = val[m][1]*multF*acc_factor
 
-    with open(MAIN_DIR+"combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".json", "w") as fp:
-        json.dump(json_output, fp)
-
     for t in THEORY:
+        json_output["theory_values"][t] = {}
+        json_output["theory_uncert_down"][t] = {}
+        json_output["theory_uncert_up"][t] = {}
+
         Theory[t] = TGraphAsymmErrors()
         #Theory[t] = TGraph()
         Xs_dict = HVT[t]['Z']['XS'] if t!='SSM' else SSM['Z']
 
         for m in sorted(Xs_dict.keys()):
+            if m<1800: continue
+            if m>8000: continue
             if INCLUDEACC and t!='SSM':
                 acc_factor = ACCEPTANCE[m]
+            elif INCLUDEEFF and t!='SSM':
+                acc_factor = EFFICIENCY[m]
             else:
                 if not INCLUDEACC and t=='SSM':
                     acc_factor = 1./ACCEPTANCE[m]
                 else:
                     acc_factor = 1.
+                if INCLUDEEFF and t=='SSM':
+                    acc_factor *= EFFICIENCY[m]
             if m < SIGNALS[0] or m > SIGNALS[-1]: continue
             #if m < mass[0] or m > mass[-1]: continue
             #if t!= 'SSM' and m>4500: continue ## I don't have the higher mass xs
@@ -242,6 +259,10 @@ def limit():
                 XsZ_Up = XsZ*(1.+math.hypot(HVT['A1']['Z']['QCD'][m][0]-1., HVT['A1']['Z']['PDF'][m][0]-1.))
                 XsZ_Down = XsZ*(1.-math.hypot(1.-HVT['A1']['Z']['QCD'][m][0], 1.-HVT['A1']['Z']['PDF'][m][0]))
      
+            json_output["theory_values"][t][int(m)] = XsZ*acc_factor
+            json_output["theory_uncert_down"][t][int(m)] = XsZ_Down*acc_factor
+            json_output["theory_uncert_up"][t][int(m)] = XsZ_Up*acc_factor
+
             n = Theory[t].GetN()
             Theory[t].SetPoint(n, m, XsZ*acc_factor)
             Theory[t].SetPointError(n, 0., 0., (XsZ-XsZ_Down)*acc_factor, (XsZ_Up-XsZ)*acc_factor)
@@ -251,6 +272,9 @@ def limit():
             Theory[t].SetFillStyle(theoryFillStyle[t])
             Theory[t].SetLineWidth(2)
             #Theory[t].SetLineStyle(7)
+
+    with open(MAIN_DIR+"combine/plotsLimit/ExclusionLimits/"+YEAR+suffix+".json", "w") as fp:
+        json.dump(json_output, fp)
 
     Exp2s.SetLineWidth(2)
     Exp2s.SetLineStyle(1)
@@ -273,7 +297,7 @@ def limit():
     if NO_BR:
         Exp2s.GetYaxis().SetTitle("#sigma("+particleP+"){} (fb)".format(" #Alpha" if INCLUDEACC else ""))
     else:
-        Exp2s.GetYaxis().SetTitle("#sigma("+particleP+") #bf{#it{#Beta}}("+particleP+" #rightarrow "+particle+"){} (fb)".format(" #Alpha" if INCLUDEACC else ""))
+        Exp2s.GetYaxis().SetTitle("#sigma("+particleP+") #bf{#it{#Beta}}("+particleP+" #rightarrow "+particle+"){}{} (fb)".format(" #Alpha" if INCLUDEACC else "", " #Alpha #Epsilon" if INCLUDEEFF else ""))
     Exp2s.GetYaxis().SetTitleOffset(1.5)
     Exp2s.GetYaxis().SetNoExponent(True)
     Exp2s.GetYaxis().SetMoreLogLabels()
@@ -331,6 +355,8 @@ def limit():
     Exp2s.GetYaxis().SetNoExponent(True)
     if INCLUDEACC:
         Exp2s.GetYaxis().SetRangeUser(0.05, 5.e3)
+    elif INCLUDEEFF:
+        Exp2s.GetYaxis().SetRangeUser(0.015, 1.5e3)
     else:
         Exp2s.GetYaxis().SetRangeUser(0.1, 5.e3)
     #else: Exp2s.GetYaxis().SetRangeUser(0.1, 1.e2)
